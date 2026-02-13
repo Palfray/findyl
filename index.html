@@ -291,8 +291,26 @@
                 return;
             }
             
+            // Deduplicate by album title (remove multiple pressings of same album)
+            const seen = new Set();
+            const uniqueResults = [];
+            
+            for (const item of results) {
+                const artist = item.title.split(' - ')[0] || 'Unknown Artist';
+                const album = item.title.split(' - ')[1] || item.title;
+                const key = artist.toLowerCase() + '||' + album.toLowerCase();
+                
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    uniqueResults.push(item);
+                }
+                
+                // Stop at 6 unique albums
+                if (uniqueResults.length >= 6) break;
+            }
+            
             let html = '';
-            results.forEach((item) => {
+            uniqueResults.forEach((item) => {
                 const artist = item.title.split(' - ')[0] || 'Unknown Artist';
                 const album = item.title.split(' - ')[1] || item.title;
                 const year = item.year || '';
