@@ -34,21 +34,50 @@
             font-family: 'DM Serif Text', serif;
         }
         
-        .store-card {
+        .vinyl-card {
             transition: all 0.3s ease;
         }
-        .store-card:hover {
-            transform: translateY(-4px);
+        
+        .vinyl-card:hover {
+            transform: translateY(-2px);
             box-shadow: 0 8px 16px rgba(0,0,0,0.15);
         }
         
-        .store-logo {
-            width: 48px;
-            height: 48px;
-            object-fit: contain;
-            border-radius: 8px;
-            background: #f5f5f5;
-            padding: 8px;
+        .store-button {
+            transition: all 0.2s ease;
+        }
+        
+        .store-button:hover {
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+        
+        .album-cover {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 8px 8px 0 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .loading {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .stores-expanded {
+            max-height: 2000px;
+            transition: max-height 0.5s ease-in-out;
+        }
+        
+        .stores-collapsed {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
         }
     </style>
 </head>
@@ -84,19 +113,33 @@
 
     <main class="max-w-7xl mx-auto px-4 py-8">
         <div class="mb-8">
-            <h1 class="text-3xl md:text-4xl font-normal mb-2" id="searchTitle">Vinyl records</h1>
-            <p class="text-gray-600">Click any store below to see their results for your search</p>
+            <h1 class="text-3xl md:text-4xl font-normal mb-2" id="searchTitle">Searching...</h1>
+            <p class="text-gray-600" id="searchSubtitle">Finding vinyl records for you</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4" id="storeCards"></div>
+        <!-- Loading State -->
+        <div id="loadingState" class="text-center py-12">
+            <div class="loading text-6xl mb-4">💿</div>
+            <p class="text-gray-600">Searching vinyl database...</p>
+        </div>
 
+        <!-- Results -->
+        <div id="vinylResults" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6" style="display: none;"></div>
+
+        <!-- No Results -->
+        <div id="noResults" style="display: none;" class="text-center py-12">
+            <p class="text-xl text-gray-600 mb-4">No vinyl found for your search</p>
+            <p class="text-sm text-gray-500">Try a different artist or album name</p>
+        </div>
+
+        <!-- Info Section -->
         <div class="mt-12 bg-blue-50 rounded-lg p-6">
             <h3 class="text-lg font-normal mb-2">How findyl Works</h3>
             <ul class="space-y-2 text-gray-700 text-sm">
-                <li>✓ We've found 17 UK vinyl retailers for you</li>
-                <li>✓ Click any store to see their search results</li>
-                <li>✓ Compare prices and availability across retailers</li>
-                <li>✓ Support independent record stores with your purchase</li>
+                <li>✓ Search our database of millions of vinyl releases</li>
+                <li>✓ Browse albums with cover art and details</li>
+                <li>✓ Click "Find Retailers" to see where to buy</li>
+                <li>✓ Choose from 17 UK stores - indie and major retailers</li>
             </ul>
         </div>
     </main>
@@ -104,67 +147,136 @@
     <footer class="mt-16 py-8 border-t border-gray-200">
         <div class="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500">
             <p class="mb-2">findyl may earn commission from purchases made through our links.</p>
-            <p>Supporting UK vinyl retailers since 2025</p>
+            <p>Powered by Discogs • Supporting UK vinyl retailers since 2025</p>
         </div>
     </footer>
 
     <script>
-        var params = new URLSearchParams(window.location.search);
-        var q = params.get('q') || '';
+        const params = new URLSearchParams(window.location.search);
+        const searchQuery = params.get('q') || '';
         
-        var stores = [
-            {name: 'Rough Trade', color: '#000000', url: 'https://www.roughtrade.com/search?q=', desc: 'Iconic independent store', domain: 'roughtrade.com'},
-            {name: 'HMV', color: '#E4007C', url: 'https://www.hmv.com/store/music/vinyl?text=', desc: 'UK music institution', domain: 'hmv.com'},
-            {name: 'Juno Records', color: '#FF6B00', url: 'https://www.juno.co.uk/search/?q%5Ball%5D%5B%5D=', desc: 'Specialist vinyl retailer', domain: 'juno.co.uk'},
-            {name: 'Banquet Records', color: '#1DB954', url: 'https://www.banquetrecords.com/search?q=', desc: 'Kingston indie favourite', domain: 'banquetrecords.com'},
-            {name: 'Norman Records', color: '#FF4136', url: 'https://www.normanrecords.com/search?q=', desc: 'Leeds independent store', domain: 'normanrecords.com'},
-            {name: 'Assai Records', color: '#2ECC40', url: 'https://assai.co.uk/page/1/?s=', desc: 'Edinburgh vinyl specialists', domain: 'assai.co.uk'},
-            {name: 'Monorail Music', color: '#B10DC9', url: 'https://www.monorailmusic.com/?s=', desc: 'Glasgow record store', domain: 'monorailmusic.com'},
-            {name: 'Resident Music', color: '#FF851B', url: 'https://www.resident-music.com/search?q=', desc: 'Brighton based indie', domain: 'resident-music.com'},
-            {name: 'Piccadilly Records', color: '#0074D9', url: 'https://www.piccadillyrecords.com/search?q=', desc: 'Manchester institution', domain: 'piccadillyrecords.com'},
-            {name: 'Record Store', color: '#39CCCC', url: 'https://recordstore.co.uk/search?q=', desc: 'Curated vinyl selection', domain: 'recordstore.co.uk'},
-            {name: 'Sounds Like Vinyl', color: '#85144b', url: 'https://soundslikevinyl.com/search?q=', desc: 'Online vinyl specialists', domain: 'soundslikevinyl.com'},
-            {name: 'The Sound of Vinyl', color: '#F012BE', url: 'https://thesoundofvinyl.com/search?q=', desc: 'New releases & reissues', domain: 'thesoundofvinyl.com'},
-            {name: 'Merchbar', color: '#FFDC00', url: 'https://www.merchbar.com/search?q=', desc: 'Artist merchandise & vinyl', domain: 'merchbar.com'},
-            {name: 'EMP', color: '#111111', url: 'https://www.emp.co.uk/search/?q=', desc: 'Music & entertainment merch', domain: 'emp.co.uk'},
-            {name: 'Vinyl Castle', color: '#3D9970', url: 'https://www.vinylcastle.com/search?q=', desc: 'Rare & collectible vinyl', domain: 'vinylcastle.com'},
-            {name: 'Lost in Vinyl', color: '#01FF70', url: 'https://www.lostinvinyl.org/page/1/?s=', desc: 'Independent record shop', domain: 'lostinvinyl.org'},
-            {name: 'POP Store', color: '#FF69B4', url: 'https://www.wearepopstore.com/search?q=', desc: 'Pop culture collectables', domain: 'wearepopstore.com'}
+        const stores = [
+            {name: 'Rough Trade', color: '#000000', url: 'https://www.roughtrade.com/search?q='},
+            {name: 'HMV', color: '#E4007C', url: 'https://www.hmv.com/store/music/vinyl?text='},
+            {name: 'Juno Records', color: '#FF6B00', url: 'https://www.juno.co.uk/search/?q%5Ball%5D%5B%5D='},
+            {name: 'Banquet Records', color: '#1DB954', url: 'https://www.banquetrecords.com/search?q='},
+            {name: 'Norman Records', color: '#FF4136', url: 'https://www.normanrecords.com/search?q='},
+            {name: 'Assai Records', color: '#2ECC40', url: 'https://assai.co.uk/page/1/?s='},
+            {name: 'Monorail Music', color: '#B10DC9', url: 'https://www.monorailmusic.com/?s='},
+            {name: 'Resident Music', color: '#FF851B', url: 'https://www.resident-music.com/search?q='},
+            {name: 'Piccadilly Records', color: '#0074D9', url: 'https://www.piccadillyrecords.com/search?q='},
+            {name: 'Record Store', color: '#39CCCC', url: 'https://recordstore.co.uk/search?q='},
+            {name: 'Sounds Like Vinyl', color: '#85144b', url: 'https://soundslikevinyl.com/search?q='},
+            {name: 'The Sound of Vinyl', color: '#F012BE', url: 'https://thesoundofvinyl.com/search?q='},
+            {name: 'Merchbar', color: '#FFDC00', url: 'https://www.merchbar.com/search?q='},
+            {name: 'EMP', color: '#111111', url: 'https://www.emp.co.uk/search/?q='},
+            {name: 'Vinyl Castle', color: '#3D9970', url: 'https://www.vinylcastle.com/search?q='},
+            {name: 'Lost in Vinyl', color: '#01FF70', url: 'https://www.lostinvinyl.org/page/1/?s='},
+            {name: 'POP Store', color: '#FF69B4', url: 'https://www.wearepopstore.com/search?q='}
         ];
 
-        if (q) {
-            document.getElementById('searchTitle').textContent = 'Vinyl records for "' + q + '"';
-            document.getElementById('headerSearch').value = q;
+        // Update page title
+        if (searchQuery) {
+            document.getElementById('searchTitle').textContent = 'Vinyl records for "' + searchQuery + '"';
+            document.getElementById('headerSearch').value = searchQuery;
         }
 
-        function trackStoreClick(storeName) {
+        // Search via our Vercel API endpoint
+        async function searchVinyl(query) {
+            try {
+                const response = await fetch('/api/discogs?q=' + encodeURIComponent(query));
+                
+                if (!response.ok) {
+                    throw new Error('API error');
+                }
+                
+                const data = await response.json();
+                return data.results || [];
+            } catch (error) {
+                console.error('Error fetching vinyl:', error);
+                return [];
+            }
+        }
+
+        // Toggle store visibility for a vinyl card
+        function toggleStores(cardId) {
+            const storesDiv = document.getElementById('stores-' + cardId);
+            const button = document.getElementById('btn-' + cardId);
+            
+            if (storesDiv.classList.contains('stores-collapsed')) {
+                storesDiv.classList.remove('stores-collapsed');
+                storesDiv.classList.add('stores-expanded');
+                button.textContent = 'Hide Retailers';
+            } else {
+                storesDiv.classList.remove('stores-expanded');
+                storesDiv.classList.add('stores-collapsed');
+                button.textContent = 'Find Retailers';
+            }
+        }
+
+        // Track clicks
+        function trackStoreClick(storeName, albumTitle) {
             if (window.gtag) {
                 gtag('event', 'store_click', {
                     'store_name': storeName,
-                    'search_query': q
+                    'album_title': albumTitle,
+                    'search_query': searchQuery
                 });
             }
         }
 
-        var html = '';
-        for (var i = 0; i < stores.length; i++) {
-            var s = stores[i];
-            var link = s.url + encodeURIComponent(q);
-            var faviconUrl = 'https://www.google.com/s2/favicons?domain=' + s.domain + '&sz=128';
+        // Display results
+        function displayResults(results) {
+            const container = document.getElementById('vinylResults');
+            document.getElementById('loadingState').style.display = 'none';
             
-            html += '<div class="store-card bg-white rounded-lg shadow-sm p-4 border border-gray-200">';
-            html += '<div class="mb-3">';
-            html += '<img src="' + faviconUrl + '" alt="' + s.name + ' logo" class="store-logo">';
-            html += '</div>';
-            html += '<h3 class="text-lg font-normal mb-1">' + s.name + '</h3>';
-            html += '<p class="text-xs text-gray-600 mb-3">' + s.desc + '</p>';
-            html += '<a href="' + link + '" target="_blank" rel="noopener noreferrer" ';
-            html += 'onclick="trackStoreClick(\'' + s.name + '\')" ';
-            html += 'class="block w-full text-center py-2 px-3 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90" ';
-            html += 'style="background-color: ' + s.color + ';">Search ' + s.name + '</a>';
-            html += '</div>';
+            if (results.length === 0) {
+                document.getElementById('noResults').style.display = 'block';
+                document.getElementById('searchSubtitle').textContent = 'No results found';
+                return;
+            }
+            
+            container.style.display = 'grid';
+            document.getElementById('searchSubtitle').textContent = 'Found ' + results.length + ' vinyl releases';
+            
+            let html = '';
+            results.forEach((item, index) => {
+                const artist = item.title.split(' - ')[0] || 'Unknown Artist';
+                const album = item.title.split(' - ')[1] || item.title;
+                const year = item.year || '';
+                const format = item.format ? item.format.join(', ') : 'Vinyl';
+                const cover = item.cover_image || item.thumb || '';
+                const searchTerm = artist + ' ' + album;
+                
+                html += '<div class="vinyl-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">';
+                html += '<img src="' + cover + '" alt="' + album + '" class="album-cover" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23667eea%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2248%22 fill=%22white%22%3E💿%3C/text%3E%3C/svg%3E\'">';
+                html += '<div class="p-4">';
+                html += '<h3 class="font-normal text-base mb-1 line-clamp-1">' + artist + '</h3>';
+                html += '<p class="text-sm text-gray-600 mb-2 line-clamp-1">' + album + '</p>';
+                html += '<p class="text-xs text-gray-500 mb-3">' + (year ? year + ' • ' : '') + format + '</p>';
+                html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full py-2 px-4 text-white font-medium rounded-lg transition-all hover:opacity-90" style="background-color: #FF6B6B;">Find Retailers</button>';
+                html += '<div id="stores-' + index + '" class="stores-collapsed mt-3 space-y-2">';
+                
+                stores.forEach(store => {
+                    html += '<a href="' + store.url + encodeURIComponent(searchTerm) + '" target="_blank" rel="noopener noreferrer" onclick="trackStoreClick(\'' + store.name + '\', \'' + album.replace(/'/g, "\\'") + '\')" class="store-button block text-center py-2 px-3 rounded text-sm font-medium text-white" style="background-color: ' + store.color + ';">' + store.name + '</a>';
+                });
+                
+                html += '</div>';
+                html += '</div>';
+                html += '</div>';
+            });
+            
+            container.innerHTML = html;
         }
-        document.getElementById('storeCards').innerHTML = html;
+
+        // Execute search on page load
+        if (searchQuery) {
+            searchVinyl(searchQuery).then(displayResults);
+        } else {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('noResults').style.display = 'block';
+            document.getElementById('searchTitle').textContent = 'No search query';
+        }
     </script>
 </body>
 </html>
