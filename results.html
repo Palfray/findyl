@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results — findyl</title>
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4VKXNETWR4"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-4VKXNETWR4');
+    </script>
+    
+    <!-- DM Serif Text Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Text:ital@0;1&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        
+        .dm-serif {
+            font-family: 'DM Serif Text', serif;
+        }
+        
+        h1, h2, h3 {
+            font-family: 'DM Serif Text', serif;
+        }
+        
+        .store-card {
+            transition: all 0.3s ease;
+        }
+        .store-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <a href="index.html" class="flex items-center gap-2">
+                    <div style="background-color: #FF6B6B; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <circle cx="10" cy="10" r="9.5" fill="none" stroke="white" stroke-width="0.5"/>
+                          <circle cx="10" cy="10" r="7.5" fill="none" stroke="white" stroke-width="0.3" opacity="0.6"/>
+                          <circle cx="10" cy="10" r="5.5" fill="none" stroke="white" stroke-width="0.3" opacity="0.6"/>
+                          <circle cx="10" cy="10" r="3" fill="white"/>
+                          <circle cx="10" cy="10" r="1" fill="#FF6B6B"/>
+                        </svg>
+                    </div>
+                    <span class="text-2xl font-normal dm-serif" style="color: #1a1a1a;">findyl</span>
+                </a>
+                <form action="results.html" method="get" class="flex-1 max-w-2xl">
+                    <input 
+                        type="text" 
+                        name="q"
+                        id="headerSearch"
+                        placeholder="Search for artist or album..."
+                        class="w-full px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2"
+                        style="outline-color: #FF6B6B;"
+                    >
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <div class="mb-8">
+            <h1 class="text-3xl md:text-4xl font-normal mb-2" id="searchTitle">Vinyl records</h1>
+            <p class="text-gray-600">Click any store below to see their results for your search</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4" id="storeCards"></div>
+
+        <div class="mt-12 bg-blue-50 rounded-lg p-6">
+            <h3 class="text-lg font-normal mb-2">How findyl Works</h3>
+            <ul class="space-y-2 text-gray-700 text-sm">
+                <li>✓ We've found 17 UK vinyl retailers for you</li>
+                <li>✓ Click any store to see their search results</li>
+                <li>✓ Compare prices and availability across retailers</li>
+                <li>✓ Support independent record stores with your purchase</li>
+            </ul>
+        </div>
+    </main>
+
+    <footer class="mt-16 py-8 border-t border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500">
+            <p class="mb-2">findyl may earn commission from purchases made through our links.</p>
+            <p>Supporting UK vinyl retailers since 2025</p>
+        </div>
+    </footer>
+
+    <script>
+        var params = new URLSearchParams(window.location.search);
+        var q = params.get('q') || '';
+        
+        var stores = [
+            {name: 'Rough Trade', logo: '🎵', color: '#000000', url: 'https://www.roughtrade.com/search?q=', desc: 'Iconic independent store'},
+            {name: 'HMV', logo: '🎧', color: '#E4007C', url: 'https://www.hmv.com/store/music/vinyl?text=', desc: 'UK music institution'},
+            {name: 'Juno Records', logo: '💿', color: '#FF6B00', url: 'https://www.juno.co.uk/search/?q%5Ball%5D%5B%5D=', desc: 'Specialist vinyl retailer'},
+            {name: 'Banquet Records', logo: '🎸', color: '#1DB954', url: 'https://www.banquetrecords.com/search?q=', desc: 'Kingston indie favourite'},
+            {name: 'Norman Records', logo: '📻', color: '#FF4136', url: 'https://www.normanrecords.com/search?q=', desc: 'Leeds independent store'},
+            {name: 'Assai Records', logo: '🎼', color: '#2ECC40', url: 'https://assai.co.uk/page/1/?s=', desc: 'Edinburgh vinyl specialists'},
+            {name: 'Monorail Music', logo: '🎹', color: '#B10DC9', url: 'https://www.monorailmusic.com/?s=', desc: 'Glasgow record store'},
+            {name: 'Resident Music', logo: '🥁', color: '#FF851B', url: 'https://www.resident-music.com/search?q=', desc: 'Brighton based indie'},
+            {name: 'Piccadilly Records', logo: '🎺', color: '#0074D9', url: 'https://www.piccadillyrecords.com/search?q=', desc: 'Manchester institution'},
+            {name: 'Record Store', logo: '📀', color: '#39CCCC', url: 'https://recordstore.co.uk/search?q=', desc: 'Curated vinyl selection'},
+            {name: 'Sounds Like Vinyl', logo: '🔊', color: '#85144b', url: 'https://soundslikevinyl.com/search?q=', desc: 'Online vinyl specialists'},
+            {name: 'The Sound of Vinyl', logo: '🎤', color: '#F012BE', url: 'https://thesoundofvinyl.com/search?q=', desc: 'New releases & reissues'},
+            {name: 'Merchbar', logo: '🛍️', color: '#FFDC00', url: 'https://www.merchbar.com/search?q=', desc: 'Artist merchandise & vinyl'},
+            {name: 'EMP', logo: '⚡', color: '#111111', url: 'https://www.emp.co.uk/search/?q=', desc: 'Music & entertainment merch'},
+            {name: 'Vinyl Castle', logo: '🏰', color: '#3D9970', url: 'https://www.vinylcastle.com/search?q=', desc: 'Rare & collectible vinyl'},
+            {name: 'Lost in Vinyl', logo: '🧭', color: '#01FF70', url: 'https://www.lostinvinyl.org/page/1/?s=', desc: 'Independent record shop'},
+            {name: 'POP Store', logo: '🎀', color: '#FF69B4', url: 'https://www.wearepopstore.com/search?q=', desc: 'Pop culture collectables'}
+        ];
+
+        if (q) {
+            document.getElementById('searchTitle').textContent = 'Vinyl records for "' + q + '"';
+            document.getElementById('headerSearch').value = q;
+        }
+
+        function trackStoreClick(storeName) {
+            if (window.gtag) {
+                gtag('event', 'store_click', {
+                    'store_name': storeName,
+                    'search_query': q
+                });
+            }
+        }
+
+        var html = '';
+        for (var i = 0; i < stores.length; i++) {
+            var s = stores[i];
+            var link = s.url + encodeURIComponent(q);
+            html += '<div class="store-card bg-white rounded-lg shadow-sm p-4 border border-gray-200">';
+            html += '<div class="text-3xl mb-2">' + s.logo + '</div>';
+            html += '<h3 class="text-lg font-normal mb-1">' + s.name + '</h3>';
+            html += '<p class="text-xs text-gray-600 mb-3">' + s.desc + '</p>';
+            html += '<a href="' + link + '" target="_blank" rel="noopener noreferrer" ';
+            html += 'onclick="trackStoreClick(\'' + s.name + '\')" ';
+            html += 'class="block w-full text-center py-2 px-3 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90" ';
+            html += 'style="background-color: ' + s.color + ';">Search ' + s.name + '</a>';
+            html += '</div>';
+        }
+        document.getElementById('storeCards').innerHTML = html;
+    </script>
+</body>
+</html>
