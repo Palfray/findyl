@@ -198,6 +198,25 @@
             }
         }
 
+        // Deduplicate results by album title
+        function deduplicateResults(results) {
+            const seen = new Set();
+            const unique = [];
+            
+            for (const item of results) {
+                const artist = item.title.split(' - ')[0] || 'Unknown Artist';
+                const album = item.title.split(' - ')[1] || item.title;
+                const key = artist.toLowerCase().trim() + '||' + album.toLowerCase().trim();
+                
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    unique.push(item);
+                }
+            }
+            
+            return unique;
+        }
+
         // Toggle store visibility for a vinyl card
         function toggleStores(cardId) {
             const storesDiv = document.getElementById('stores-' + cardId);
@@ -230,17 +249,20 @@
             const container = document.getElementById('vinylResults');
             document.getElementById('loadingState').style.display = 'none';
             
-            if (results.length === 0) {
+            // Deduplicate results
+            const uniqueResults = deduplicateResults(results);
+            
+            if (uniqueResults.length === 0) {
                 document.getElementById('noResults').style.display = 'block';
                 document.getElementById('searchSubtitle').textContent = 'No results found';
                 return;
             }
             
             container.style.display = 'grid';
-            document.getElementById('searchSubtitle').textContent = 'Found ' + results.length + ' vinyl releases';
+            document.getElementById('searchSubtitle').textContent = 'Found ' + uniqueResults.length + ' unique albums';
             
             let html = '';
-            results.forEach((item, index) => {
+            uniqueResults.forEach((item, index) => {
                 const artist = item.title.split(' - ')[0] || 'Unknown Artist';
                 const album = item.title.split(' - ')[1] || item.title;
                 const year = item.year || '';
