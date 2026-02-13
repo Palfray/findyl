@@ -46,7 +46,6 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             padding: 8px;
             transition: box-shadow 0.3s;
-            position: relative;
         }
         
         .search-box:focus-within {
@@ -83,81 +82,6 @@
         
         .nav-link:hover {
             opacity: 1;
-        }
-        
-        .autocomplete-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border-radius: 0 0 24px 24px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-            max-height: 400px;
-            overflow-y: auto;
-            z-index: 1000;
-            margin-top: -8px;
-            display: none;
-        }
-        
-        .autocomplete-dropdown.show {
-            display: block;
-        }
-        
-        .autocomplete-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            cursor: pointer;
-            transition: background 0.2s;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        
-        .autocomplete-item:hover {
-            background: #f9fafb;
-        }
-        
-        .autocomplete-item:last-child {
-            border-bottom: none;
-        }
-        
-        .autocomplete-cover {
-            width: 48px;
-            height: 48px;
-            object-fit: cover;
-            border-radius: 4px;
-            flex-shrink: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .autocomplete-info {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .autocomplete-title {
-            font-weight: 500;
-            font-size: 14px;
-            color: #1a1a1a;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .autocomplete-meta {
-            font-size: 12px;
-            color: #6b7280;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .autocomplete-loading {
-            padding: 16px;
-            text-align: center;
-            color: #6b7280;
-            font-size: 14px;
         }
         
         /* Mobile-specific fixes */
@@ -210,20 +134,16 @@
             Finding Vinyl, Made Simple
         </p>
         
-        <form id="searchForm" action="results.html" method="get" class="w-full max-w-2xl px-4" onsubmit="handleSubmit(event)">
+        <form action="results.html" method="get" class="w-full max-w-2xl px-4" onsubmit="trackSearch()">
             <div class="search-box bg-white rounded-full flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                <div class="flex-1 relative">
-                    <input 
-                        type="text" 
-                        name="q"
-                        id="searchInput"
-                        placeholder="Search for artist or album..."
-                        class="w-full px-4 sm:px-6 py-3 sm:py-4 text-base sm:text-lg outline-none bg-transparent"
-                        required
-                        autocomplete="off"
-                    >
-                    <div id="autocompleteDropdown" class="autocomplete-dropdown"></div>
-                </div>
+                <input 
+                    type="text" 
+                    name="q"
+                    id="searchInput"
+                    placeholder="Search for artist or album..."
+                    class="flex-1 px-4 sm:px-6 py-3 sm:py-4 text-base sm:text-lg outline-none bg-transparent"
+                    required
+                >
                 <button 
                     type="submit"
                     class="coral-button text-white px-6 sm:px-8 py-3 font-semibold rounded-full whitespace-nowrap"
@@ -235,148 +155,14 @@
     </div>
 
     <script>
-        let autocompleteTimeout;
-        let currentResults = [];
-        
-        const searchInput = document.getElementById('searchInput');
-        const autocompleteDropdown = document.getElementById('autocompleteDropdown');
-        
-        // Debounced autocomplete search
-        searchInput.addEventListener('input', function(e) {
-            const query = e.target.value.trim();
-            
-            // Clear existing timeout
-            clearTimeout(autocompleteTimeout);
-            
-            // Hide dropdown if query is too short
-            if (query.length < 2) {
-                hideAutocomplete();
-                return;
-            }
-            
-            // Show loading state
-            showLoading();
-            
-            // Debounce API call (wait 300ms after user stops typing)
-            autocompleteTimeout = setTimeout(() => {
-                fetchAutocomplete(query);
-            }, 300);
-        });
-        
-        // Fetch autocomplete suggestions
-        async function fetchAutocomplete(query) {
-            try {
-                const response = await fetch('/api/discogs?q=' + encodeURIComponent(query));
-                
-                if (!response.ok) {
-                    hideAutocomplete();
-                    return;
-                }
-                
-                const data = await response.json();
-                currentResults = data.results || [];
-                
-                displayAutocomplete(currentResults.slice(0, 6)); // Show top 6
-                
-            } catch (error) {
-                console.error('Autocomplete error:', error);
-                hideAutocomplete();
-            }
-        }
-        
-        // Display autocomplete results
-        function displayAutocomplete(results) {
-            if (results.length === 0) {
-                hideAutocomplete();
-                return;
-            }
-            
-            // Deduplicate by album title (remove multiple pressings of same album)
-            const seen = new Set();
-            const uniqueResults = [];
-            
-            for (const item of results) {
-                const artist = item.title.split(' - ')[0] || 'Unknown Artist';
-                const album = item.title.split(' - ')[1] || item.title;
-                const key = artist.toLowerCase() + '||' + album.toLowerCase();
-                
-                if (!seen.has(key)) {
-                    seen.add(key);
-                    uniqueResults.push(item);
-                }
-                
-                // Stop at 6 unique albums
-                if (uniqueResults.length >= 6) break;
-            }
-            
-            let html = '';
-            uniqueResults.forEach((item) => {
-                const artist = item.title.split(' - ')[0] || 'Unknown Artist';
-                const album = item.title.split(' - ')[1] || item.title;
-                const year = item.year || '';
-                const cover = item.thumb || item.cover_image || '';
-                const format = item.format ? item.format[0] : 'Vinyl';
-                
-                html += '<div class="autocomplete-item" onclick="selectAlbum(\'' + encodeURIComponent(artist + ' ' + album) + '\')">';
-                html += '<img src="' + cover + '" class="autocomplete-cover" onerror="this.style.background=\'linear-gradient(135deg, #667eea 0%, #764ba2 100%)\'; this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E\'">';
-                html += '<div class="autocomplete-info">';
-                html += '<div class="autocomplete-title">' + artist + ' - ' + album + '</div>';
-                html += '<div class="autocomplete-meta">' + (year ? year + ' • ' : '') + format + '</div>';
-                html += '</div>';
-                html += '</div>';
-            });
-            
-            autocompleteDropdown.innerHTML = html;
-            autocompleteDropdown.classList.add('show');
-        }
-        
-        // Show loading state
-        function showLoading() {
-            autocompleteDropdown.innerHTML = '<div class="autocomplete-loading">Searching...</div>';
-            autocompleteDropdown.classList.add('show');
-        }
-        
-        // Hide autocomplete
-        function hideAutocomplete() {
-            autocompleteDropdown.classList.remove('show');
-        }
-        
-        // Select an album from autocomplete
-        function selectAlbum(query) {
-            searchInput.value = decodeURIComponent(query);
-            hideAutocomplete();
-            document.getElementById('searchForm').submit();
-            trackSearch(decodeURIComponent(query));
-        }
-        
-        // Handle form submit
-        function handleSubmit(event) {
-            trackSearch(searchInput.value);
-            hideAutocomplete();
-        }
-        
-        // Track search
-        function trackSearch(searchTerm) {
+        function trackSearch() {
+            var searchTerm = document.getElementById('searchInput').value;
             if (window.gtag) {
                 gtag('event', 'search', {
                     'search_term': searchTerm
                 });
             }
         }
-        
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!searchInput.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
-                hideAutocomplete();
-            }
-        });
-        
-        // Close dropdown on escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                hideAutocomplete();
-            }
-        });
     </script>
 </body>
 </html>
