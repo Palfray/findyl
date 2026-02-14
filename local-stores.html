@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Local Record Stores — findyl</title>
+    <meta name="description" content="Find 285+ independent record stores across the UK. Support your local vinyl shop.">
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4VKXNETWR4"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-4VKXNETWR4');
+    </script>
+    
+    <!-- DM Serif Text Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Text:ital@0;1&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        
+        .dm-serif {
+            font-family: 'DM Serif Text', serif;
+        }
+        
+        h1, h2, h3 {
+            font-family: 'DM Serif Text', serif;
+        }
+        
+        .store-card {
+            transition: all 0.2s ease;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .store-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.15);
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .search-box {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .search-box:focus-within {
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200">
+        <div class="max-w-6xl mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <a href="index.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                    <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="20" cy="20" r="19" fill="#FF6B6B"/>
+                      <circle cx="20" cy="20" r="15" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
+                      <circle cx="20" cy="20" r="11" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
+                      <circle cx="20" cy="20" r="6" fill="white"/>
+                      <circle cx="20" cy="20" r="2" fill="#FF6B6B"/>
+                    </svg>
+                    <span class="dm-serif text-2xl">findyl</span>
+                </a>
+                
+                <a href="index.html" class="text-gray-600 hover:text-gray-900 transition-colors text-sm">
+                    ← Back to Search
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-12">
+        <!-- Title Section -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl sm:text-5xl dm-serif mb-4">Local Record Stores</h1>
+            <p class="text-gray-600 text-lg">
+                Find independent record stores across the UK
+            </p>
+            <p class="text-sm text-gray-500 mt-2">
+                <span id="storeCount">285</span> stores · Source: Record Store Day UK
+            </p>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="max-w-2xl mx-auto mb-8">
+            <div class="search-box bg-white rounded-full px-6 py-4">
+                <input 
+                    type="text" 
+                    id="searchInput"
+                    placeholder="Search by store name or location..."
+                    class="w-full text-base outline-none"
+                >
+            </div>
+        </div>
+
+        <!-- Store Grid -->
+        <div id="storesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Stores will be inserted here by JavaScript -->
+        </div>
+
+        <!-- No Results -->
+        <div id="noResults" class="text-center py-12 hidden">
+            <p class="text-gray-500">No stores found</p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-6xl mx-auto px-4 py-8 text-center text-sm text-gray-600">
+            <p>Data sourced from <a href="https://www.recordstoreday.co.uk" target="_blank" class="text-coral hover:underline" style="color: #FF6B6B;">Record Store Day UK</a></p>
+            <p class="mt-2">findyl — Finding Vinyl, Made Simple</p>
+        </div>
+    </footer>
+
+    <script>
+        // Store data
+        const stores = [
+            {"name": "Off The Record", "location": "UK"},
+            {"name": "Lion Vibes", "location": "UK"},
+            {"name": "Derricks", "location": "UK"},
+            {"name": "Choons", "location": "UK"},
+            {"name": "12 Bar Music and Social", "location": "UK"},
+            {"name": "Townsend Records", "location": "Great Harwood"},
+            {"name": "Area 51 Records", "location": "UK"},
+            {"name": "VOD Music", "location": "UK"},
+            {"name": "Golden Discs", "location": "Cork"},
+            {"name": "Golden Discs", "location": "Dundalk"},
+            {"name": "Ignite Record Store", "location": "UK"},
+            {"name": "Far Land Records", "location": "UK"},
+            {"name": "Music Mania", "location": "UK"},
+            {"name": "Concorde Music Shop", "location": "UK"},
+            {"name": "The Second 45", "location": "UK"},
+            {"name": "World of Echo", "location": "UK"},
+            {"name": "Revolution Records Halesowen", "location": "UK"},
+            {"name": "Rough Trade Bristol", "location": "Bristol"},
+            {"name": "Raves from the Grave", "location": "UK"},
+            {"name": "Slipped Discs Billericay", "location": "UK"},
+            {"name": "Dash The Henge Store", "location": "UK"},
+            {"name": "Empire Records", "location": "UK"},
+            {"name": "Spillers Records", "location": "Cardiff"},
+            {"name": "Slide Record Shop", "location": "UK"},
+            {"name": "Monorail Music", "location": "Glasgow"},
+            {"name": "Regency Records", "location": "UK"},
+            {"name": "Specialist Subject", "location": "UK"},
+            {"name": "Save Our Souls Records", "location": "UK"},
+            {"name": "Clocktower Records", "location": "UK"},
+            {"name": "Big Moon Records", "location": "UK"},
+            {"name": "Roan Records", "location": "UK"},
+            {"name": "Phonica Records", "location": "London"},
+            {"name": "Truck Oxford", "location": "Oxford"},
+            {"name": "Music Mania Ltd", "location": "UK"},
+            {"name": "Vintage & Vinyl", "location": "UK"},
+            {"name": "Sound Cellar", "location": "UK"},
+            {"name": "Voxbox", "location": "UK"},
+            {"name": "Vinyl Attraction", "location": "UK"},
+            {"name": "Raven Retail", "location": "UK"},
+            {"name": "Vinyl Underground", "location": "UK"},
+            {"name": "Starr Records", "location": "UK"},
+            {"name": "Jacaranda Records", "location": "Liverpool"},
+            {"name": "Tower Records", "location": "Dublin"},
+            {"name": "Tubeway Records", "location": "UK"},
+            {"name": "Saturnalia Records", "location": "UK"},
+            {"name": "Museum Vinyl", "location": "UK"},
+            {"name": "Five Rise Records", "location": "UK"},
+            {"name": "Black Circle Records", "location": "UK"},
+            {"name": "The Vault Collective", "location": "UK"},
+            {"name": "Up North Records", "location": "UK"},
+            {"name": "Slow Century Records", "location": "UK"},
+            {"name": "Heathen Chemistry", "location": "UK"},
+            {"name": "Beyond Vinyl", "location": "UK"},
+            {"name": "Number One Records", "location": "UK"},
+            {"name": "Rubber Soul Records", "location": "UK"},
+            {"name": "Good Vibes Neighbourhood Store", "location": "UK"},
+            {"name": "Intense Records", "location": "Nottingham"},
+            {"name": "Record Room", "location": "UK"},
+            {"name": "Golden Discs", "location": "Drogheda"},
+            {"name": "Golden Discs", "location": "Galway"},
+            {"name": "Golden Discs", "location": "Swords"},
+            {"name": "Crash Records", "location": "Leeds"},
+            {"name": "Ventnor Exchange", "location": "UK"},
+            {"name": "Soul Brother", "location": "London"},
+            {"name": "Red House Records", "location": "UK"},
+            {"name": "Spun Out", "location": "UK"},
+            {"name": "Sound Records IOM", "location": "Isle of Man"},
+            {"name": "The Vinyl Whistle", "location": "UK"},
+            {"name": "Sounds Of The Universe", "location": "London"},
+            {"name": "Bella Union Vinyl Shop", "location": "UK"},
+            {"name": "S T Records", "location": "UK"},
+            {"name": "Stone Rock Records", "location": "UK"},
+            {"name": "Sister Ray", "location": "London"},
+            {"name": "Left for Dead", "location": "UK"},
+            {"name": "Love Music", "location": "UK"},
+            {"name": "Peckham Soul", "location": "London"},
+            {"name": "Steamboat Records", "location": "UK"},
+            {"name": "Revo Records", "location": "UK"},
+            {"name": "Seedee Jons", "location": "UK"},
+            {"name": "Future Audio", "location": "UK"},
+            {"name": "Jam Records", "location": "UK"},
+            {"name": "Spinning Discs Sheffield", "location": "Sheffield"},
+            {"name": "The LP Cafe", "location": "UK"},
+            {"name": "The Record Shop Ltd", "location": "UK"},
+            {"name": "Honest Jon's Records", "location": "London"},
+            {"name": "Sound Records", "location": "UK"},
+            {"name": "Venus Vinyl", "location": "UK"},
+            {"name": "Grooves Records", "location": "UK"},
+            {"name": "Music's Not Dead", "location": "UK"},
+            {"name": "The Vinyl Frontier", "location": "UK"},
+            {"name": "Record Vault", "location": "UK"},
+            {"name": "Polar Bear", "location": "UK"},
+            {"name": "Vinyl Head Record Shop", "location": "UK"},
+            {"name": "Casbah Records", "location": "UK"},
+            {"name": "Jumbo Records", "location": "Leeds"},
+            {"name": "Tough Love St Leonards", "location": "UK"},
+            {"name": "Strip Joint Records", "location": "UK"},
+            {"name": "Yew Tree Records", "location": "UK"},
+            {"name": "Over The Moon Records", "location": "UK"},
+            {"name": "Underground Solution", "location": "UK"},
+            {"name": "Golden Discs", "location": "Athlone"},
+            {"name": "JM Records", "location": "UK"},
+            {"name": "The Musical Box", "location": "UK"},
+            {"name": "Hundred Records", "location": "UK"},
+            {"name": "Flashback Records", "location": "London"},
+            {"name": "Vinilo Record Store", "location": "UK"},
+            {"name": "Mostly Vinyl Micky", "location": "UK"},
+            {"name": "Bear Tree Records", "location": "UK"},
+            {"name": "Blitzkriegshop", "location": "UK"},
+            {"name": "Lucky's Record Bar", "location": "UK"},
+            {"name": "Off the Beaten Tracks", "location": "UK"},
+            {"name": "Vinylstore Jr", "location": "UK"},
+            {"name": "Discovery Music", "location": "UK"},
+            {"name": "Golden Discs", "location": "Navan"},
+            {"name": "Luca Records", "location": "UK"},
+            {"name": "Vinyl Revival", "location": "UK"},
+            {"name": "Golden Discs", "location": "Wexford"},
+            {"name": "Vinyl Cafe", "location": "UK"},
+            {"name": "Replay Records", "location": "UK"},
+            {"name": "Applestump Records", "location": "UK"},
+            {"name": "Resolution Records", "location": "UK"},
+            {"name": "Mo' Fidelity Records", "location": "UK"},
+            {"name": "First Press", "location": "UK"},
+            {"name": "David's Music", "location": "UK"},
+            {"name": "Truck Witney", "location": "Witney"},
+            {"name": "Thirteen Records", "location": "UK"},
+            {"name": "Frank Harvey Hifi Excellence", "location": "UK"},
+            {"name": "The Beat and Track", "location": "UK"},
+            {"name": "Golden Discs", "location": "Sligo"},
+            {"name": "Quicksilver Music", "location": "UK"},
+            {"name": "Castle Sounds", "location": "UK"},
+            {"name": "Dead Cloud", "location": "UK"},
+            {"name": "Raven Records", "location": "UK"},
+            {"name": "Second Line Records", "location": "UK"},
+            {"name": "Bscene", "location": "UK"},
+            {"name": "Relevant Records", "location": "UK"},
+            {"name": "Boiler Room Salisbury", "location": "Salisbury"},
+            {"name": "Reflex", "location": "UK"},
+            {"name": "The Vinyl Revival Store", "location": "UK"},
+            {"name": "The Record Cafe", "location": "UK"},
+            {"name": "Spin The Black Circle", "location": "UK"},
+            {"name": "Vinyl & Vintage", "location": "UK"},
+            {"name": "Sound Knowledge", "location": "UK"},
+            {"name": "Swordfish Records", "location": "UK"},
+            {"name": "Capsule Records", "location": "UK"},
+            {"name": "A Slice of Vinyl", "location": "UK"},
+            {"name": "Head Records", "location": "UK"},
+            {"name": "Reckless Records", "location": "London"},
+            {"name": "The Record Rack", "location": "UK"},
+            {"name": "Powerhouse Music", "location": "UK"},
+            {"name": "Books On The Rise", "location": "UK"},
+            {"name": "Dreamhouse Records", "location": "UK"},
+            {"name": "Boiler Room Poole", "location": "Poole"},
+            {"name": "Olaf's Record Store", "location": "UK"},
+            {"name": "Dead Sea Records", "location": "UK"},
+            {"name": "Music From Big Blue", "location": "UK"},
+            {"name": "Freebird Records", "location": "UK"},
+            {"name": "Earworm Records", "location": "UK"},
+            {"name": "Bending Sound", "location": "UK"},
+            {"name": "Music Zone", "location": "UK"},
+            {"name": "Action Records", "location": "UK"},
+            {"name": "Phoenix Sounds", "location": "UK"},
+            {"name": "Record Plant York", "location": "York"},
+            {"name": "Vinyl Eddie", "location": "UK"},
+            {"name": "Waxhead Records", "location": "UK"},
+            {"name": "Tallbird", "location": "UK"},
+            {"name": "Square Records", "location": "UK"},
+            {"name": "Rival Records", "location": "UK"},
+            {"name": "Mixed Up Records", "location": "UK"},
+            {"name": "Rough Trade Liverpool", "location": "Liverpool"},
+            {"name": "Volume Records & Books", "location": "UK"},
+            {"name": "Kaleidoscope Records", "location": "UK"},
+            {"name": "Revolution Records Penge", "location": "UK"},
+            {"name": "Tangled Parrot", "location": "Swansea"},
+            {"name": "Reverence Music", "location": "UK"},
+            {"name": "Assai", "location": "Aberdeen"},
+            {"name": "Rough Trade East", "location": "London"},
+            {"name": "Stranger than Paradise", "location": "UK"},
+            {"name": "The Vinyl Countdown", "location": "UK"},
+            {"name": "South Record Shop", "location": "UK"},
+            {"name": "Out of the Attic", "location": "UK"},
+            {"name": "Mint and Sealed", "location": "UK"},
+            {"name": "Astonishing Sounds", "location": "UK"},
+            {"name": "Record Plant Leeds", "location": "Leeds"},
+            {"name": "Vinyl Van", "location": "UK"},
+            {"name": "Le Freak Records", "location": "UK"},
+            {"name": "Vinyl Tap", "location": "UK"},
+            {"name": "Record Corner", "location": "UK"},
+            {"name": "The Rock Box", "location": "UK"},
+            {"name": "Vinyl Guru", "location": "UK"},
+            {"name": "Core Of The Poodle", "location": "UK"},
+            {"name": "Rough Trade West", "location": "London"},
+            {"name": "Keep Audio Co", "location": "UK"},
+            {"name": "Revolution Records Selby", "location": "Selby"},
+            {"name": "Dales Music Store", "location": "UK"},
+            {"name": "All City Records", "location": "Dublin"},
+            {"name": "Union", "location": "UK"},
+            {"name": "Pop Classics", "location": "UK"},
+            {"name": "Rough Trade Denmark Street", "location": "London"},
+            {"name": "Cult Hero", "location": "UK"},
+            {"name": "Eel Pie Records", "location": "UK"},
+            {"name": "The Record Store", "location": "UK"},
+            {"name": "Tangled Parrot", "location": "Carmarthen"},
+            {"name": "Carnival Records", "location": "UK"},
+            {"name": "Chameleon @ Holburn Hifi", "location": "UK"},
+            {"name": "81 Renshaw", "location": "Liverpool"},
+            {"name": "Electron Records", "location": "UK"},
+            {"name": "The Music Room @ Bookstop", "location": "UK"},
+            {"name": "Seismic Records", "location": "UK"},
+            {"name": "Plugd Records", "location": "Cork"},
+            {"name": "Vinyl Exchange", "location": "Manchester"},
+            {"name": "Martian", "location": "UK"},
+            {"name": "Thorne Records", "location": "UK"},
+            {"name": "Analogue Music", "location": "UK"},
+            {"name": "Badlands", "location": "UK"},
+            {"name": "Stylus Records", "location": "UK"},
+            {"name": "Slab Records", "location": "UK"},
+            {"name": "Sticky Black Tarmac", "location": "UK"},
+            {"name": "Ben O'Neill", "location": "UK"},
+            {"name": "Spin Sounds", "location": "UK"},
+            {"name": "Soundclash", "location": "UK"},
+            {"name": "OMG @ Zhivago", "location": "UK"},
+            {"name": "Banquet Records", "location": "Kingston"},
+            {"name": "Planet Of Sounds", "location": "UK"},
+            {"name": "Rotten Records", "location": "UK"},
+            {"name": "Gatefield Sounds", "location": "UK"},
+            {"name": "Assai", "location": "Glasgow"},
+            {"name": "Music Nostalgia", "location": "UK"},
+            {"name": "Pandemonium", "location": "UK"},
+            {"name": "Rockaboom", "location": "UK"},
+            {"name": "Loafers Vinyl & Coffee", "location": "UK"},
+            {"name": "Low Port Music", "location": "UK"},
+            {"name": "Wrecking Ball Music", "location": "UK"},
+            {"name": "Maestro Records", "location": "UK"},
+            {"name": "Diverse Vinyl", "location": "UK"},
+            {"name": "Cool Discs Music", "location": "UK"},
+            {"name": "Piccadilly Records", "location": "Manchester"},
+            {"name": "Rockabuy Records", "location": "UK"},
+            {"name": "Townsend Records", "location": "Clitheroe"},
+            {"name": "Record Collector", "location": "Sheffield"},
+            {"name": "Wah Wah Records", "location": "UK"},
+            {"name": "Spinning Around Records", "location": "UK"},
+            {"name": "Tangled Parrot", "location": "Hereford"},
+            {"name": "Assai", "location": "Dundee"},
+            {"name": "Rarekind Records", "location": "UK"},
+            {"name": "Just Dropped In", "location": "UK"},
+            {"name": "Vinyl Audio Cafe", "location": "UK"},
+            {"name": "Rough Trade Vintage", "location": "London"},
+            {"name": "Back to Mono", "location": "UK"},
+            {"name": "33 RPM", "location": "UK"},
+            {"name": "Dig Vinyl", "location": "West Kirby"},
+            {"name": "Tasty Records", "location": "UK"},
+            {"name": "RPM Music", "location": "UK"},
+            {"name": "Spindizzy Records", "location": "UK"},
+            {"name": "Global Groove", "location": "UK"},
+            {"name": "Pure Vinyl Records", "location": "UK"},
+            {"name": "Andy's Records", "location": "UK"},
+            {"name": "Reggie's Retro Record Store", "location": "UK"},
+            {"name": "Resident Music", "location": "Brighton"},
+            {"name": "Assai", "location": "Edinburgh"},
+            {"name": "101 Collectors Records", "location": "UK"},
+            {"name": "Beatdown Records", "location": "UK"},
+            {"name": "Bell, Book Candle", "location": "UK"},
+            {"name": "Smugglers Records", "location": "UK"},
+            {"name": "Europa Music", "location": "UK"},
+            {"name": "Cruisin Records", "location": "UK"},
+            {"name": "The Orpington", "location": "UK"},
+            {"name": "Toms Record Shop", "location": "UK"},
+            {"name": "Grinning Soul Records", "location": "UK"},
+            {"name": "Level Crossing Records", "location": "UK"},
+            {"name": "Hectic Records", "location": "UK"},
+            {"name": "Wax and Beans", "location": "UK"},
+            {"name": "Some Great Reward", "location": "UK"}
+        ];
+
+        const searchInput = document.getElementById('searchInput');
+        const storesGrid = document.getElementById('storesGrid');
+        const noResults = document.getElementById('noResults');
+        const storeCount = document.getElementById('storeCount');
+
+        // Display all stores initially
+        displayStores(stores);
+
+        // Search functionality
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            
+            if (query === '') {
+                displayStores(stores);
+                return;
+            }
+            
+            const filtered = stores.filter(store => 
+                store.name.toLowerCase().includes(query) ||
+                store.location.toLowerCase().includes(query)
+            );
+            
+            displayStores(filtered);
+        });
+
+        function displayStores(storesToDisplay) {
+            storeCount.textContent = storesToDisplay.length;
+            
+            if (storesToDisplay.length === 0) {
+                storesGrid.style.display = 'none';
+                noResults.classList.remove('hidden');
+                return;
+            }
+            
+            storesGrid.style.display = 'grid';
+            noResults.classList.add('hidden');
+            
+            let html = '';
+            storesToDisplay.forEach(store => {
+                const rsdUrl = `https://www.recordstoreday.co.uk/record-shop/${encodeURIComponent(store.name)}`;
+                
+                html += `
+                    <div class="store-card bg-white rounded-lg p-5 border border-gray-200 hover:border-coral transition-colors" style="--coral: #FF6B6B;">
+                        <h3 class="font-semibold text-gray-900 mb-1">${store.name}</h3>
+                        <p class="text-sm text-gray-600 mb-3">${store.location}</p>
+                        <a href="${rsdUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-sm font-medium hover:underline" style="color: #FF6B6B;">
+                            View details
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </a>
+                    </div>
+                `;
+            });
+            
+            storesGrid.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
