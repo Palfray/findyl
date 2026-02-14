@@ -15,12 +15,38 @@ export default async function handler(req, res) {
   }
 
   const searchTerm = q.toLowerCase().trim();
+  const searchTermLower = searchTerm; // For clarity in code
 
   try {
-    // Step 1: Search POPSTORE products
-    const popstoreResults = popstoreProducts.filter(product => 
-      product.search_text.includes(searchTerm)
-    );
+    // Step 1: Search POPSTORE products with better matching
+    const searchTermLower = searchTerm.toLowerCase();
+    
+    const popstoreResults = popstoreProducts.filter(product => {
+      const artistLower = product.artist.toLowerCase();
+      const albumLower = product.album.toLowerCase();
+      
+      // Check if search term matches artist name (more strict)
+      const artistMatch = artistLower.includes(searchTermLower) || 
+                         searchTermLower.includes(artistLower);
+      
+      // Or if it matches the full title
+      const titleMatch = product.search_text.includes(searchTermLower);
+      
+      // Or if searching for specific album
+      const albumMatch = albumLower.includes(searchTermLower);
+      
+      // Must match artist OR (album AND artist is in search term)
+      // This prevents "James Taylor" matching "Taylor Swift"
+      if (artistMatch) {
+        return true; // Direct artist match
+      } else if (albumMatch && searchTermLower.split(' ').some(word => 
+        word.length > 3 && artistLower.includes(word)
+      )) {
+        return true; // Album match but artist name is mentioned
+      }
+      
+      return false;
+    });
 
     console.log(`POPSTORE found ${popstoreResults.length} matches for "${q}"`);
 
@@ -61,12 +87,70 @@ export default async function handler(req, res) {
       // Then add Discogs results (deduplicate against POPSTORE)
       ...discogsResults
         .filter(d => {
-          // Don't add if we already have it from POPSTORE
           const discogsTitle = d.title.toLowerCase();
-          return !popstoreResults.some(p => 
+          const discogsArtist = (d.title.split(' - ')[0] || '').toLowerCase();
+          const words = discogsArtist.split(/\s+/);
+          
+          // Don't add if we already have it from POPSTORE
+          const isDuplicate = popstoreResults.some(p => 
             discogsTitle.includes(p.artist.toLowerCase()) && 
             discogsTitle.includes(p.album.toLowerCase())
           );
+          
+          if (isDuplicate) return false;
+          
+          // If user searches for exact artist name, show all their albums
+          // Check if artist name in Discogs result matches search term closely
+          const searchLower = searchTermLower.trim();
+          const artistLower = discogsArtist.trim();
+          
+          // Exact match - always include
+          if (artistLower === searchLower) {
+            return true;
+          }
+          
+          // Artist name starts with or ends with search term
+          if (artistLower.startsWith(searchLower) || artistLower.endsWith(searchLower)) {
+            return true;
+          }
+          
+          // Search term is contained in artist name (but check it's a full word)
+          if (artistLower.includes(searchLower)) {
+            // Make sure it's a word boundary match, not just substring
+            const words = artistLower.split(/\s+/);
+            const searchWords = searchLower.split(/\s+/);
+            
+            // Check if all search words appear in artist name
+            const allWordsMatch = searchWords.every(searchWord => 
+              words.some(word => word === searchWord || word.startsWith(searchWord))
+            );
+            
+            if (allWordsMatch) {
+              return true;
+            }
+          }
+          
+          // For multi-word searches like "Pink Floyd", be more lenient
+          if (searchLower.includes(' ')) {
+            const searchWords = searchLower.split(/\s+/).filter(w => w.length > 2);
+            const artistWords = artistLower.split(/\s+/).filter(w => w.length > 2);
+            
+            // Check if most search words appear in artist
+            const matchCount = searchWords.filter(sw => 
+              artistWords.some(aw => aw.includes(sw) || sw.includes(aw))
+            ).length;
+            
+            if (matchCount >= searchWords.length * 0.7) { // 70% of words match
+              return true;
+            }
+          }
+          
+          // Single word searches - check if it appears in the artist name
+          if (!searchLower.includes(' ')) {
+            return words.some(word => word === searchLower || word.startsWith(searchLower));
+          }
+          
+          return false;
         })
         .map(d => ({
           source: 'discogs',
