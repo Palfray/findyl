@@ -51,7 +51,7 @@ export default async function handler(req, res) {
     console.log(`POPSTORE found ${popstoreResults.length} matches for "${q}"`);
 
     // Step 2: Search Discogs API
-    const discogsUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(q)}&type=release&format=vinyl&per_page=20&key=${process.env.DISCOGS_CONSUMER_KEY}&secret=${process.env.DISCOGS_CONSUMER_SECRET}`;
+    const discogsUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(q)}&type=release&format=vinyl&per_page=50&key=${process.env.DISCOGS_CONSUMER_KEY}&secret=${process.env.DISCOGS_CONSUMER_SECRET}`;
 
     const discogsResponse = await fetch(discogsUrl, {
       headers: {
@@ -178,6 +178,18 @@ export default async function handler(req, res) {
         uniqueResults.push(item);
       }
     }
+    
+    // Step 5: Sort by year (newest first) to show recent releases at top
+    uniqueResults.sort((a, b) => {
+      // POPSTORE items always stay at top (they have prices!)
+      if (a.source === 'popstore' && b.source !== 'popstore') return -1;
+      if (b.source === 'popstore' && a.source !== 'popstore') return 1;
+      
+      // Then sort by year
+      const yearA = parseInt(a.year) || 0;
+      const yearB = parseInt(b.year) || 0;
+      return yearB - yearA; // Newest first
+    });
 
     console.log(`Returning ${uniqueResults.length} unique results (${popstoreResults.length} from POPSTORE, ${uniqueResults.length - popstoreResults.length} from Discogs)`);
 
