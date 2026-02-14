@@ -246,33 +246,6 @@
                 </button>
             </div>
         </form>
-        
-        <!-- Newsletter Signup -->
-        <div class="mt-12 w-full max-w-md px-4">
-            <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center">
-                <h3 class="text-white text-lg dm-serif mb-2">Get vinyl picks in your inbox</h3>
-                <p class="text-white/80 text-sm mb-4">New releases, deals, and rare finds - weekly</p>
-                
-                <form id="newsletterForm" class="flex flex-col sm:flex-row gap-2">
-                    <input 
-                        type="email" 
-                        id="emailInput"
-                        placeholder="your@email.com"
-                        class="flex-1 px-4 py-3 rounded-full outline-none text-base"
-                        required
-                    >
-                    <button 
-                        type="submit"
-                        class="coral-button text-white px-6 py-3 font-semibold rounded-full whitespace-nowrap"
-                        style="background-color: white; color: #FF6B6B;"
-                    >
-                        Subscribe
-                    </button>
-                </form>
-                
-                <p class="text-white/60 text-xs mt-3">No spam, unsubscribe anytime</p>
-            </div>
-        </div>
     </div>
 
     <script>
@@ -356,46 +329,6 @@
                 });
             }
         }
-        
-        // Newsletter signup handler
-        document.getElementById('newsletterForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('emailInput').value;
-            const form = this;
-            const button = form.querySelector('button');
-            const originalText = button.textContent;
-            
-            // Show loading state
-            button.textContent = 'Subscribing...';
-            button.disabled = true;
-            
-            // Track signup attempt
-            if (window.gtag) {
-                gtag('event', 'newsletter_signup', {
-                    'email': email
-                });
-            }
-            
-            // TODO: Replace this URL with your actual Mailchimp form action URL
-            const mailchimpUrl = 'YOUR_MAILCHIMP_FORM_URL_HERE';
-            
-            // For now, show success message
-            setTimeout(() => {
-                button.textContent = '✓ Subscribed!';
-                button.style.backgroundColor = '#10b981';
-                button.style.color = 'white';
-                form.querySelector('input').value = '';
-                
-                // Reset after 3 seconds
-                setTimeout(() => {
-                    button.textContent = originalText;
-                    button.style.backgroundColor = 'white';
-                    button.style.color = '#FF6B6B';
-                    button.disabled = false;
-                }, 3000);
-            }, 500);
-        });
     </script>
 </body>
 </html>
