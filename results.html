@@ -36,7 +36,30 @@
         
         .vinyl-card {
             transition: all 0.3s ease;
+            animation: fadeIn 0.4s ease-out forwards;
+            opacity: 0;
         }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Stagger animation for cards */
+        .vinyl-card:nth-child(1) { animation-delay: 0.05s; }
+        .vinyl-card:nth-child(2) { animation-delay: 0.1s; }
+        .vinyl-card:nth-child(3) { animation-delay: 0.15s; }
+        .vinyl-card:nth-child(4) { animation-delay: 0.2s; }
+        .vinyl-card:nth-child(5) { animation-delay: 0.25s; }
+        .vinyl-card:nth-child(6) { animation-delay: 0.3s; }
+        .vinyl-card:nth-child(7) { animation-delay: 0.35s; }
+        .vinyl-card:nth-child(8) { animation-delay: 0.4s; }
         
         .vinyl-card:hover {
             transform: translateY(-2px);
@@ -67,6 +90,27 @@
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
+        }
+        
+        /* Spinning vinyl record animation */
+        @keyframes spin-vinyl {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .vinyl-spinning {
+            animation: spin-vinyl 2s linear infinite;
+            display: inline-block;
+        }
+        
+        .search-loading {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .search-loading.active {
+            display: block;
         }
         
         .stores-expanded {
@@ -119,7 +163,17 @@
 
         <!-- Loading State -->
         <div id="loadingState" class="text-center py-12">
-            <div class="loading text-6xl mb-4">💿</div>
+            <div class="vinyl-spinning mb-4" style="font-size: 80px; line-height: 1;">
+                <svg width="80" height="80" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="20" cy="20" r="19" fill="#FF6B6B"/>
+                  <circle cx="20" cy="20" r="18" fill="none" stroke="white" stroke-width="0.5"/>
+                  <circle cx="20" cy="20" r="15" fill="none" stroke="white" stroke-width="0.3" opacity="0.6"/>
+                  <circle cx="20" cy="20" r="12" fill="none" stroke="white" stroke-width="0.3" opacity="0.6"/>
+                  <circle cx="20" cy="20" r="9" fill="none" stroke="white" stroke-width="0.3" opacity="0.6"/>
+                  <circle cx="20" cy="20" r="6" fill="white"/>
+                  <circle cx="20" cy="20" r="2.5" fill="#FF6B6B"/>
+                </svg>
+            </div>
             <p class="text-gray-600">Searching vinyl database...</p>
         </div>
 
