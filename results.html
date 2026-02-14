@@ -156,23 +156,23 @@
         const searchQuery = params.get('q') || '';
         
         const stores = [
-            {name: 'Rough Trade', color: '#000000', url: 'https://www.roughtrade.com/search?q='},
-            {name: 'HMV', color: '#E4007C', url: 'https://www.hmv.com/store/music/vinyl?text='},
-            {name: 'Juno Records', color: '#FF6B00', url: 'https://www.juno.co.uk/search/?q%5Ball%5D%5B%5D='},
-            {name: 'Banquet Records', color: '#1DB954', url: 'https://www.banquetrecords.com/search?q='},
-            {name: 'Norman Records', color: '#FF4136', url: 'https://www.normanrecords.com/search?q='},
-            {name: 'Assai Records', color: '#2ECC40', url: 'https://assai.co.uk/page/1/?s='},
-            {name: 'Monorail Music', color: '#B10DC9', url: 'https://www.monorailmusic.com/?s='},
-            {name: 'Resident Music', color: '#FF851B', url: 'https://www.resident-music.com/search?q='},
-            {name: 'Piccadilly Records', color: '#0074D9', url: 'https://www.piccadillyrecords.com/search?q='},
-            {name: 'Record Store', color: '#39CCCC', url: 'https://recordstore.co.uk/search?q='},
-            {name: 'Sounds Like Vinyl', color: '#85144b', url: 'https://soundslikevinyl.com/search?q='},
-            {name: 'The Sound of Vinyl', color: '#F012BE', url: 'https://thesoundofvinyl.com/search?q='},
-            {name: 'Merchbar', color: '#FFDC00', url: 'https://www.merchbar.com/search?q='},
-            {name: 'EMP', color: '#111111', url: 'https://www.emp.co.uk/search/?q='},
-            {name: 'Vinyl Castle', color: '#3D9970', url: 'https://www.vinylcastle.com/search?q='},
-            {name: 'Lost in Vinyl', color: '#01FF70', url: 'https://www.lostinvinyl.org/page/1/?s='},
-            {name: 'POP Store', color: '#FF69B4', url: 'https://www.wearepopstore.com/search?q='}
+            {name: 'Rough Trade', url: 'https://www.roughtrade.com/search?q=', domain: 'roughtrade.com'},
+            {name: 'HMV', url: 'https://www.hmv.com/store/music/vinyl?text=', domain: 'hmv.com'},
+            {name: 'Juno Records', url: 'https://www.juno.co.uk/search/?q%5Ball%5D%5B%5D=', domain: 'juno.co.uk'},
+            {name: 'Banquet Records', url: 'https://www.banquetrecords.com/search?q=', domain: 'banquetrecords.com'},
+            {name: 'Norman Records', url: 'https://www.normanrecords.com/search?q=', domain: 'normanrecords.com'},
+            {name: 'Assai Records', url: 'https://assai.co.uk/page/1/?s=', domain: 'assai.co.uk'},
+            {name: 'Monorail Music', url: 'https://www.monorailmusic.com/?s=', domain: 'monorailmusic.com'},
+            {name: 'Resident Music', url: 'https://www.resident-music.com/search?q=', domain: 'resident-music.com'},
+            {name: 'Piccadilly Records', url: 'https://www.piccadillyrecords.com/search?q=', domain: 'piccadillyrecords.com'},
+            {name: 'Record Store', url: 'https://recordstore.co.uk/search?q=', domain: 'recordstore.co.uk'},
+            {name: 'Sounds Like Vinyl', url: 'https://soundslikevinyl.com/search?q=', domain: 'soundslikevinyl.com'},
+            {name: 'The Sound of Vinyl', url: 'https://thesoundofvinyl.com/search?q=', domain: 'thesoundofvinyl.com'},
+            {name: 'Merchbar', url: 'https://www.merchbar.com/search?q=', domain: 'merchbar.com'},
+            {name: 'EMP', url: 'https://www.emp.co.uk/search/?q=', domain: 'emp.co.uk'},
+            {name: 'Vinyl Castle', url: 'https://www.vinylcastle.com/search?q=', domain: 'vinylcastle.com'},
+            {name: 'Lost in Vinyl', url: 'https://www.lostinvinyl.org/page/1/?s=', domain: 'lostinvinyl.org'},
+            {name: 'POP Store', url: 'https://www.wearepopstore.com/search?q=', domain: 'wearepopstore.com'}
         ];
 
         // Update page title
@@ -287,7 +287,12 @@
                 html += '<div id="stores-' + index + '" class="stores-collapsed mt-3 space-y-2">';
                 
                 stores.forEach(store => {
-                    html += '<a href="' + store.url + encodeURIComponent(searchTerm) + '" target="_blank" rel="noopener noreferrer" onclick="trackStoreClick(\'' + store.name + '\', \'' + album.replace(/'/g, "\\'") + '\')" class="store-button block text-center py-2 px-3 rounded text-sm font-medium text-white" style="background-color: ' + store.color + ';">' + store.name + '</a>';
+                    const faviconUrl = 'https://www.google.com/s2/favicons?domain=' + store.domain + '&sz=64';
+                    html += '<a href="' + store.url + encodeURIComponent(searchTerm) + '" target="_blank" rel="noopener noreferrer" onclick="trackStoreClick(\'' + store.name + '\', \'' + album.replace(/'/g, "\\'") + '\')" class="store-button flex items-center gap-2 py-2 px-3 rounded text-sm font-medium text-white hover:opacity-90" style="background-color: #FF6B6B;">';
+                    html += '<img src="' + faviconUrl + '" alt="' + store.name + '" class="w-4 h-4 flex-shrink-0" onerror="this.style.display=\'none\'">';
+                    html += '<span class="flex-1 text-left">' + store.name + '</span>';
+                    html += '<svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>';
+                    html += '</a>';
                 });
                 
                 html += '</div>';
