@@ -184,47 +184,22 @@
             document.getElementById('headerSearch').value = searchQuery;
         }
 
-        // Search via our Vercel API endpoint
+        // Search via our hybrid API endpoint (POPSTORE + Discogs)
         async function searchVinyl(query) {
             try {
-                const response = await fetch('/api/discogs?q=' + encodeURIComponent(query));
+                const response = await fetch('/api/hybrid-search?q=' + encodeURIComponent(query));
                 
                 if (!response.ok) {
                     throw new Error('API error');
                 }
                 
                 const data = await response.json();
+                console.log('Hybrid search results:', data);
                 return data.results || [];
             } catch (error) {
                 console.error('Error fetching vinyl:', error);
                 return [];
             }
-        }
-
-        // Deduplicate results by album title and sort by year (newest first)
-        function deduplicateResults(results) {
-            const seen = new Set();
-            const unique = [];
-            
-            for (const item of results) {
-                const artist = item.title.split(' - ')[0] || 'Unknown Artist';
-                const album = item.title.split(' - ')[1] || item.title;
-                const key = artist.toLowerCase().trim() + '||' + album.toLowerCase().trim();
-                
-                if (!seen.has(key)) {
-                    seen.add(key);
-                    unique.push(item);
-                }
-            }
-            
-            // Sort by year, newest first (handle missing years)
-            unique.sort((a, b) => {
-                const yearA = parseInt(a.year) || 0;
-                const yearB = parseInt(b.year) || 0;
-                return yearB - yearA; // Descending order (newest first)
-            });
-            
-            return unique;
         }
 
         // Toggle store visibility for a vinyl card
@@ -254,44 +229,56 @@
             }
         }
 
-        // Display results
+        // Display results with POPSTORE prices
         function displayResults(results) {
             const container = document.getElementById('vinylResults');
             document.getElementById('loadingState').style.display = 'none';
             
-            // Deduplicate results
-            const uniqueResults = deduplicateResults(results);
-            
-            if (uniqueResults.length === 0) {
+            if (results.length === 0) {
                 document.getElementById('noResults').style.display = 'block';
                 document.getElementById('searchSubtitle').textContent = 'No results found';
                 return;
             }
             
             container.style.display = 'grid';
-            document.getElementById('searchSubtitle').textContent = 'Found ' + uniqueResults.length + ' unique albums';
+            
+            // Count POPSTORE vs Discogs
+            const popstoreCount = results.filter(r => r.source === 'popstore').length;
+            const discogsCount = results.length - popstoreCount;
+            
+            if (popstoreCount > 0) {
+                document.getElementById('searchSubtitle').textContent = `Found ${results.length} albums (${popstoreCount} with prices from POP Store)`;
+            } else {
+                document.getElementById('searchSubtitle').textContent = `Found ${results.length} albums`;
+            }
             
             let html = '';
-            uniqueResults.forEach((item, index) => {
-                const artist = item.title.split(' - ')[0] || 'Unknown Artist';
-                const album = item.title.split(' - ')[1] || item.title;
-                const year = item.year || '';
-                const format = item.format ? item.format.join(', ') : 'Vinyl';
-                const cover = item.cover_image || item.thumb || '';
-                const searchTerm = artist + ' ' + album;
+            results.forEach((item, index) => {
+                const hasPOPSTOREPrice = item.source === 'popstore';
                 
                 html += '<div class="vinyl-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">';
-                html += '<img src="' + cover + '" alt="' + album + '" class="album-cover" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23667eea%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2248%22 fill=%22white%22%3E💿%3C/text%3E%3C/svg%3E\'">';
+                html += '<img src="' + item.cover + '" alt="' + item.album + '" class="album-cover" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23667eea%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2248%22 fill=%22white%22%3E💿%3C/text%3E%3C/svg%3E\'">';
                 html += '<div class="p-4">';
-                html += '<h3 class="font-normal text-base mb-1 line-clamp-1">' + artist + '</h3>';
-                html += '<p class="text-sm text-gray-600 mb-2 line-clamp-1">' + album + '</p>';
-                html += '<p class="text-xs text-gray-500 mb-3">' + (year ? year + ' • ' : '') + format + '</p>';
-                html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full py-2 px-4 text-white font-medium rounded-lg transition-all hover:opacity-90" style="background-color: #FF6B6B;">Find Retailers</button>';
+                html += '<h3 class="font-normal text-base mb-1 line-clamp-1">' + item.artist + '</h3>';
+                html += '<p class="text-sm text-gray-600 mb-2 line-clamp-1">' + item.album + '</p>';
+                
+                // Show price if from POPSTORE
+                if (hasPOPSTOREPrice) {
+                    html += '<p class="text-lg font-bold mb-2" style="color: #FF6B6B;">£' + item.price + '</p>';
+                    html += '<a href="' + item.buy_link + '" target="_blank" rel="noopener noreferrer" class="block w-full py-2 px-4 text-center text-white font-medium rounded-lg mb-2" style="background-color: #FF6B6B;">Buy at POP Store</a>';
+                    html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full py-2 px-4 text-gray-700 font-medium rounded-lg border border-gray-300 text-sm">Or find at other retailers</button>';
+                } else {
+                    // Show format/year if from Discogs
+                    html += '<p class="text-xs text-gray-500 mb-3">' + (item.year ? item.year + ' • ' : '') + item.format + '</p>';
+                    html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full py-2 px-4 text-white font-medium rounded-lg transition-all hover:opacity-90" style="background-color: #FF6B6B;">Find Retailers</button>';
+                }
+                
                 html += '<div id="stores-' + index + '" class="stores-collapsed mt-3 space-y-2">';
                 
+                const searchTerm = item.artist + ' ' + item.album;
                 stores.forEach(store => {
+                    html += '<a href="' + store.url + encodeURIComponent(searchTerm) + '" target="_blank" rel="noopener noreferrer" onclick="trackStoreClick(\'' + store.name + '\', \'' + item.album.replace(/'/g, "\\'") + '\')" class="store-button flex items-center gap-2 py-2 px-3 rounded text-sm font-medium text-white hover:opacity-90" style="background-color: #FF6B6B;">';
                     const faviconUrl = 'https://www.google.com/s2/favicons?domain=' + store.domain + '&sz=64';
-                    html += '<a href="' + store.url + encodeURIComponent(searchTerm) + '" target="_blank" rel="noopener noreferrer" onclick="trackStoreClick(\'' + store.name + '\', \'' + album.replace(/'/g, "\\'") + '\')" class="store-button flex items-center gap-2 py-2 px-3 rounded text-sm font-medium text-white hover:opacity-90" style="background-color: #FF6B6B;">';
                     html += '<img src="' + faviconUrl + '" alt="' + store.name + '" class="w-4 h-4 flex-shrink-0" onerror="this.style.display=\'none\'">';
                     html += '<span class="flex-1 text-left">' + store.name + '</span>';
                     html += '<svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>';
