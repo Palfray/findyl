@@ -87,6 +87,47 @@
             opacity: 1;
         }
         
+        /* Autocomplete dropdown */
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .autocomplete-dropdown.show {
+            display: block;
+        }
+        
+        .autocomplete-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+        
+        .autocomplete-item:hover {
+            background-color: #fef2f2;
+            color: #FF6B6B;
+        }
+        
+        .autocomplete-item strong {
+            color: #FF6B6B;
+        }
+        
         /* Mobile-specific fixes */
         @media (max-width: 640px) {
             .search-box {
@@ -165,16 +206,20 @@
         </p>
         
         <form action="results.html" method="get" class="w-full max-w-2xl px-4" onsubmit="trackSearch()">
-            <div class="search-box bg-white rounded-full flex items-center gap-2">
-                <input 
-                    type="text" 
-                    name="q"
-                    id="searchInput"
-                    placeholder="Search for artist or album..."
-                    class="flex-1 px-4 sm:px-6 py-3 sm:py-4 text-base sm:text-lg outline-none bg-transparent"
-                    style="min-width: 0;"
-                    required
-                >
+            <div class="search-box bg-white rounded-full flex items-center gap-2" style="position: relative;">
+                <div style="flex: 1; position: relative;">
+                    <input 
+                        type="text" 
+                        name="q"
+                        id="searchInput"
+                        placeholder="Search for artist or album..."
+                        class="flex-1 px-4 sm:px-6 py-3 sm:py-4 text-base sm:text-lg outline-none bg-transparent"
+                        style="min-width: 0; width: 100%;"
+                        required
+                        autocomplete="off"
+                    >
+                    <div id="autocompleteDropdown" class="autocomplete-dropdown"></div>
+                </div>
                 <button 
                     type="submit"
                     class="coral-button text-white px-6 sm:px-8 py-3 font-semibold rounded-full whitespace-nowrap flex items-center justify-center"
@@ -194,6 +239,78 @@
     </div>
 
     <script>
+        // POPSTORE artist list for autocomplete
+        const popstoreArtists = ["*B-Stock* Madonna","*B-Stock* Troye Sivan","A-Ha","Adam + The Ants","Adam Ant","Alesha Dixon","Alex Warren","Alexandra Kay","All Saints","Anne-Marie","Annie Lennox","Arctic Monkeys","Ariana Grande","Ava Max","Avril Lavigne","BTS","Bananarama","Banks","Bat For Lashes","Bebe Rexha","Beabadoobee","Beth Orton","Beyoncé","Billie Eilish","Billy Joel","Birdy","Blondie","Bon Jovi","Boy George","Boygenius","Britney Spears","Bruno Mars","Carly Rae Jepsen","Carly Simon","Carole King","Charli XCX","Charlie Puth","Cher","Chic","Childish Gambino","Chris De Burgh","Ciara","Conan Gray","Culture Club","Cyndi Lauper","Demi Lovato","Diana Ross","Doja Cat","Dolly Parton","Duran Duran","Dua Lipa","Ed Sheeran","Ellie Goulding","Elton John","Erasure","Fifth Harmony","Fleetwood Mac","Florence + The Machine","Fontaines Dc","Frank Ocean","George Michael","George Strait","Gerry & The Pacemakers","Girls Aloud","Grace Jones","Gracie Abrams","Harry Styles","Hayley Williams","Hozier","Hurts","Iggy Pop","Jess Glynne","Jessie J","John Lennon","Jonas Brothers","Joni Mitchell","Justin Bieber","Justin Timberlake","KSI","Kate Bush","Katy Perry","Kelly Clarkson","Kesha","Kiana Ledé","Kylie Minogue","Lady Gaga","Lana Del Rey","Laura Marling","Liam Gallagher","Lisa","Little Boots","Lola Young","Lorde","MARINA","Madonna","Mariah Carey","Marina & The Diamonds","Mark Ronson","Marvin Gaye","Meghan Trainor","Metallica","Michael Bublé","Michael Jackson","Miley Cyrus","Missy Elliott","Muse","Nat King Cole","Nicki Minaj","Nirvana","Noah Kahan","Noel Gallagher","Oasis","Olivia Newton-John","Olivia Rodrigo","Olly Alexander","Orla Gartland","P!nk","POPSTORE","Pet Shop Boys","Phoebe Bridgers","Pixie Lott","Prince","Pulp","Pvris","Queen","Rae Sremmurd","Raye","Remi Wolf","Ren","Reneé Rapp","Rihanna","Robbie Williams","Rod Stewart","Sabrina Carpenter","Sam Fender","Sam Smith","Samantha Fox","Self Esteem","Shania Twain","Sia","Simon & Garfunkel","Simple Minds","Skepta","Snoop Dogg","Sofia Isella","Solange","Spice Girls","Stevie Nicks","Sting","Sugababes","Taylor Swift","Tate Mcrae","Teddy Swims","The 1975","The Beatles","The Charlatans","The Cure","The Doors","The Hollies","The Killers","The Last Dinner Party","The Libertines","The Ronettes","The Script","The Smiths","The Supremes","The Verve","The Weeknd","The Wombats","Tina Turner","Tom Jones","Tom Odell","Tones & I","Travis","Troye Sivan","Tyla","U2","Vampire Weekend","Wham!","Whitney Houston","Years & Years","Yungblud","Zara Larsson"];
+        
+        const searchInput = document.getElementById('searchInput');
+        const autocompleteDropdown = document.getElementById('autocompleteDropdown');
+        let currentFocus = -1;
+        
+        // Show autocomplete suggestions
+        searchInput.addEventListener('input', function(e) {
+            const value = this.value.toLowerCase().trim();
+            
+            if (value.length < 2) {
+                hideAutocomplete();
+                return;
+            }
+            
+            // Filter artists that match
+            const matches = popstoreArtists.filter(artist => 
+                artist.toLowerCase().includes(value)
+            ).slice(0, 8); // Show max 8 suggestions
+            
+            if (matches.length === 0) {
+                hideAutocomplete();
+                return;
+            }
+            
+            displaySuggestions(matches, value);
+        });
+        
+        // Display suggestions
+        function displaySuggestions(matches, searchValue) {
+            let html = '';
+            matches.forEach((artist, index) => {
+                // Highlight matching text
+                const regex = new RegExp('(' + searchValue + ')', 'gi');
+                const highlighted = artist.replace(regex, '<strong>$1</strong>');
+                
+                html += '<div class="autocomplete-item" data-artist="' + artist + '" onclick="selectArtist(\'' + artist.replace(/'/g, "\\'") + '\')">';
+                html += highlighted;
+                html += '</div>';
+            });
+            
+            autocompleteDropdown.innerHTML = html;
+            autocompleteDropdown.classList.add('show');
+        }
+        
+        // Select an artist
+        function selectArtist(artist) {
+            searchInput.value = artist;
+            hideAutocomplete();
+            document.querySelector('form').submit();
+        }
+        
+        // Hide autocomplete
+        function hideAutocomplete() {
+            autocompleteDropdown.classList.remove('show');
+        }
+        
+        // Close on click outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
+                hideAutocomplete();
+            }
+        });
+        
+        // Close on escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hideAutocomplete();
+            }
+        });
+        
         function trackSearch() {
             var searchTerm = document.getElementById('searchInput').value;
             if (window.gtag) {
