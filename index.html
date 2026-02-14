@@ -46,6 +46,9 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             padding: 8px;
             transition: box-shadow 0.3s;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
         }
         
         .search-box:focus-within {
@@ -162,18 +165,20 @@
         </p>
         
         <form action="results.html" method="get" class="w-full max-w-2xl px-4" onsubmit="trackSearch()">
-            <div class="search-box bg-white rounded-full flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div class="search-box bg-white rounded-full flex items-center gap-2">
                 <input 
                     type="text" 
                     name="q"
                     id="searchInput"
                     placeholder="Search for artist or album..."
                     class="flex-1 px-4 sm:px-6 py-3 sm:py-4 text-base sm:text-lg outline-none bg-transparent"
+                    style="min-width: 0;"
                     required
                 >
                 <button 
                     type="submit"
-                    class="coral-button text-white px-6 sm:px-8 py-3 font-semibold rounded-full whitespace-nowrap"
+                    class="coral-button text-white px-6 sm:px-8 py-3 font-semibold rounded-full whitespace-nowrap flex items-center justify-center"
+                    style="flex-shrink: 0;"
                 >
                     <span class="button-text">Find Vinyl</span>
                     <svg class="button-icon" width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
