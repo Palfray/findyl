@@ -64,9 +64,56 @@ export default async function handler(req, res) {
     }
 
     const discogsData = await discogsResponse.json();
-    const discogsResults = discogsData.results || [];
+    let discogsResults = discogsData.results || [];
+    
+    // Filter to albums only - exclude singles, EPs, compilations, etc.
+    discogsResults = discogsResults.filter(release => {
+      const title = (release.title || '').toLowerCase();
+      const formats = (release.format || []).join(' ').toLowerCase();
+      
+      // Exclude singles (look for "7\"", "single" in format or title)
+      if (formats.includes('single') || 
+          formats.includes('7"') || 
+          formats.includes('7\'') ||
+          title.includes('(single)')) {
+        return false;
+      }
+      
+      // Exclude EPs (look for "EP" in format or title)
+      if (formats.includes('ep') || 
+          title.includes('(ep)') || 
+          title.match(/\bep\b/i)) {
+        return false;
+      }
+      
+      // Exclude compilations (various artists, greatest hits, best of)
+      if (title.includes('compilation') ||
+          title.includes('greatest hits') ||
+          title.includes('best of') ||
+          title.includes('the best') ||
+          release.title.startsWith('Various -') ||
+          release.title.startsWith('VA -')) {
+        return false;
+      }
+      
+      // Exclude maxi singles
+      if (formats.includes('maxi') && formats.includes('single')) {
+        return false;
+      }
+      
+      // Only keep albums (LP, 12", Album)
+      // If format explicitly says "Album" or "LP" or "12\"", keep it
+      const isAlbum = formats.includes('album') || 
+                      formats.includes('lp') || 
+                      formats.includes('12"') ||
+                      formats.includes('12\'');
+      
+      // If no format specified but it's not explicitly excluded above, include it
+      // (some legitimate albums don't have format metadata)
+      return isAlbum || formats.length === 0 || formats === 'vinyl';
+    });
 
-    console.log(`Discogs found ${discogsResults.length} matches for "${q}"`);
+    console.log(`Discogs found ${discogsResults.length} album matches for "${q}" (after filtering out singles/EPs/compilations)`);
 
     // Step 3: Merge results
     // POPSTORE products come first (they have prices!)
