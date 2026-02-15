@@ -72,21 +72,6 @@
             transform: translateY(-1px);
         }
         
-        .nav-link {
-            position: absolute;
-            top: 2rem;
-            left: 2rem;
-            color: white;
-            text-decoration: none;
-            font-size: 0.875rem;
-            opacity: 0.9;
-            transition: opacity 0.2s;
-        }
-        
-        .nav-link:hover {
-            opacity: 1;
-        }
-        
         /* Menu button (top right) */
         .menu-button {
             position: absolute;
@@ -112,15 +97,16 @@
             position: absolute;
             top: 5rem;
             right: 2rem;
-            background: white;
+            background: #FF6B6B;
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 24px rgba(255, 107, 107, 0.3);
             min-width: 250px;
             opacity: 0;
             visibility: hidden;
             transform: translateY(-10px);
             transition: all 0.3s ease;
             z-index: 1000;
+            overflow: hidden;
         }
         
         .dropdown-menu.show {
@@ -134,28 +120,19 @@
             align-items: center;
             gap: 12px;
             padding: 16px 20px;
-            color: #333;
+            color: white;
             text-decoration: none;
             transition: all 0.2s;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .menu-item:last-child {
             border-bottom: none;
-            border-radius: 0 0 12px 12px;
-        }
-        
-        .menu-item:first-child {
-            border-radius: 12px 12px 0 0;
-        }
-        
-        .menu-item:only-child {
-            border-radius: 12px;
         }
         
         .menu-item:hover {
-            background-color: #fef2f2;
-            color: #FF6B6B;
+            background-color: rgba(255, 255, 255, 0.15);
+            padding-left: 24px;
         }
         
         .menu-item svg {
@@ -245,11 +222,6 @@
                 gap: 0.5rem;
             }
             
-            .nav-link {
-                top: 1rem;
-                left: 1rem;
-            }
-            
             .menu-button {
                 top: 1rem;
                 right: 1rem;
@@ -285,8 +257,6 @@
 </head>
 <body>
     <div class="search-container">
-        <a href="local-stores.html" class="nav-link">Local Record Stores →</a>
-        
         <!-- Menu Button (Top Right) -->
         <button id="menuButton" class="menu-button" onclick="toggleMenu()">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
