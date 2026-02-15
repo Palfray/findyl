@@ -206,6 +206,25 @@
             <p class="text-gray-600" id="searchSubtitle">Finding vinyl records for you</p>
         </div>
 
+        <!-- Sort Controls -->
+        <div id="sortControls" class="mb-6 flex items-center justify-between" style="display: none;">
+            <p class="text-sm text-gray-600" id="resultCount"></p>
+            <div class="flex items-center gap-2">
+                <label for="sortSelect" class="text-sm text-gray-600">Sort by:</label>
+                <select id="sortSelect" onchange="sortResults()" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2" style="outline-color: #FF6B6B;">
+                    <option value="relevance">Relevance</option>
+                    <option value="year-desc">Release Date (Newest)</option>
+                    <option value="year-asc">Release Date (Oldest)</option>
+                    <option value="price-asc">Price (Low to High)</option>
+                    <option value="price-desc">Price (High to Low)</option>
+                    <option value="artist-asc">Artist (A-Z)</option>
+                    <option value="artist-desc">Artist (Z-A)</option>
+                    <option value="album-asc">Album (A-Z)</option>
+                    <option value="album-desc">Album (Z-A)</option>
+                </select>
+            </div>
+        </div>
+
         <!-- Loading State -->
         <div id="loadingState" class="text-center py-12">
             <div class="vinyl-spinning mb-4" style="font-size: 80px; line-height: 1;">
@@ -413,6 +432,110 @@
             document.getElementById('searchTitle').textContent = 'No search query';
         }
         
+        // Store results globally for sorting
+        let allResults = [];
+        
+        // Modified displayResults to store results
+        const originalDisplayResults = displayResults;
+        displayResults = function(results) {
+            allResults = results;
+            
+            // Show sort controls if we have results
+            if (results.length > 0) {
+                document.getElementById('sortControls').style.display = 'flex';
+                document.getElementById('resultCount').textContent = `${results.length} results`;
+            }
+            
+            originalDisplayResults(results);
+        };
+        
+        // Sort results function
+        function sortResults() {
+            const sortValue = document.getElementById('sortSelect').value;
+            let sorted = [...allResults];
+            
+            switch(sortValue) {
+                case 'relevance':
+                    // Original order (POPSTORE first, then by year)
+                    sorted.sort((a, b) => {
+                        if (a.source === 'popstore' && b.source !== 'popstore') return -1;
+                        if (b.source === 'popstore' && a.source !== 'popstore') return 1;
+                        const yearA = parseInt(a.year) || 0;
+                        const yearB = parseInt(b.year) || 0;
+                        return yearB - yearA;
+                    });
+                    break;
+                    
+                case 'year-desc':
+                    // Newest first
+                    sorted.sort((a, b) => {
+                        const yearA = parseInt(a.year) || 0;
+                        const yearB = parseInt(b.year) || 0;
+                        return yearB - yearA;
+                    });
+                    break;
+                    
+                case 'year-asc':
+                    // Oldest first
+                    sorted.sort((a, b) => {
+                        const yearA = parseInt(a.year) || 0;
+                        const yearB = parseInt(b.year) || 0;
+                        return yearA - yearB;
+                    });
+                    break;
+                    
+                case 'price-asc':
+                    // Lowest price first (items with no price go last)
+                    sorted.sort((a, b) => {
+                        const priceA = a.price || 999999;
+                        const priceB = b.price || 999999;
+                        return priceA - priceB;
+                    });
+                    break;
+                    
+                case 'price-desc':
+                    // Highest price first (items with no price go last)
+                    sorted.sort((a, b) => {
+                        if (!a.price && !b.price) return 0;
+                        if (!a.price) return 1;
+                        if (!b.price) return -1;
+                        return b.price - a.price;
+                    });
+                    break;
+                    
+                case 'artist-asc':
+                    // A-Z by artist
+                    sorted.sort((a, b) => {
+                        return a.artist.localeCompare(b.artist);
+                    });
+                    break;
+                    
+                case 'artist-desc':
+                    // Z-A by artist
+                    sorted.sort((a, b) => {
+                        return b.artist.localeCompare(a.artist);
+                    });
+                    break;
+                    
+                case 'album-asc':
+                    // A-Z by album
+                    sorted.sort((a, b) => {
+                        return a.album.localeCompare(b.album);
+                    });
+                    break;
+                    
+                case 'album-desc':
+                    // Z-A by album
+                    sorted.sort((a, b) => {
+                        return b.album.localeCompare(a.album);
+                    });
+                    break;
+            }
+            
+            // Re-render with sorted results
+            originalDisplayResults(sorted);
+        }
+        
         // Autocomplete functionality for header search
         const headerSearchInput = document.getElementById('headerSearch');
         const headerAutocomplete = document.getElementById('headerAutocomplete');
@@ -461,26 +584,64 @@
         function displayHeaderSuggestions(matches, searchValue) {
             let html = '';
             matches.forEach((match) => {
-                const artistName = match.name || match;
                 const regex = new RegExp('(' + searchValue + ')', 'gi');
-                const highlighted = artistName.replace(regex, '<strong>$1</strong>');
                 
-                html += '<div class="autocomplete-item" onclick="selectHeaderArtist(\'' + artistName.replace(/'/g, "\\'") + '\')">';
-                html += highlighted;
-                if (match.source === 'popstore') {
-                    html += ' <span style="font-size: 10px; color: #FF6B6B;">●</span>';
+                if (match.type === 'artist') {
+                    // Artist suggestion
+                    const artistName = match.name || match;
+                    const highlighted = artistName.replace(regex, '<strong>$1</strong>');
+                    
+                    html += '<div class="autocomplete-item" onclick="selectHeaderSuggestion(\'' + artistName.replace(/'/g, "\\'") + '\')">';
+                    html += highlighted;
+                    if (match.source === 'popstore') {
+                        html += ' <span style="font-size: 10px; color: #FF6B6B;">●</span>';
+                    }
+                    html += '</div>';
+                } else if (match.type === 'album') {
+                    // Album suggestion
+                    const albumName = match.album;
+                    const artistName = match.artist;
+                    const highlightedAlbum = albumName.replace(regex, '<strong>$1</strong>');
+                    const searchQuery = artistName + ' ' + albumName;
+                    
+                    html += '<div class="autocomplete-item" onclick="selectHeaderSuggestion(\'' + searchQuery.replace(/'/g, "\\'") + '\')">';
+                    html += '<div style="display: flex; align-items: center; gap: 6px;">';
+                    html += '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0; color: #FF6B6B;">';
+                    html += '<circle cx="12" cy="12" r="10"></circle>';
+                    html += '<circle cx="12" cy="12" r="3"></circle>';
+                    html += '</svg>';
+                    html += '<span>' + highlightedAlbum + ' <span style="color: #999;">· ' + artistName + '</span></span>';
+                    if (match.source === 'popstore') {
+                        html += ' <span style="font-size: 10px; color: #FF6B6B;">●</span>';
+                    }
+                    html += '</div>';
+                    html += '</div>';
+                } else {
+                    // Fallback for old format
+                    const artistName = match.name || match;
+                    const highlighted = artistName.replace(regex, '<strong>$1</strong>');
+                    
+                    html += '<div class="autocomplete-item" onclick="selectHeaderSuggestion(\'' + artistName.replace(/'/g, "\\'") + '\')">';
+                    html += highlighted;
+                    if (match.source === 'popstore') {
+                        html += ' <span style="font-size: 10px; color: #FF6B6B;">●</span>';
+                    }
+                    html += '</div>';
                 }
-                html += '</div>';
             });
             
             headerAutocomplete.innerHTML = html;
             headerAutocomplete.classList.add('show');
         }
         
-        function selectHeaderArtist(artist) {
-            headerSearchInput.value = artist;
+        function selectHeaderSuggestion(searchQuery) {
+            headerSearchInput.value = searchQuery;
             hideHeaderAutocomplete();
             headerSearchInput.form.submit();
+        }
+        
+        function selectHeaderArtist(artist) {
+            selectHeaderSuggestion(artist);
         }
         
         function hideHeaderAutocomplete() {
