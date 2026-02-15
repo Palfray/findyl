@@ -67,7 +67,10 @@ export default async function handler(req, res) {
     const discogsData = await discogsResponse.json();
     let discogsResults = discogsData.results || [];
     
+    console.log(`Discogs API returned ${discogsResults.length} raw results for "${q}"`);
+    
     // Filter to albums only - exclude singles, EPs, compilations, etc.
+    const beforeFilterCount = discogsResults.length;
     discogsResults = discogsResults.filter(release => {
       const title = (release.title || '').toLowerCase();
       const formats = (release.format || []).join(' ').toLowerCase();
@@ -103,11 +106,12 @@ export default async function handler(req, res) {
       return true;
     });
 
-    console.log(`Discogs found ${discogsResults.length} album matches for "${q}" (after filtering out singles/EPs/compilations)`);
+    const afterAlbumFilter = discogsResults.length;
+    console.log(`Album filter: ${beforeFilterCount} → ${afterAlbumFilter} (removed ${beforeFilterCount - afterAlbumFilter} singles/EPs/compilations)`);
     
-    // Debug: Log first 5 results to see what we're getting
+    // Debug: Log first 10 results to see what we're getting
     if (discogsResults.length > 0) {
-      console.log('Sample Discogs results:', discogsResults.slice(0, 5).map(r => r.title));
+      console.log('Sample Discogs results after album filter:', discogsResults.slice(0, 10).map(r => r.title));
     }
 
     // Step 3: Merge results
@@ -142,23 +146,46 @@ export default async function handler(req, res) {
           
           const searchLower = searchTermLower.trim();
           
-          // For single word searches, be more lenient
+          // Exact match
+          if (discogsArtist === searchLower) {
+            return true;
+          }
+          
+          // Handle "The" variations
+          const searchWithoutThe = searchLower.replace(/^the /, '');
+          const artistWithoutThe = discogsArtist.replace(/^the /, '');
+          
+          if (searchWithoutThe === artistWithoutThe) {
+            return true;
+          }
+          
+          // For single word searches, artist must contain the word
           if (!searchLower.includes(' ')) {
             return discogsArtist.includes(searchLower);
           }
           
-          // For multi-word searches, check if artist contains the search term
-          // This handles "Foo Fighters", "The National", etc.
-          const searchWords = searchLower.split(/\s+/);
+          // For multi-word searches (like "Foo Fighters", "The National")
+          // Check if artist starts with the search term OR contains it exactly
+          if (discogsArtist.startsWith(searchLower)) {
+            // Artist starts with search term
+            const afterSearch = discogsArtist.substring(searchLower.length).trim();
+            
+            // Exact match
+            if (afterSearch === '') return true;
+            
+            // Followed by collaborator marker
+            if (afterSearch.match(/^(&|and|featuring|ft\.?|feat\.?|\/|,)/i)) {
+              return true;
+            }
+            
+            // Otherwise exclude (e.g., "Brand New Heavies" when searching "Brand New")
+            return false;
+          }
           
-          // Check if ALL search words appear in the artist name
-          const allWordsMatch = searchWords.every(word => {
-            // Skip very short words like "the", "a", etc.
-            if (word.length <= 2) return true;
-            return discogsArtist.includes(word);
-          });
-          
-          return allWordsMatch;
+          // Check if artist contains search term exactly (with word boundaries)
+          // This catches "Foo Fighters" in "The Foo Fighters" or variations
+          const searchRegex = new RegExp('\\b' + searchLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+          return searchRegex.test(discogsArtist);
         })
         .map(d => ({
           source: 'discogs',
@@ -176,6 +203,9 @@ export default async function handler(req, res) {
           discogs_url: `https://www.discogs.com/release/${d.id}`
         }))
     ];
+    
+    const discogsAfterArtistFilter = combinedResults.filter(r => r.source === 'discogs').length;
+    console.log(`Artist matching: ${afterAlbumFilter} → ${discogsAfterArtistFilter} Discogs albums (removed ${afterAlbumFilter - discogsAfterArtistFilter} non-matching artists)`);
 
     // Step 4: Deduplicate by artist + album (keep POPSTORE versions)
     const seen = new Set();
