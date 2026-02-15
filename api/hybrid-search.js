@@ -156,44 +156,42 @@ export default async function handler(req, res) {
             return true;
           }
           
-          // Artist name starts with or ends with search term
-          if (artistLower.startsWith(searchLower) || artistLower.endsWith(searchLower)) {
+          // Artist name starts with or ends with search term (exact phrase)
+          if (artistLower.startsWith(searchLower + ' ') || 
+              artistLower.endsWith(' ' + searchLower) ||
+              artistLower.startsWith(searchLower) || 
+              artistLower.endsWith(searchLower)) {
             return true;
           }
           
-          // Search term is contained in artist name (but check it's a full word)
-          if (artistLower.includes(searchLower)) {
-            // Make sure it's a word boundary match, not just substring
-            const words = artistLower.split(/\s+/);
-            const searchWords = searchLower.split(/\s+/);
-            
-            // Check if all search words appear in artist name
-            const allWordsMatch = searchWords.every(searchWord => 
-              words.some(word => word === searchWord || word.startsWith(searchWord))
-            );
-            
-            if (allWordsMatch) {
+          // For multi-word searches (like "brand new"), check for exact phrase match first
+          if (searchLower.includes(' ')) {
+            // Check if the exact search phrase appears in the artist name
+            // with word boundaries (so "brand new" doesn't match "brand new heavies")
+            const regex = new RegExp('\\b' + searchLower.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '\\b', 'i');
+            if (regex.test(artistLower)) {
               return true;
             }
-          }
-          
-          // For multi-word searches like "Pink Floyd", be more lenient
-          if (searchLower.includes(' ')) {
+            
+            // Only if exact phrase doesn't match, check for partial word matches
+            // But be much stricter - require at least 80% of words to match
             const searchWords = searchLower.split(/\s+/).filter(w => w.length > 2);
             const artistWords = artistLower.split(/\s+/).filter(w => w.length > 2);
             
-            // Check if most search words appear in artist
             const matchCount = searchWords.filter(sw => 
-              artistWords.some(aw => aw.includes(sw) || sw.includes(aw))
+              artistWords.some(aw => aw === sw) // Exact word match only
             ).length;
             
-            if (matchCount >= searchWords.length * 0.7) { // 70% of words match
+            if (matchCount >= searchWords.length * 0.8) { // 80% of words must match exactly
               return true;
             }
+            
+            return false; // Don't match if less than 80%
           }
           
-          // Single word searches - check if it appears in the artist name
+          // Single word searches - check if it appears as a complete word in the artist name
           if (!searchLower.includes(' ')) {
+            const words = artistLower.split(/\s+/);
             return words.some(word => word === searchLower || word.startsWith(searchLower));
           }
           
