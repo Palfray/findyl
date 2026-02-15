@@ -51,7 +51,20 @@ export default async function handler(req, res) {
     console.log(`POPSTORE found ${popstoreResults.length} matches for "${q}"`);
 
     // Step 2: Search Discogs API
-    const discogsUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(q)}&type=release&format=vinyl&per_page=100&key=${process.env.DISCOGS_CONSUMER_KEY}&secret=${process.env.DISCOGS_CONSUMER_SECRET}`;
+    // For better artist-specific results, try artist search if query looks like an artist name
+    let discogsUrl;
+    
+    // If search term doesn't include album-specific words, search by artist
+    const albumKeywords = ['album', 'vinyl', 'lp', 'record', 'pressing', 'edition'];
+    const hasAlbumKeyword = albumKeywords.some(keyword => q.toLowerCase().includes(keyword));
+    
+    if (!hasAlbumKeyword) {
+      // Search specifically by artist for better results
+      discogsUrl = `https://api.discogs.com/database/search?artist=${encodeURIComponent(q)}&type=release&format=vinyl&per_page=100&key=${process.env.DISCOGS_CONSUMER_KEY}&secret=${process.env.DISCOGS_CONSUMER_SECRET}`;
+    } else {
+      // General keyword search
+      discogsUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(q)}&type=release&format=vinyl&per_page=100&key=${process.env.DISCOGS_CONSUMER_KEY}&secret=${process.env.DISCOGS_CONSUMER_SECRET}`;
+    }
 
     const discogsResponse = await fetch(discogsUrl, {
       headers: {
@@ -139,90 +152,24 @@ export default async function handler(req, res) {
           
           if (isDuplicate) return false;
           
-          // Get search term
+          // Since we're using artist= parameter in Discogs search,
+          // results are already filtered by artist
+          // Just do basic sanity check
           const searchLower = searchTermLower.trim();
+          const searchWords = searchLower.split(/\s+/).filter(w => w.length > 2);
+          const artistWords = discogsArtist.split(/\s+/).filter(w => w.length > 2);
           
-          // Exact match - always include
-          if (discogsArtist === searchLower) {
-            return true;
-          }
-          
-          // Match with "The" prefix variations
-          if (discogsArtist === 'the ' + searchLower || 
-              searchLower === 'the ' + discogsArtist ||
-              discogsArtist.replace(/^the /, '') === searchLower) {
-            return true;
-          }
-          
-          // For multi-word searches with "the" - be very strict
-          // "the national" should ONLY match "The National", not "The National Orchestra"
-          if (searchLower.startsWith('the ') && searchLower.includes(' ')) {
-            // Extract artist name without "the"
-            const searchWithoutThe = searchLower.replace(/^the /, '');
-            const artistWithoutThe = discogsArtist.replace(/^the /, '');
-            
-            // Must be exact match or start with search + connector
-            if (artistWithoutThe === searchWithoutThe) {
-              return true;
-            }
-            
-            // Allow "The National & X" but not "The National Orchestra"
-            if (artistWithoutThe.startsWith(searchWithoutThe)) {
-              const afterMatch = artistWithoutThe.substring(searchWithoutThe.length).trim();
-              if (afterMatch === '' || afterMatch.match(/^(&|and|featuring|ft\.?|feat\.?|\/)/i)) {
-                return true;
-              }
-            }
-            
-            return false; // Don't match partial artist names
-          }
-          
-          // Single word search - check if it matches any word in artist name
-          if (!searchLower.includes(' ')) {
-            const artistWords = discogsArtist.split(/\s+/);
-            return artistWords.some(word => word === searchLower || word.startsWith(searchLower));
-          }
-          
-          // Multi-word search (without "the")
-          const searchWords = searchLower.split(/\s+/);
-          const artistWords = discogsArtist.split(/\s+/);
-          
-          // Check if artist name starts with search term
-          if (discogsArtist.startsWith(searchLower)) {
-            const afterSearch = discogsArtist.substring(searchLower.length).trim();
-            
-            // Exact match (nothing after)
-            if (afterSearch === '') {
-              return true;
-            }
-            
-            // Collaboration/feature markers
-            if (afterSearch.match(/^(&|and|featuring|ft\.?|feat\.?|vs\.?|with|\/)/i)) {
-              return true;
-            }
-            
-            // Check if next word is part of search or a connector word
-            const nextWord = afterSearch.split(/\s+/)[0];
-            const connectorWords = ['for', 'of', 'in', 'on', 'at', 'to'];
-            
-            if (connectorWords.includes(nextWord)) {
-              return true;
-            }
-            
-            // If next word is unrelated, exclude
-            if (nextWord && !searchWords.includes(nextWord)) {
-              return false;
-            }
-            
-            return true;
-          }
-          
-          // Check if all search words appear in artist name (any order)
-          const allWordsMatch = searchWords.every(searchWord => 
-            artistWords.some(artistWord => artistWord === searchWord || artistWord.startsWith(searchWord))
+          // Check if main search words appear in artist name
+          // This handles variations like "The National" vs "National, The"
+          const hasRelevantWords = searchWords.some(searchWord => 
+            artistWords.some(artistWord => 
+              artistWord === searchWord || 
+              artistWord.startsWith(searchWord) ||
+              searchWord.startsWith(artistWord)
+            )
           );
           
-          return allWordsMatch;
+          return hasRelevantWords || discogsArtist.includes(searchLower) || searchLower.includes(discogsArtist);
         })
         .map(d => ({
           source: 'discogs',
