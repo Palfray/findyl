@@ -123,6 +123,45 @@
             overflow: hidden;
             transition: max-height 0.3s ease-in-out;
         }
+        
+        /* Autocomplete dropdown */
+        .autocomplete-container {
+            position: relative;
+        }
+        
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-top: none;
+            border-radius: 0 0 1rem 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        
+        .autocomplete-dropdown.show {
+            display: block;
+        }
+        
+        .autocomplete-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background-color 0.15s;
+        }
+        
+        .autocomplete-item:hover {
+            background-color: #fef2f2;
+        }
+        
+        .autocomplete-item strong {
+            color: #FF6B6B;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -141,7 +180,7 @@
                     </div>
                     <span class="text-2xl font-normal dm-serif" style="color: #1a1a1a;">findyl</span>
                 </a>
-                <form action="results.html" method="get" class="flex-1 max-w-2xl">
+                <form action="results.html" method="get" class="flex-1 max-w-2xl autocomplete-container">
                     <input 
                         type="text" 
                         name="q"
@@ -149,7 +188,9 @@
                         placeholder="Search for artist or album..."
                         class="w-full px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2"
                         style="outline-color: #FF6B6B;"
+                        autocomplete="off"
                     >
+                    <div id="headerAutocomplete" class="autocomplete-dropdown"></div>
                 </form>
             </div>
         </div>
@@ -367,6 +408,94 @@
             document.getElementById('noResults').style.display = 'block';
             document.getElementById('searchTitle').textContent = 'No search query';
         }
+        
+        // Autocomplete functionality for header search
+        const headerSearchInput = document.getElementById('headerSearch');
+        const headerAutocomplete = document.getElementById('headerAutocomplete');
+        let debounceTimer;
+        
+        headerSearchInput.addEventListener('input', function(e) {
+            const value = this.value.trim();
+            
+            if (value.length < 2) {
+                hideHeaderAutocomplete();
+                return;
+            }
+            
+            // Debounce API calls
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                fetchHeaderSuggestions(value);
+            }, 300);
+        });
+        
+        async function fetchHeaderSuggestions(searchValue) {
+            try {
+                const response = await fetch(`/api/autocomplete?q=${encodeURIComponent(searchValue)}`);
+                
+                if (!response.ok) {
+                    hideHeaderAutocomplete();
+                    return;
+                }
+                
+                const data = await response.json();
+                const suggestions = data.suggestions || [];
+                
+                if (suggestions.length === 0) {
+                    hideHeaderAutocomplete();
+                    return;
+                }
+                
+                displayHeaderSuggestions(suggestions, searchValue);
+                
+            } catch (error) {
+                console.error('Autocomplete error:', error);
+                hideHeaderAutocomplete();
+            }
+        }
+        
+        function displayHeaderSuggestions(matches, searchValue) {
+            let html = '';
+            matches.forEach((match) => {
+                const artistName = match.name || match;
+                const regex = new RegExp('(' + searchValue + ')', 'gi');
+                const highlighted = artistName.replace(regex, '<strong>$1</strong>');
+                
+                html += '<div class="autocomplete-item" onclick="selectHeaderArtist(\'' + artistName.replace(/'/g, "\\'") + '\')">';
+                html += highlighted;
+                if (match.source === 'popstore') {
+                    html += ' <span style="font-size: 10px; color: #FF6B6B;">●</span>';
+                }
+                html += '</div>';
+            });
+            
+            headerAutocomplete.innerHTML = html;
+            headerAutocomplete.classList.add('show');
+        }
+        
+        function selectHeaderArtist(artist) {
+            headerSearchInput.value = artist;
+            hideHeaderAutocomplete();
+            headerSearchInput.form.submit();
+        }
+        
+        function hideHeaderAutocomplete() {
+            headerAutocomplete.classList.remove('show');
+        }
+        
+        // Close autocomplete when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.autocomplete-container')) {
+                hideHeaderAutocomplete();
+            }
+        });
+        
+        // Handle keyboard navigation
+        headerSearchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hideHeaderAutocomplete();
+            }
+        });
     </script>
 </body>
 </html>
