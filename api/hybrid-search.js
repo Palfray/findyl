@@ -156,46 +156,61 @@ export default async function handler(req, res) {
             return true;
           }
           
-          // Artist name starts with or ends with search term (exact phrase)
-          if (artistLower.startsWith(searchLower + ' ') || 
-              artistLower.endsWith(' ' + searchLower) ||
-              artistLower.startsWith(searchLower) || 
-              artistLower.endsWith(searchLower)) {
+          // Match with "The" prefix
+          if (artistLower === 'the ' + searchLower || searchLower === 'the ' + artistLower) {
             return true;
           }
           
-          // For multi-word searches (like "brand new"), check for exact phrase match first
+          // For multi-word searches, check if it's a substring match
           if (searchLower.includes(' ')) {
-            // Check if the exact search phrase appears in the artist name
-            // with word boundaries (so "brand new" doesn't match "brand new heavies")
-            const regex = new RegExp('\\b' + searchLower.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '\\b', 'i');
-            if (regex.test(artistLower)) {
+            // Allow if artist name STARTS with search term
+            // "brand new" matches "Brand New" but also "Brand New & X"
+            if (artistLower.startsWith(searchLower)) {
+              // But exclude if there's a word after that's not a common connector
+              const afterSearch = artistLower.substring(searchLower.length).trim();
+              
+              // If nothing after, it's exact match
+              if (afterSearch === '') {
+                return true;
+              }
+              
+              // If starts with common connectors, allow
+              if (afterSearch.match(/^(&|and|featuring|ft\.?|feat\.?|vs\.?|with|\/)/i)) {
+                return true;
+              }
+              
+              // Otherwise check - is the next word totally different?
+              // "brand new" should NOT match "brand new heavies"
+              const nextWord = afterSearch.split(/\s+/)[0];
+              const searchWords = searchLower.split(/\s+/);
+              
+              // If next word is unrelated to search, probably different artist
+              if (nextWord && !searchWords.includes(nextWord.toLowerCase())) {
+                return false;
+              }
+              
               return true;
             }
             
-            // Only if exact phrase doesn't match, check for partial word matches
-            // But be much stricter - require at least 80% of words to match
-            const searchWords = searchLower.split(/\s+/).filter(w => w.length > 2);
-            const artistWords = artistLower.split(/\s+/).filter(w => w.length > 2);
+            // Check if all search words appear in artist name as complete words
+            const searchWords = searchLower.split(/\s+/);
+            const artistWords = artistLower.split(/\s+/);
             
-            const matchCount = searchWords.filter(sw => 
-              artistWords.some(aw => aw === sw) // Exact word match only
-            ).length;
+            const allWordsMatch = searchWords.every(searchWord => 
+              artistWords.some(artistWord => artistWord === searchWord)
+            );
             
-            if (matchCount >= searchWords.length * 0.8) { // 80% of words must match exactly
+            if (allWordsMatch) {
               return true;
             }
             
-            return false; // Don't match if less than 80%
+            return false;
           }
           
-          // Single word searches - check if it appears as a complete word in the artist name
-          if (!searchLower.includes(' ')) {
-            const words = artistLower.split(/\s+/);
-            return words.some(word => word === searchLower || word.startsWith(searchLower));
-          }
-          
-          return false;
+          // Single word searches - match if word appears in artist name
+          const words = artistLower.split(/\s+/);
+          return words.some(word => word === searchLower || word.startsWith(searchLower));
+
         })
         .map(d => ({
           source: 'discogs',
