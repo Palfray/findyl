@@ -51,7 +51,7 @@ export default async function handler(req, res) {
     console.log(`POPSTORE found ${popstoreResults.length} matches for "${q}"`);
 
     // Step 2: Search Discogs API
-    const discogsUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(q)}&type=release&format=vinyl&per_page=50&key=${process.env.DISCOGS_CONSUMER_KEY}&secret=${process.env.DISCOGS_CONSUMER_SECRET}`;
+    const discogsUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(q)}&type=release&format=vinyl&per_page=100&key=${process.env.DISCOGS_CONSUMER_KEY}&secret=${process.env.DISCOGS_CONSUMER_SECRET}`;
 
     const discogsResponse = await fetch(discogsUrl, {
       headers: {
@@ -103,6 +103,11 @@ export default async function handler(req, res) {
     });
 
     console.log(`Discogs found ${discogsResults.length} album matches for "${q}" (after filtering out singles/EPs/compilations)`);
+    
+    // Debug: Log first 5 results to see what we're getting
+    if (discogsResults.length > 0) {
+      console.log('Sample Discogs results:', discogsResults.slice(0, 5).map(r => r.title));
+    }
 
     // Step 3: Merge results
     // POPSTORE products come first (they have prices!)
@@ -149,17 +154,40 @@ export default async function handler(req, res) {
             return true;
           }
           
+          // For multi-word searches with "the" - be very strict
+          // "the national" should ONLY match "The National", not "The National Orchestra"
+          if (searchLower.startsWith('the ') && searchLower.includes(' ')) {
+            // Extract artist name without "the"
+            const searchWithoutThe = searchLower.replace(/^the /, '');
+            const artistWithoutThe = discogsArtist.replace(/^the /, '');
+            
+            // Must be exact match or start with search + connector
+            if (artistWithoutThe === searchWithoutThe) {
+              return true;
+            }
+            
+            // Allow "The National & X" but not "The National Orchestra"
+            if (artistWithoutThe.startsWith(searchWithoutThe)) {
+              const afterMatch = artistWithoutThe.substring(searchWithoutThe.length).trim();
+              if (afterMatch === '' || afterMatch.match(/^(&|and|featuring|ft\.?|feat\.?|\/)/i)) {
+                return true;
+              }
+            }
+            
+            return false; // Don't match partial artist names
+          }
+          
           // Single word search - check if it matches any word in artist name
           if (!searchLower.includes(' ')) {
             const artistWords = discogsArtist.split(/\s+/);
             return artistWords.some(word => word === searchLower || word.startsWith(searchLower));
           }
           
-          // Multi-word search
+          // Multi-word search (without "the")
           const searchWords = searchLower.split(/\s+/);
           const artistWords = discogsArtist.split(/\s+/);
           
-          // Check if artist name starts with search term (handles "brand new")
+          // Check if artist name starts with search term
           if (discogsArtist.startsWith(searchLower)) {
             const afterSearch = discogsArtist.substring(searchLower.length).trim();
             
@@ -175,15 +203,15 @@ export default async function handler(req, res) {
             
             // Check if next word is part of search or a connector word
             const nextWord = afterSearch.split(/\s+/)[0];
-            const connectorWords = ['for', 'of', 'the', 'in', 'on', 'at', 'to'];
+            const connectorWords = ['for', 'of', 'in', 'on', 'at', 'to'];
             
             if (connectorWords.includes(nextWord)) {
-              return true; // "Death Cab for Cutie" matches "death cab"
+              return true;
             }
             
             // If next word is unrelated, exclude
             if (nextWord && !searchWords.includes(nextWord)) {
-              return false; // "Brand New Heavies" doesn't match "brand new"
+              return false;
             }
             
             return true;
