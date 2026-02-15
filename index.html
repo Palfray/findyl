@@ -281,12 +281,33 @@
         <div class="logo-container">
             <h1 class="text-white text-5xl sm:text-6xl font-normal tracking-tight dm-serif">findyl</h1>
             
-            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="20" cy="20" r="19" fill="none" stroke="white" stroke-width="1"/>
-              <circle cx="20" cy="20" r="15" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
-              <circle cx="20" cy="20" r="11" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
-              <circle cx="20" cy="20" r="6" fill="white"/>
-              <circle cx="20" cy="20" r="2" fill="#FF6B6B"/>
+            <!-- Vinyl Record Halfway Out of Sleeve Logo -->
+            <svg width="50" height="50" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Record Sleeve (Coral with white outline) -->
+                <rect x="8" y="12" width="44" height="44" rx="2" fill="#FF6B6B" stroke="white" stroke-width="1.5"/>
+                
+                <!-- Sleeve opening shadow (darker coral to show depth) -->
+                <rect x="8" y="12" width="44" height="6" fill="#FF5252"/>
+                
+                <!-- Vinyl Record (partially visible, coming out of sleeve) -->
+                <g transform="translate(30, 8)">
+                    <!-- Main vinyl disc (black) -->
+                    <circle cx="0" cy="0" r="18" fill="#1a1a1a"/>
+                    
+                    <!-- Groove rings -->
+                    <circle cx="0" cy="0" r="15" fill="none" stroke="#333" stroke-width="0.3" opacity="0.6"/>
+                    <circle cx="0" cy="0" r="12" fill="none" stroke="#333" stroke-width="0.3" opacity="0.6"/>
+                    <circle cx="0" cy="0" r="9" fill="none" stroke="#333" stroke-width="0.3" opacity="0.6"/>
+                    
+                    <!-- Record label (white circle in center) -->
+                    <circle cx="0" cy="0" r="6" fill="white"/>
+                    
+                    <!-- Label text area (coral) -->
+                    <circle cx="0" cy="0" r="4.5" fill="#FF6B6B"/>
+                    
+                    <!-- Center hole -->
+                    <circle cx="0" cy="0" r="1.5" fill="#1a1a1a"/>
+                </g>
             </svg>
         </div>
         
