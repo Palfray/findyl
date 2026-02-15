@@ -445,29 +445,69 @@
         function displaySuggestions(matches, searchValue) {
             let html = '';
             matches.forEach((match) => {
-                const artistName = match.name || match;
                 // Highlight matching text
                 const regex = new RegExp('(' + searchValue + ')', 'gi');
-                const highlighted = artistName.replace(regex, '<strong>$1</strong>');
                 
-                html += '<div class="autocomplete-item" onclick="selectArtist(\'' + artistName.replace(/'/g, "\\'") + '\')">';
-                html += highlighted;
-                // Show badge for POPSTORE artists (they have prices!)
-                if (match.source === 'popstore') {
-                    html += ' <span style="font-size: 10px; color: #FF6B6B;">●</span>';
+                if (match.type === 'artist') {
+                    // Artist suggestion
+                    const artistName = match.name || match;
+                    const highlighted = artistName.replace(regex, '<strong>$1</strong>');
+                    
+                    html += '<div class="autocomplete-item" onclick="selectSuggestion(\'' + artistName.replace(/'/g, "\\'") + '\')">';
+                    html += highlighted;
+                    // Show badge for POPSTORE artists
+                    if (match.source === 'popstore') {
+                        html += ' <span style="font-size: 10px; color: #FF6B6B;">●</span>';
+                    }
+                    html += '</div>';
+                } else if (match.type === 'album') {
+                    // Album suggestion - show "Album · Artist"
+                    const albumName = match.album;
+                    const artistName = match.artist;
+                    const highlightedAlbum = albumName.replace(regex, '<strong>$1</strong>');
+                    const searchQuery = artistName + ' ' + albumName;
+                    
+                    html += '<div class="autocomplete-item" onclick="selectSuggestion(\'' + searchQuery.replace(/'/g, "\\'") + '\')">';
+                    html += '<div style="display: flex; align-items: center; gap: 6px;">';
+                    html += '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0; color: #FF6B6B;">';
+                    html += '<circle cx="12" cy="12" r="10"></circle>';
+                    html += '<circle cx="12" cy="12" r="3"></circle>';
+                    html += '</svg>';
+                    html += '<span>' + highlightedAlbum + ' <span style="color: #999;">· ' + artistName + '</span></span>';
+                    // Show badge for POPSTORE albums
+                    if (match.source === 'popstore') {
+                        html += ' <span style="font-size: 10px; color: #FF6B6B;">●</span>';
+                    }
+                    html += '</div>';
+                    html += '</div>';
+                } else {
+                    // Fallback for old format (artist name only)
+                    const artistName = match.name || match;
+                    const highlighted = artistName.replace(regex, '<strong>$1</strong>');
+                    
+                    html += '<div class="autocomplete-item" onclick="selectSuggestion(\'' + artistName.replace(/'/g, "\\'") + '\')">';
+                    html += highlighted;
+                    if (match.source === 'popstore') {
+                        html += ' <span style="font-size: 10px; color: #FF6B6B;">●</span>';
+                    }
+                    html += '</div>';
                 }
-                html += '</div>';
             });
             
             autocompleteDropdown.innerHTML = html;
             autocompleteDropdown.classList.add('show');
         }
         
-        // Select an artist
-        function selectArtist(artist) {
-            searchInput.value = artist;
+        // Select a suggestion (artist or album)
+        function selectSuggestion(searchQuery) {
+            searchInput.value = searchQuery;
             hideAutocomplete();
             document.querySelector('form').submit();
+        }
+        
+        // Select an artist (deprecated, kept for compatibility)
+        function selectArtist(artist) {
+            selectSuggestion(artist);
         }
         
         // Hide autocomplete
