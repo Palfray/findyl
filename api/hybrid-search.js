@@ -51,20 +51,8 @@ export default async function handler(req, res) {
     console.log(`POPSTORE found ${popstoreResults.length} matches for "${q}"`);
 
     // Step 2: Search Discogs API
-    // For better artist-specific results, try artist search if query looks like an artist name
-    let discogsUrl;
-    
-    // If search term doesn't include album-specific words, search by artist
-    const albumKeywords = ['album', 'vinyl', 'lp', 'record', 'pressing', 'edition'];
-    const hasAlbumKeyword = albumKeywords.some(keyword => q.toLowerCase().includes(keyword));
-    
-    if (!hasAlbumKeyword) {
-      // Search specifically by artist for better results
-      discogsUrl = `https://api.discogs.com/database/search?artist=${encodeURIComponent(q)}&type=release&format=vinyl&per_page=100&key=${process.env.DISCOGS_CONSUMER_KEY}&secret=${process.env.DISCOGS_CONSUMER_SECRET}`;
-    } else {
-      // General keyword search
-      discogsUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(q)}&type=release&format=vinyl&per_page=100&key=${process.env.DISCOGS_CONSUMER_KEY}&secret=${process.env.DISCOGS_CONSUMER_SECRET}`;
-    }
+    // Use general search for better coverage
+    const discogsUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(q)}&type=release&format=vinyl&per_page=100&key=${process.env.DISCOGS_CONSUMER_KEY}&secret=${process.env.DISCOGS_CONSUMER_SECRET}`;
 
     const discogsResponse = await fetch(discogsUrl, {
       headers: {
@@ -152,24 +140,25 @@ export default async function handler(req, res) {
           
           if (isDuplicate) return false;
           
-          // Since we're using artist= parameter in Discogs search,
-          // results are already filtered by artist
-          // Just do basic sanity check
           const searchLower = searchTermLower.trim();
-          const searchWords = searchLower.split(/\s+/).filter(w => w.length > 2);
-          const artistWords = discogsArtist.split(/\s+/).filter(w => w.length > 2);
           
-          // Check if main search words appear in artist name
-          // This handles variations like "The National" vs "National, The"
-          const hasRelevantWords = searchWords.some(searchWord => 
-            artistWords.some(artistWord => 
-              artistWord === searchWord || 
-              artistWord.startsWith(searchWord) ||
-              searchWord.startsWith(artistWord)
-            )
-          );
+          // For single word searches, be more lenient
+          if (!searchLower.includes(' ')) {
+            return discogsArtist.includes(searchLower);
+          }
           
-          return hasRelevantWords || discogsArtist.includes(searchLower) || searchLower.includes(discogsArtist);
+          // For multi-word searches, check if artist contains the search term
+          // This handles "Foo Fighters", "The National", etc.
+          const searchWords = searchLower.split(/\s+/);
+          
+          // Check if ALL search words appear in the artist name
+          const allWordsMatch = searchWords.every(word => {
+            // Skip very short words like "the", "a", etc.
+            if (word.length <= 2) return true;
+            return discogsArtist.includes(word);
+          });
+          
+          return allWordsMatch;
         })
         .map(d => ({
           source: 'discogs',
