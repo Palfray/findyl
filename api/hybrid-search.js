@@ -71,19 +71,19 @@ export default async function handler(req, res) {
       const title = (release.title || '').toLowerCase();
       const formats = (release.format || []).join(' ').toLowerCase();
       
-      // Exclude singles (look for "7\"", "single" in format or title)
-      if (formats.includes('single') || 
-          formats.includes('7"') || 
-          formats.includes('7\'') ||
-          title.includes('(single)')) {
+      // Exclude singles (look for "7\"", "single" in format)
+      if (formats.includes('7"') || formats.includes('7\'')) {
         return false;
       }
       
+      // Exclude if explicitly marked as single
+      if (formats.includes('single') && !formats.includes('12"')) {
+        return false; // Keep 12" singles as they might be albums
+      }
+      
       // Exclude EPs (look for "EP" in format or title)
-      if (formats.includes('ep') || 
-          title.includes('(ep)') || 
-          title.match(/\bep\b/i)) {
-        return false;
+      if (formats.match(/\bep\b/i) && !formats.includes('lp')) {
+        return false; // Exclude EP unless it also says LP
       }
       
       // Exclude compilations (various artists, greatest hits, best of)
@@ -96,21 +96,10 @@ export default async function handler(req, res) {
         return false;
       }
       
-      // Exclude maxi singles
-      if (formats.includes('maxi') && formats.includes('single')) {
-        return false;
-      }
-      
-      // Only keep albums (LP, 12", Album)
-      // If format explicitly says "Album" or "LP" or "12\"", keep it
-      const isAlbum = formats.includes('album') || 
-                      formats.includes('lp') || 
-                      formats.includes('12"') ||
-                      formats.includes('12\'');
-      
-      // If no format specified but it's not explicitly excluded above, include it
-      // (some legitimate albums don't have format metadata)
-      return isAlbum || formats.length === 0 || formats === 'vinyl';
+      // If we haven't excluded it, include it
+      // This is more permissive - we assume most vinyl releases are albums
+      // unless they're explicitly singles/EPs/compilations
+      return true;
     });
 
     console.log(`Discogs found ${discogsResults.length} album matches for "${q}" (after filtering out singles/EPs/compilations)`);
