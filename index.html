@@ -139,6 +139,27 @@
             flex-shrink: 0;
         }
         
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        .logo-text {
+            margin: 0;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .logo-vinyl {
+            position: relative;
+            margin-top: -8px;
+            margin-left: 28px;
+        }
+        
         /* Autocomplete dropdown */
         .autocomplete-dropdown {
             position: absolute;
@@ -219,17 +240,19 @@
             
             .logo-container {
                 flex-direction: column;
-                gap: 0.5rem;
-                margin-bottom: 1rem;
+                gap: 0;
+                margin-bottom: 1.5rem;
             }
             
-            /* Show mobile logo, hide desktop logo */
-            .logo-desktop {
-                display: none !important;
+            .logo-text {
+                font-size: 3rem !important;
             }
             
-            .logo-mobile {
-                display: block !important;
+            .logo-vinyl {
+                width: 48px;
+                height: 28px;
+                margin-top: -6px;
+                margin-left: 18px;
             }
             
             .menu-button {
@@ -303,11 +326,17 @@
             <!-- More menu items can be added here later -->
         </div>
         
-        <div class="logo-container" style="position: relative; display: inline-block; margin-bottom: 2rem;">
-            <!-- Desktop Logo -->
-            <img src="findyl-logo-desktop.svg" alt="findyl" class="logo-desktop" style="width: 300px; height: auto; display: block;">
-            <!-- Mobile Logo -->
-            <img src="findyl-logo-mobile.svg" alt="findyl" class="logo-mobile" style="width: 200px; height: auto; display: none;">
+        <div class="logo-container">
+            <h1 class="text-white text-5xl sm:text-6xl font-normal tracking-tight dm-serif logo-text">findyl</h1>
+            
+            <!-- Vinyl semicircle -->
+            <svg class="logo-vinyl" width="60" height="35" viewBox="0 0 60 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="30" cy="0" r="28" fill="none" stroke="white" stroke-width="1"/>
+                <circle cx="30" cy="0" r="22" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
+                <circle cx="30" cy="0" r="16" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
+                <circle cx="30" cy="0" r="9" fill="white"/>
+                <circle cx="30" cy="0" r="3" fill="#FF6B6B"/>
+            </svg>
         </div>
         
         <p class="text-white text-lg sm:text-xl md:text-2xl font-light mb-8 tracking-wide dm-serif text-center px-4">
