@@ -179,10 +179,12 @@ export default async function handler(req, res) {
           year: d.year,
           format: d.format ? d.format.join(', ') : 'Vinyl',
           cover: d.cover_image || d.thumb,
-          price: null, // No price from Discogs
+          price: null, // Will be fetched separately for top 20
           currency: null,
           buy_link: null,
-          availability: null
+          availability: null,
+          discogs_id: d.id, // Store ID for price lookup
+          discogs_url: `https://www.discogs.com/release/${d.id}`
         }))
     ];
 
@@ -209,6 +211,62 @@ export default async function handler(req, res) {
       const yearB = parseInt(b.year) || 0;
       return yearB - yearA; // Newest first
     });
+
+    // Step 6: Fetch Discogs marketplace pricing for top 20 Discogs albums
+    const discogsAlbums = uniqueResults.filter(r => r.source === 'discogs' && r.discogs_id);
+    const top20Discogs = discogsAlbums.slice(0, 20);
+    
+    if (top20Discogs.length > 0) {
+      console.log(`Fetching Discogs marketplace pricing for ${top20Discogs.length} albums...`);
+      
+      // Fetch prices in parallel (with error handling per album)
+      const pricePromises = top20Discogs.map(async (album) => {
+        try {
+          const statsUrl = `https://api.discogs.com/marketplace/stats/${album.discogs_id}?curr_abbr=GBP&key=${process.env.DISCOGS_CONSUMER_KEY}&secret=${process.env.DISCOGS_CONSUMER_SECRET}`;
+          
+          const response = await fetch(statsUrl, {
+            headers: {
+              'User-Agent': 'Findyl/1.0 +https://findyl.co.uk',
+            },
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            
+            // Get lowest price from marketplace
+            if (data.lowest_price && data.lowest_price.value) {
+              return {
+                discogs_id: album.discogs_id,
+                price: data.lowest_price.value,
+                currency: data.lowest_price.currency || 'GBP'
+              };
+            }
+          }
+          
+          return null;
+        } catch (error) {
+          console.error(`Failed to fetch price for ${album.discogs_id}:`, error.message);
+          return null;
+        }
+      });
+      
+      const prices = await Promise.all(pricePromises);
+      
+      // Update albums with pricing data
+      prices.forEach(priceData => {
+        if (priceData) {
+          const album = uniqueResults.find(r => r.discogs_id === priceData.discogs_id);
+          if (album) {
+            album.price = priceData.price;
+            album.currency = priceData.currency;
+            album.price_source = 'discogs_marketplace';
+          }
+        }
+      });
+      
+      const pricesFound = prices.filter(p => p !== null).length;
+      console.log(`Found Discogs prices for ${pricesFound}/${top20Discogs.length} albums`);
+    }
 
     console.log(`Returning ${uniqueResults.length} unique results (${popstoreResults.length} from POPSTORE, ${uniqueResults.length - popstoreResults.length} from Discogs)`);
 
