@@ -282,37 +282,40 @@
             <h1 class="text-white text-5xl sm:text-6xl font-normal tracking-tight dm-serif">findyl</h1>
             
             <!-- Vinyl Record Halfway Out of Sleeve Logo -->
-            <svg width="60" height="50" viewBox="0 0 70 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- Record Sleeve (Coral with white outline) -->
-                <rect x="5" y="5" width="40" height="40" rx="2" fill="#FF6B6B" stroke="white" stroke-width="1.5"/>
-                
-                <!-- Sleeve opening on right side (darker to show depth) -->
-                <rect x="44" y="5" width="2" height="40" fill="#FF5252"/>
-                
-                <!-- Vinyl Record (only right half visible) -->
+            <svg width="70" height="50" viewBox="0 0 80 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Clip path - shows right half of vinyl -->
                 <defs>
-                    <clipPath id="halfClip">
-                        <rect x="45" y="0" width="25" height="50"/>
+                    <clipPath id="vinylHalf">
+                        <rect x="45" y="0" width="40" height="50"/>
                     </clipPath>
                 </defs>
                 
-                <g transform="translate(45, 25)" clip-path="url(#halfClip)">
-                    <!-- Main disc (coral) -->
-                    <circle cx="0" cy="0" r="19" fill="#FF6B6B"/>
-                    
-                    <!-- White outline -->
-                    <circle cx="0" cy="0" r="19" fill="none" stroke="white" stroke-width="1"/>
-                    
-                    <!-- Groove rings (white) -->
-                    <circle cx="0" cy="0" r="15" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
-                    <circle cx="0" cy="0" r="11" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
-                    
-                    <!-- Center label (white) -->
-                    <circle cx="0" cy="0" r="6" fill="white"/>
-                    
-                    <!-- Center hole (coral) -->
-                    <circle cx="0" cy="0" r="2" fill="#FF6B6B"/>
+                <!-- Vinyl Record (positioned so half is visible) -->
+                <g clip-path="url(#vinylHalf)">
+                    <g transform="translate(45, 25)">
+                        <!-- Main disc (coral) -->
+                        <circle cx="0" cy="0" r="19" fill="#FF6B6B"/>
+                        
+                        <!-- White outline -->
+                        <circle cx="0" cy="0" r="19" fill="none" stroke="white" stroke-width="1"/>
+                        
+                        <!-- Groove rings (white) -->
+                        <circle cx="0" cy="0" r="15" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
+                        <circle cx="0" cy="0" r="11" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
+                        
+                        <!-- Center label (white) -->
+                        <circle cx="0" cy="0" r="6" fill="white"/>
+                        
+                        <!-- Center hole (coral) -->
+                        <circle cx="0" cy="0" r="2" fill="#FF6B6B"/>
+                    </g>
                 </g>
+                
+                <!-- Record Sleeve (drawn on top so it overlaps the vinyl) -->
+                <rect x="5" y="5" width="40" height="40" rx="2" fill="#FF6B6B" stroke="white" stroke-width="1.5"/>
+                
+                <!-- Sleeve opening edge (darker to show depth) -->
+                <line x1="45" y1="5" x2="45" y2="45" stroke="#FF5252" stroke-width="2"/>
             </svg>
         </div>
         
