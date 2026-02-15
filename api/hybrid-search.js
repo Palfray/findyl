@@ -135,8 +135,7 @@ export default async function handler(req, res) {
       ...discogsResults
         .filter(d => {
           const discogsTitle = d.title.toLowerCase();
-          const discogsArtist = (d.title.split(' - ')[0] || '').toLowerCase();
-          const words = discogsArtist.split(/\s+/);
+          const discogsArtist = (d.title.split(' - ')[0] || '').toLowerCase().trim();
           
           // Don't add if we already have it from POPSTORE
           const isDuplicate = popstoreResults.some(p => 
@@ -146,71 +145,67 @@ export default async function handler(req, res) {
           
           if (isDuplicate) return false;
           
-          // If user searches for exact artist name, show all their albums
-          // Check if artist name in Discogs result matches search term closely
+          // Get search term
           const searchLower = searchTermLower.trim();
-          const artistLower = discogsArtist.trim();
           
           // Exact match - always include
-          if (artistLower === searchLower) {
+          if (discogsArtist === searchLower) {
             return true;
           }
           
-          // Match with "The" prefix
-          if (artistLower === 'the ' + searchLower || searchLower === 'the ' + artistLower) {
+          // Match with "The" prefix variations
+          if (discogsArtist === 'the ' + searchLower || 
+              searchLower === 'the ' + discogsArtist ||
+              discogsArtist.replace(/^the /, '') === searchLower) {
             return true;
           }
           
-          // For multi-word searches, check if it's a substring match
-          if (searchLower.includes(' ')) {
-            // Allow if artist name STARTS with search term
-            // "brand new" matches "Brand New" but also "Brand New & X"
-            if (artistLower.startsWith(searchLower)) {
-              // But exclude if there's a word after that's not a common connector
-              const afterSearch = artistLower.substring(searchLower.length).trim();
-              
-              // If nothing after, it's exact match
-              if (afterSearch === '') {
-                return true;
-              }
-              
-              // If starts with common connectors, allow
-              if (afterSearch.match(/^(&|and|featuring|ft\.?|feat\.?|vs\.?|with|\/)/i)) {
-                return true;
-              }
-              
-              // Otherwise check - is the next word totally different?
-              // "brand new" should NOT match "brand new heavies"
-              const nextWord = afterSearch.split(/\s+/)[0];
-              const searchWords = searchLower.split(/\s+/);
-              
-              // If next word is unrelated to search, probably different artist
-              if (nextWord && !searchWords.includes(nextWord.toLowerCase())) {
-                return false;
-              }
-              
-              return true;
-            }
-            
-            // Check if all search words appear in artist name as complete words
-            const searchWords = searchLower.split(/\s+/);
-            const artistWords = artistLower.split(/\s+/);
-            
-            const allWordsMatch = searchWords.every(searchWord => 
-              artistWords.some(artistWord => artistWord === searchWord)
-            );
-            
-            if (allWordsMatch) {
-              return true;
-            }
-            
-            return false;
+          // Single word search - check if it matches any word in artist name
+          if (!searchLower.includes(' ')) {
+            const artistWords = discogsArtist.split(/\s+/);
+            return artistWords.some(word => word === searchLower || word.startsWith(searchLower));
           }
           
-          // Single word searches - match if word appears in artist name
-          const words = artistLower.split(/\s+/);
-          return words.some(word => word === searchLower || word.startsWith(searchLower));
-
+          // Multi-word search
+          const searchWords = searchLower.split(/\s+/);
+          const artistWords = discogsArtist.split(/\s+/);
+          
+          // Check if artist name starts with search term (handles "brand new")
+          if (discogsArtist.startsWith(searchLower)) {
+            const afterSearch = discogsArtist.substring(searchLower.length).trim();
+            
+            // Exact match (nothing after)
+            if (afterSearch === '') {
+              return true;
+            }
+            
+            // Collaboration/feature markers
+            if (afterSearch.match(/^(&|and|featuring|ft\.?|feat\.?|vs\.?|with|\/)/i)) {
+              return true;
+            }
+            
+            // Check if next word is part of search or a connector word
+            const nextWord = afterSearch.split(/\s+/)[0];
+            const connectorWords = ['for', 'of', 'the', 'in', 'on', 'at', 'to'];
+            
+            if (connectorWords.includes(nextWord)) {
+              return true; // "Death Cab for Cutie" matches "death cab"
+            }
+            
+            // If next word is unrelated, exclude
+            if (nextWord && !searchWords.includes(nextWord)) {
+              return false; // "Brand New Heavies" doesn't match "brand new"
+            }
+            
+            return true;
+          }
+          
+          // Check if all search words appear in artist name (any order)
+          const allWordsMatch = searchWords.every(searchWord => 
+            artistWords.some(artistWord => artistWord === searchWord || artistWord.startsWith(searchWord))
+          );
+          
+          return allWordsMatch;
         })
         .map(d => ({
           source: 'discogs',
