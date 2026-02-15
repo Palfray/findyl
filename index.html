@@ -220,14 +220,26 @@
             .logo-container {
                 flex-direction: column;
                 gap: 0.5rem;
+                margin-bottom: 1rem;
             }
             
             .logo-container h1 {
                 font-size: 3rem !important;
             }
             
-            .logo-container svg {
-                transform: translateX(-50%) scale(0.8);
+            /* Reposition vinyl for mobile */
+            .logo-vinyl {
+                width: 200px !important;
+                height: 70px !important;
+            }
+            
+            .vinyl-position > g {
+                transform: translate(100, 38) !important;
+            }
+            
+            #bottomHalf rect {
+                x: 72 !important;
+                y: 38 !important;
             }
             
             .menu-button {
@@ -245,6 +257,21 @@
             
             .search-container {
                 padding: 32px 16px;
+            }
+            
+            /* Show vinyl icon on mobile, hide text */
+            .button-text {
+                display: none;
+            }
+            
+            .button-icon {
+                display: block !important;
+            }
+            
+            .coral-button {
+                width: 56px;
+                height: 56px;
+                padding: 14px !important;
             }
         }
         
@@ -288,7 +315,7 @@
         
         <div class="logo-container" style="position: relative; display: inline-block; margin-bottom: 2rem;">
             <!-- Vinyl record as semicircle BEHIND the 'dy' in findyl -->
-            <svg width="300" height="100" viewBox="0 0 300 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); pointer-events: none;">
+            <svg class="logo-vinyl" width="300" height="100" viewBox="0 0 300 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); pointer-events: none;">
                 <!-- Clip path for bottom half of vinyl (relative to the circle center) -->
                 <defs>
                     <clipPath id="bottomHalf">
@@ -296,8 +323,8 @@
                     </clipPath>
                 </defs>
                 
-                <!-- Position vinyl - moved right and down slightly for gap -->
-                <g clip-path="url(#bottomHalf)">
+                <!-- Position vinyl - desktop position -->
+                <g class="vinyl-position" clip-path="url(#bottomHalf)">
                     <g transform="translate(169, 58)">
                         <!-- Vinyl Record (only bottom half visible) -->
                         <circle cx="0" cy="0" r="28" fill="none" stroke="white" stroke-width="1"/>
