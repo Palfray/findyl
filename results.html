@@ -322,9 +322,21 @@
                     html += '<a href="' + item.buy_link + '" target="_blank" rel="noopener noreferrer" class="block w-full py-2 px-4 text-center text-white font-medium rounded-lg mb-2" style="background-color: #FF6B6B;">Buy at POP Store</a>';
                     html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full py-2 px-4 text-gray-700 font-medium rounded-lg border border-gray-300 text-sm">Or find at other retailers</button>';
                 } else {
+                    // Show Discogs marketplace price if available
+                    if (item.price && item.price_source === 'discogs_marketplace') {
+                        html += '<p class="text-sm text-gray-600 mb-1">From <span class="font-bold" style="color: #FF6B6B;">£' + item.price.toFixed(2) + '</span> on Discogs marketplace</p>';
+                    }
+                    
                     // Show format/year if from Discogs
                     html += '<p class="text-xs text-gray-500 mb-3">' + (item.year ? item.year + ' • ' : '') + item.format + '</p>';
-                    html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full py-2 px-4 text-white font-medium rounded-lg transition-all hover:opacity-90" style="background-color: #FF6B6B;">Find Retailers</button>';
+                    
+                    // Different button text based on whether we have Discogs price
+                    if (item.discogs_url) {
+                        html += '<a href="' + item.discogs_url + '" target="_blank" rel="noopener noreferrer" class="block w-full py-2 px-4 text-center text-white font-medium rounded-lg mb-2 transition-all hover:opacity-90" style="background-color: #FF6B6B;">View on Discogs</a>';
+                        html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full py-2 px-4 text-gray-700 font-medium rounded-lg border border-gray-300 text-sm">Or find at retailers</button>';
+                    } else {
+                        html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full py-2 px-4 text-white font-medium rounded-lg transition-all hover:opacity-90" style="background-color: #FF6B6B;">Find Retailers</button>';
+                    }
                 }
                 
                 html += '<div id="stores-' + index + '" class="stores-collapsed mt-3 space-y-2">';
