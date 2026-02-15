@@ -223,15 +223,13 @@
                 margin-bottom: 1rem;
             }
             
-            .logo-container h1 {
-                font-size: 3rem !important;
+            /* Show mobile logo, hide desktop logo */
+            .logo-desktop {
+                display: none !important;
             }
             
-            /* Reposition vinyl for mobile - move left and up */
-            .logo-vinyl {
-                width: 200px !important;
-                height: 70px !important;
-                transform: translateX(-48%) translateY(4px) !important;
+            .logo-mobile {
+                display: block !important;
             }
             
             .menu-button {
@@ -306,30 +304,10 @@
         </div>
         
         <div class="logo-container" style="position: relative; display: inline-block; margin-bottom: 2rem;">
-            <!-- Vinyl record as semicircle BEHIND the 'dy' in findyl -->
-            <svg class="logo-vinyl" width="300" height="100" viewBox="0 0 300 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); pointer-events: none;">
-                <!-- Clip path for bottom half of vinyl (relative to the circle center) -->
-                <defs>
-                    <clipPath id="bottomHalf">
-                        <rect x="141" y="58" width="56" height="42"/>
-                    </clipPath>
-                </defs>
-                
-                <!-- Position vinyl - desktop position -->
-                <g class="vinyl-position" clip-path="url(#bottomHalf)">
-                    <g transform="translate(169, 58)">
-                        <!-- Vinyl Record (only bottom half visible) -->
-                        <circle cx="0" cy="0" r="28" fill="none" stroke="white" stroke-width="1"/>
-                        <circle cx="0" cy="0" r="22" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
-                        <circle cx="0" cy="0" r="16" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
-                        <circle cx="0" cy="0" r="9" fill="white"/>
-                        <circle cx="0" cy="0" r="3" fill="#FF6B6B"/>
-                    </g>
-                </g>
-            </svg>
-            
-            <!-- Text on top (y descender acts as tonearm) -->
-            <h1 class="text-white text-5xl sm:text-6xl font-normal tracking-tight dm-serif" style="position: relative; z-index: 1; margin: 0;">findyl</h1>
+            <!-- Desktop Logo -->
+            <img src="findyl-logo-desktop.svg" alt="findyl" class="logo-desktop" style="width: 300px; height: auto; display: block;">
+            <!-- Mobile Logo -->
+            <img src="findyl-logo-mobile.svg" alt="findyl" class="logo-mobile" style="width: 200px; height: auto; display: none;">
         </div>
         
         <p class="text-white text-lg sm:text-xl md:text-2xl font-light mb-8 tracking-wide dm-serif text-center px-4">
