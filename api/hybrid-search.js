@@ -31,9 +31,8 @@ export default async function handler(req, res) {
       // Artist match: more lenient - includes partial matches
       const artistMatch = artistLower === searchTerm || 
                          artistWithoutThe === searchWithoutThe ||
-                         artistLower.startsWith(searchTerm) ||  // "The National" matches "The National Park"
-                         artistLower.includes(' ' + searchTerm) || // " The National"
-                         searchTerm.includes(artistWithoutThe); // Search for "National" finds "The National"
+                         artistLower.startsWith(searchTerm) ||
+                         artistLower.includes(' ' + searchTerm);
       
       // If artist matches, include it
       if (artistMatch) return true;
@@ -74,8 +73,7 @@ export default async function handler(req, res) {
       const artistMatch = artistLower === searchTerm || 
                          artistWithoutThe === searchWithoutThe ||
                          artistLower.startsWith(searchTerm) ||
-                         artistLower.includes(' ' + searchTerm) ||
-                         searchTerm.includes(artistWithoutThe);
+                         artistLower.includes(' ' + searchTerm);
       
       // If artist matches, include it
       if (artistMatch) return true;
@@ -184,8 +182,7 @@ export default async function handler(req, res) {
       const artistMatch = artistLower === searchTerm || 
                          artistWithoutThe === searchWithoutThe ||
                          artistLower.startsWith(searchTerm) ||
-                         artistLower.includes(' ' + searchTerm) ||
-                         searchTerm.includes(artistWithoutThe);
+                         artistLower.includes(' ' + searchTerm);
       
       // For multi-word searches, ONLY include if artist matches
       // For single-word searches, can match album too
