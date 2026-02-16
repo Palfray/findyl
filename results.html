@@ -466,8 +466,35 @@
                     }
                 }
                 
-                html += '<div id="stores-' + index + '" class="stores-collapsed mt-3 space-y-2">';
+                // Always-visible top UK retailers section - PROMINENTLY DISPLAYED
+                const searchTerm = item.artist + ' ' + item.album;
+                const topStores = [
+                    {name: 'Rough Trade', url: 'https://www.roughtrade.com/search?q=', domain: 'roughtrade.com'},
+                    {name: 'HMV', url: 'https://store.hmv.com/search?q=', domain: 'hmv.com'},
+                    {name: 'Norman Records', url: 'https://www.normanrecords.com/search?q=', domain: 'normanrecords.com'},
+                    {name: 'Resident', url: 'https://www.resident-music.com/search?q=', domain: 'resident-music.com'},
+                    {name: 'Piccadilly', url: 'https://www.piccadillyrecords.com/search?q=', domain: 'piccadillyrecords.com'}
+                ];
                 
+                html += '<div class="mt-3 pt-3 border-t border-gray-200">';
+                html += '<p class="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">Also check:</p>';
+                html += '<div class="grid grid-cols-5 gap-2">';
+                
+                topStores.forEach(store => {
+                    const faviconUrl = 'https://www.google.com/s2/favicons?domain=' + store.domain + '&sz=64';
+                    html += '<a href="' + store.url + encodeURIComponent(searchTerm) + '" target="_blank" rel="noopener noreferrer" onclick="trackStoreClick(\'' + store.name + '\', \'' + item.album.replace(/'/g, "\\'") + '\')" class="flex flex-col items-center justify-center p-2 rounded-lg border border-gray-200 hover:border-coral hover:shadow-sm transition-all bg-white" style="min-height: 60px;" title="Search on ' + store.name + '">';
+                    html += '<img src="' + faviconUrl + '" alt="' + store.name + '" class="w-6 h-6 mb-1" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23FF6B6B%22 stroke-width=%222%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%2210%22/%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%223%22/%3E%3C/svg%3E\'">';
+                    html += '<span class="text-xs text-gray-700 text-center leading-tight font-medium">' + store.name + '</span>';
+                    html += '</a>';
+                });
+                
+                html += '</div>';
+                html += '</div>';
+                
+                // Collapsible full retailer list
+                html += '<div id="stores-' + index + '" class="stores-collapsed mt-3">';
+                html += '<p class="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">More UK retailers:</p>';
+                html += '<div class="space-y-2">';
                 const searchTerm = item.artist + ' ' + item.album;
                 stores.forEach(store => {
                     html += '<a href="' + store.url + encodeURIComponent(searchTerm) + '" target="_blank" rel="noopener noreferrer" onclick="trackStoreClick(\'' + store.name + '\', \'' + item.album.replace(/'/g, "\\'") + '\')" class="store-button flex items-center gap-2 py-2 px-3 rounded text-sm font-medium text-white hover:opacity-90" style="background-color: #FF6B6B;">';
