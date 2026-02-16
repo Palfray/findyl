@@ -141,6 +141,8 @@ export default async function handler(req, res) {
 
     // Step 4: Merge results - Combine POPSTORE and VinylCastle prices for same albums
     
+    console.log(`Before merging: POPSTORE=${popstoreResults.length}, VinylCastle=${vinylcastleResults.length}`);
+    
     // First, create a map to track albums and their sources
     const albumMap = new Map();
     
@@ -184,6 +186,8 @@ export default async function handler(req, res) {
       });
     });
     
+    console.log(`After merging: ${albumMap.size} unique albums`);
+    
     // Convert map to combined results array
     const combinedRetailerResults = Array.from(albumMap.values()).map(item => {
       // Use the first available image
@@ -202,6 +206,8 @@ export default async function handler(req, res) {
         currency: 'GBP'
       };
     });
+    
+    console.log(`CombinedRetailerResults: ${combinedRetailerResults.length} albums`);
     
     // Now add combined results to final array, then Discogs
     const combinedResults = [
