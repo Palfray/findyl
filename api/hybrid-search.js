@@ -1,7 +1,8 @@
-// Hybrid Search API - Searches POPSTORE first, then Discogs
+// Hybrid Search API - Searches POPSTORE, VinylCastle, then Discogs
 // Returns combined results with prices where available
 
 import popstoreProducts from '../popstore-products.json';
+import vinylcastleProducts from '../vinylcastle-products.json';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -50,7 +51,29 @@ export default async function handler(req, res) {
 
     console.log(`POPSTORE found ${popstoreResults.length} matches for "${q}"`);
 
-    // Step 2: Search Discogs API
+    // Step 2: Search VinylCastle products (same logic as POPSTORE)
+    const vinylcastleResults = vinylcastleProducts.filter(product => {
+      const artistLower = product.artist.toLowerCase();
+      const albumLower = product.album.toLowerCase();
+      
+      const artistMatch = artistLower.includes(searchTermLower) || 
+                         searchTermLower.includes(artistLower);
+      const albumMatch = albumLower.includes(searchTermLower);
+      
+      if (artistMatch) {
+        return true;
+      } else if (albumMatch && searchTermLower.split(' ').some(word => 
+        word.length > 3 && artistLower.includes(word)
+      )) {
+        return true;
+      }
+      
+      return false;
+    });
+
+    console.log(`VinylCastle found ${vinylcastleResults.length} matches for "${q}"`);
+
+    // Step 3: Search Discogs API
     // Use general search for better coverage
     const discogsUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(q)}&type=release&format=vinyl&per_page=100&key=${process.env.DISCOGS_CONSUMER_KEY}&secret=${process.env.DISCOGS_CONSUMER_SECRET}`;
 
@@ -114,8 +137,8 @@ export default async function handler(req, res) {
       console.log('Sample Discogs results after album filter:', discogsResults.slice(0, 10).map(r => r.title));
     }
 
-    // Step 3: Merge results
-    // POPSTORE products come first (they have prices!)
+    // Step 4: Merge results
+    // POPSTORE first, then VinylCastle, then Discogs
     const combinedResults = [
       ...popstoreResults.map(p => ({
         source: 'popstore',
@@ -130,16 +153,42 @@ export default async function handler(req, res) {
         buy_link: p.link, // Already has affiliate tracking!
         availability: p.availability
       })),
-      // Then add Discogs results (deduplicate against POPSTORE)
+      // Add VinylCastle results (deduplicate against POPSTORE)
+      ...vinylcastleResults
+        .filter(v => {
+          // Don't add if we already have it from POPSTORE
+          const isDuplicate = popstoreResults.some(p => 
+            p.artist.toLowerCase() === v.artist.toLowerCase() && 
+            p.album.toLowerCase() === v.album.toLowerCase()
+          );
+          return !isDuplicate;
+        })
+        .map(v => ({
+          source: 'vinylcastle',
+          title: `${v.artist} - ${v.album}`,
+          artist: v.artist,
+          album: v.album,
+          year: null,
+          format: 'Vinyl',
+          cover: v.image,
+          price: v.price,
+          currency: 'GBP',
+          buy_link: v.link, // Already has affiliate tracking!
+          availability: v.availability
+        })),
+      // Then add Discogs results (deduplicate against POPSTORE and VinylCastle)
       ...discogsResults
         .filter(d => {
           const discogsTitle = d.title.toLowerCase();
           const discogsArtist = (d.title.split(' - ')[0] || '').toLowerCase().trim();
           
-          // Don't add if we already have it from POPSTORE
+          // Don't add if we already have it from POPSTORE or VinylCastle
           const isDuplicate = popstoreResults.some(p => 
             discogsTitle.includes(p.artist.toLowerCase()) && 
             discogsTitle.includes(p.album.toLowerCase())
+          ) || vinylcastleResults.some(v =>
+            discogsTitle.includes(v.artist.toLowerCase()) && 
+            discogsTitle.includes(v.album.toLowerCase())
           );
           
           if (isDuplicate) return false;
