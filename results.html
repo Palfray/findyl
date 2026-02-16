@@ -466,6 +466,31 @@
                     }
                 }
                 
+                // Always-visible quick links to top retailers
+                const searchTerm = item.artist + ' ' + item.album;
+                const topStores = [
+                    {name: 'Rough Trade', url: 'https://www.roughtrade.com/search?q=', domain: 'roughtrade.com'},
+                    {name: 'Banquet', url: 'https://www.banquetrecords.com/search?q=', domain: 'banquetrecords.com'},
+                    {name: 'Juno', url: 'https://www.juno.co.uk/search/?q%5Ball%5D%5B%5D=', domain: 'juno.co.uk'},
+                    {name: 'Recordstore', url: 'https://recordstore.co.uk/search?q=', domain: 'recordstore.co.uk'},
+                    {name: 'EMP', url: 'https://www.emp.co.uk/search?q=', domain: 'emp.co.uk'}
+                ];
+                
+                html += '<div class="mt-3 pt-3 border-t border-gray-100">';
+                html += '<p class="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wide">Also check:</p>';
+                html += '<div class="grid grid-cols-5 gap-1.5">';
+                
+                topStores.forEach(store => {
+                    const faviconUrl = 'https://www.google.com/s2/favicons?domain=' + store.domain + '&sz=64';
+                    html += '<a href="' + store.url + encodeURIComponent(searchTerm) + '" target="_blank" rel="noopener noreferrer" onclick="trackStoreClick(\'' + store.name + '\', \'' + item.album.replace(/'/g, "\\'") + '\')" class="flex flex-col items-center justify-center p-1.5 rounded hover:bg-gray-50 transition-all" title="Search on ' + store.name + '" style="min-height: 52px;">';
+                    html += '<img src="' + faviconUrl + '" alt="' + store.name + '" class="w-5 h-5 mb-0.5" onerror="this.style.display=\'none\'">';
+                    html += '<span class="text-xs text-gray-600 text-center leading-tight" style="font-size: 9px;">' + store.name + '</span>';
+                    html += '</a>';
+                });
+                
+                html += '</div>';
+                html += '</div>';
+                
                 html += '<div id="stores-' + index + '" class="stores-collapsed mt-3 space-y-2">';
                 
                 const searchTerm = item.artist + ' ' + item.album;
