@@ -23,17 +23,17 @@ export default async function handler(req, res) {
       const artistLower = product.artist?.toLowerCase() || '';
       const albumLower = product.album?.toLowerCase() || '';
       
-      // For artist matching, be more strict
+      // For artist matching
       // Remove "the" from both for comparison
       const artistWithoutThe = artistLower.replace(/^the\s+/, '');
       const searchWithoutThe = searchTerm.replace(/^the\s+/, '');
       
-      // Artist match: exact match or search term is contained as whole word
+      // Artist match: more lenient - includes partial matches
       const artistMatch = artistLower === searchTerm || 
                          artistWithoutThe === searchWithoutThe ||
-                         artistLower.startsWith(searchTerm + ' ') ||
-                         artistLower.endsWith(' ' + searchTerm) ||
-                         artistLower.includes(' ' + searchTerm + ' ');
+                         artistLower.startsWith(searchTerm) ||  // "The National" matches "The National Park"
+                         artistLower.includes(' ' + searchTerm) || // " The National"
+                         searchTerm.includes(artistWithoutThe); // Search for "National" finds "The National"
       
       // If artist matches, include it
       if (artistMatch) return true;
@@ -67,15 +67,15 @@ export default async function handler(req, res) {
       
       if (isCoverAlbum) return false;
       
-      // For artist matching, be more strict
+      // For artist matching - more lenient
       const artistWithoutThe = artistLower.replace(/^the\s+/, '');
       const searchWithoutThe = searchTerm.replace(/^the\s+/, '');
       
       const artistMatch = artistLower === searchTerm || 
                          artistWithoutThe === searchWithoutThe ||
-                         artistLower.startsWith(searchTerm + ' ') ||
-                         artistLower.endsWith(' ' + searchTerm) ||
-                         artistLower.includes(' ' + searchTerm + ' ');
+                         artistLower.startsWith(searchTerm) ||
+                         artistLower.includes(' ' + searchTerm) ||
+                         searchTerm.includes(artistWithoutThe);
       
       // If artist matches, include it
       if (artistMatch) return true;
@@ -177,15 +177,15 @@ export default async function handler(req, res) {
       const artist = parts[0] || 'Unknown Artist';
       const artistLower = artist.toLowerCase();
       
-      // Apply same strict artist matching as POPSTORE/VinylCastle
+      // Apply lenient artist matching
       const artistWithoutThe = artistLower.replace(/^the\s+/, '');
       const searchWithoutThe = searchTerm.replace(/^the\s+/, '');
       
       const artistMatch = artistLower === searchTerm || 
                          artistWithoutThe === searchWithoutThe ||
-                         artistLower.startsWith(searchTerm + ' ') ||
-                         artistLower.endsWith(' ' + searchTerm) ||
-                         artistLower.includes(' ' + searchTerm + ' ');
+                         artistLower.startsWith(searchTerm) ||
+                         artistLower.includes(' ' + searchTerm) ||
+                         searchTerm.includes(artistWithoutThe);
       
       // For multi-word searches, ONLY include if artist matches
       // For single-word searches, can match album too
