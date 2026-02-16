@@ -35,8 +35,20 @@ export default async function handler(req, res) {
                          artistLower.endsWith(' ' + searchTerm) ||
                          artistLower.includes(' ' + searchTerm + ' ');
       
-      // Album match: contains search term
-      const albumMatch = albumLower.includes(searchTerm);
+      // For album matching, only match if:
+      // 1. Single word search (like "Revolver"), OR
+      // 2. Multi-word search AND artist name also partially matches
+      let albumMatch = false;
+      if (searchTerm.split(' ').length === 1) {
+        // Single word - match album freely
+        albumMatch = albumLower.includes(searchTerm);
+      } else {
+        // Multi-word - album matches AND artist contains at least one word from search
+        const searchWords = searchTerm.split(' ').filter(w => w.length > 2 && w !== 'the');
+        const albumContainsSearch = albumLower.includes(searchTerm);
+        const artistHasSearchWord = searchWords.some(word => artistLower.includes(word));
+        albumMatch = albumContainsSearch && artistHasSearchWord;
+      }
       
       return artistMatch || albumMatch;
     });
@@ -68,7 +80,18 @@ export default async function handler(req, res) {
                          artistLower.endsWith(' ' + searchTerm) ||
                          artistLower.includes(' ' + searchTerm + ' ');
       
-      const albumMatch = albumLower.includes(searchTerm);
+      // For album matching, only match if:
+      // 1. Single word search, OR
+      // 2. Multi-word search AND artist name also partially matches
+      let albumMatch = false;
+      if (searchTerm.split(' ').length === 1) {
+        albumMatch = albumLower.includes(searchTerm);
+      } else {
+        const searchWords = searchTerm.split(' ').filter(w => w.length > 2 && w !== 'the');
+        const albumContainsSearch = albumLower.includes(searchTerm);
+        const artistHasSearchWord = searchWords.some(word => artistLower.includes(word));
+        albumMatch = albumContainsSearch && artistHasSearchWord;
+      }
       
       return artistMatch || albumMatch;
     });
