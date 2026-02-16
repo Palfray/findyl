@@ -31,6 +31,17 @@ export default async function handler(req, res) {
     const vinylcastleResults = vinylcastleProducts.filter(product => {
       const artistLower = product.artist?.toLowerCase() || '';
       const albumLower = product.album?.toLowerCase() || '';
+      
+      // Exclude cover/tribute albums
+      const isCoverAlbum = albumLower.includes('tribute') || 
+                          albumLower.includes('cover') ||
+                          albumLower.includes('lullaby renditions') ||
+                          albumLower.includes('rockabye baby') ||
+                          artistLower.includes('tribute') ||
+                          artistLower.includes('various');
+      
+      if (isCoverAlbum) return false;
+      
       return artistLower.includes(searchTerm) || albumLower.includes(searchTerm);
     });
     
