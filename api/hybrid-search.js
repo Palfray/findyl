@@ -139,89 +139,53 @@ export default async function handler(req, res) {
       console.log('Sample Discogs results after album filter:', discogsResults.slice(0, 10).map(r => r.title));
     }
 
-    // Step 4: Merge results - Combine POPSTORE and VinylCastle prices for same albums
+    // Step 4: Combine results with simple deduplication
+    // Keep POPSTORE and VinylCastle as separate cards but remove exact duplicates
     
-    console.log(`Before merging: POPSTORE=${popstoreResults.length}, VinylCastle=${vinylcastleResults.length}`);
+    console.log(`Before combining: POPSTORE=${popstoreResults.length}, VinylCastle=${vinylcastleResults.length}`);
     
-    // First, create a map to track albums and their sources
-    const albumMap = new Map();
-    
-    // Add POPSTORE results
-    popstoreResults.forEach(p => {
-      const key = `${p.artist.toLowerCase()}|||${p.album.toLowerCase()}`;
-      if (!albumMap.has(key)) {
-        albumMap.set(key, {
-          artist: p.artist,
-          album: p.album,
-          sources: []
-        });
-      }
-      albumMap.get(key).sources.push({
+    const combinedResults = [
+      // POPSTORE first
+      ...popstoreResults.map(p => ({
         source: 'popstore',
-        price: p.price,
-        currency: 'GBP',
-        link: p.link,
-        image: p.image,
-        availability: p.availability
-      });
-    });
-    
-    // Add VinylCastle results (merge with POPSTORE if same album)
-    vinylcastleResults.forEach(v => {
-      const key = `${v.artist.toLowerCase()}|||${v.album.toLowerCase()}`;
-      if (!albumMap.has(key)) {
-        albumMap.set(key, {
-          artist: v.artist,
-          album: v.album,
-          sources: []
-        });
-      }
-      albumMap.get(key).sources.push({
-        source: 'vinylcastle',
-        price: v.price,
-        currency: 'GBP',
-        link: v.link,
-        image: v.image,
-        availability: v.availability
-      });
-    });
-    
-    console.log(`After merging: ${albumMap.size} unique albums`);
-    
-    // Convert map to combined results array
-    const combinedRetailerResults = Array.from(albumMap.values()).map(item => {
-      // Use the first available image
-      const firstSource = item.sources[0];
-      
-      return {
-        title: `${item.artist} - ${item.album}`,
-        artist: item.artist,
-        album: item.album,
+        title: `${p.artist} - ${p.album}`,
+        artist: p.artist,
+        album: p.album,
         year: null,
         format: 'Vinyl',
-        cover: firstSource.image,
-        sources: item.sources, // Array of {source, price, link, etc}
-        // For sorting, use lowest price
-        price: Math.min(...item.sources.map(s => s.price)),
-        currency: 'GBP'
-      };
-    });
-    
-    console.log(`CombinedRetailerResults: ${combinedRetailerResults.length} albums`);
-    
-    // Now add combined results to final array, then Discogs
-    const combinedResults = [
-      ...combinedRetailerResults,
-      // Then add Discogs results (deduplicate against retailers)
+        cover: p.image,
+        price: p.price,
+        currency: 'GBP',
+        buy_link: p.link,
+        availability: p.availability
+      })),
+      // VinylCastle next (keeping duplicates for now - will fix display later)
+      ...vinylcastleResults.map(v => ({
+        source: 'vinylcastle',
+        title: `${v.artist} - ${v.album}`,
+        artist: v.artist,
+        album: v.album,
+        year: null,
+        format: 'Vinyl',
+        cover: v.image,
+        price: v.price,
+        currency: 'GBP',
+        buy_link: v.link,
+        availability: v.availability
+      })),
+      // Then add Discogs results (deduplicate against both)
       ...discogsResults
         .filter(d => {
           const discogsTitle = d.title.toLowerCase();
           const discogsArtist = (d.title.split(' - ')[0] || '').toLowerCase().trim();
           
-          // Don't add if we already have it from retailers
-          const isDuplicate = combinedRetailerResults.some(r =>
-            discogsTitle.includes(r.artist.toLowerCase()) && 
-            discogsTitle.includes(r.album.toLowerCase())
+          // Don't add if we already have it from POPSTORE or VinylCastle
+          const isDuplicate = popstoreResults.some(p => 
+            discogsTitle.includes(p.artist.toLowerCase()) && 
+            discogsTitle.includes(p.album.toLowerCase())
+          ) || vinylcastleResults.some(v =>
+            discogsTitle.includes(v.artist.toLowerCase()) && 
+            discogsTitle.includes(v.album.toLowerCase())
           );
           
           if (isDuplicate) return false;
