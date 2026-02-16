@@ -356,6 +356,9 @@
             const container = document.getElementById('vinylResults');
             document.getElementById('loadingState').style.display = 'none';
             
+            console.log('displayResults called with:', results.length, 'results');
+            console.log('First result:', results[0]);
+            
             if (results.length === 0) {
                 document.getElementById('noResults').style.display = 'block';
                 document.getElementById('searchSubtitle').textContent = 'No results found';
@@ -364,14 +367,16 @@
             
             container.style.display = 'grid';
             
-            // Count POPSTORE, VinylCastle vs Discogs
-            const popstoreCount = results.filter(r => r.source === 'popstore').length;
-            const vinylcastleCount = results.filter(r => r.source === 'vinylcastle').length;
-            const retailerCount = popstoreCount + vinylcastleCount;
+            // Count retailer vs Discogs results
+            const retailerCount = results.filter(r => r.sources && r.sources.length > 0).length;
             const discogsCount = results.length - retailerCount;
             
             if (retailerCount > 0) {
-                document.getElementById('searchSubtitle').textContent = `Found ${results.length} albums (${retailerCount} with prices from UK retailers)`;
+                // Count total buy options
+                const totalBuyOptions = results.reduce((sum, r) => {
+                    return sum + (r.sources ? r.sources.length : 0);
+                }, 0);
+                document.getElementById('searchSubtitle').textContent = `Found ${results.length} albums (${totalBuyOptions} buy options from UK retailers)`;
             } else {
                 document.getElementById('searchSubtitle').textContent = `Found ${results.length} albums`;
             }
