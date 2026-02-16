@@ -505,9 +505,11 @@
                     html += '</a>';
                 });
                 
-                html += '</div>';
-                html += '</div>';
-                html += '</div>';
+                html += '</div>'; // close space-y-2
+                html += '</div>'; // close stores-collapsed
+                
+                html += '</div>'; // close p-4
+                html += '</div>'; // close vinyl-card
             });
             
             container.innerHTML = html;
