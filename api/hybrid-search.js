@@ -180,10 +180,15 @@ export default async function handler(req, res) {
       const artistWithoutThe = artistLower.replace(/^the\s+/, '');
       const searchWithoutThe = searchTerm.replace(/^the\s+/, '');
       
+      // For multi-word artist names, check if search terms appear in the artist
+      const searchWords = searchTerm.split(' ').filter(w => w.length > 2);
+      const allWordsMatch = searchWords.every(word => artistLower.includes(word.toLowerCase()));
+      
       const artistMatch = artistLower === searchTerm || 
                          artistWithoutThe === searchWithoutThe ||
                          artistLower.startsWith(searchTerm) ||
-                         artistLower.includes(' ' + searchTerm);
+                         artistLower.includes(' ' + searchTerm) ||
+                         allWordsMatch; // NEW: More lenient - all search words in artist name
       
       // For multi-word searches, ONLY include if artist matches
       // For single-word searches, can match album too
