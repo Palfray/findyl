@@ -392,13 +392,15 @@
                 // Show price if from retailer
                 if (hasRetailerPrice) {
                     const storeName = item.source === 'popstore' ? 'POP Store' : 'VinylCastle';
-                    html += '<p class="text-lg font-bold mb-2" style="color: #FF6B6B;">£' + item.price.toFixed(2) + '</p>';
+                    const priceNum = typeof item.price === 'number' ? item.price : parseFloat(item.price);
+                    html += '<p class="text-lg font-bold mb-2" style="color: #FF6B6B;">£' + priceNum.toFixed(2) + '</p>';
                     html += '<a href="' + item.buy_link + '" target="_blank" rel="noopener noreferrer" class="block w-full py-2 px-4 text-center text-white font-medium rounded-lg mb-2 transition-all hover:opacity-90" style="background-color: #FF6B6B;">Buy at ' + storeName + '</a>';
                     html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full py-2 px-4 text-gray-700 font-medium rounded-lg border border-gray-300 text-sm">Or find at other retailers</button>';
                 } else {
                     // Show Discogs marketplace price if available
                     if (item.price && item.price_source === 'discogs_marketplace') {
-                        html += '<p class="text-sm text-gray-600 mb-1">From <span class="font-bold" style="color: #FF6B6B;">£' + item.price.toFixed(2) + '</span> on Discogs marketplace</p>';
+                        const priceNum = typeof item.price === 'number' ? item.price : parseFloat(item.price);
+                        html += '<p class="text-sm text-gray-600 mb-1">From <span class="font-bold" style="color: #FF6B6B;">£' + priceNum.toFixed(2) + '</span> on Discogs marketplace</p>';
                     }
                     
                     // Show format/year if from Discogs
