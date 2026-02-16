@@ -253,7 +253,12 @@ export default async function handler(req, res) {
     const discogsAfterArtistFilter = combinedResults.filter(r => r.source === 'discogs').length;
     console.log(`Artist matching: ${afterAlbumFilter} → ${discogsAfterArtistFilter} Discogs albums (removed ${afterAlbumFilter - discogsAfterArtistFilter} non-matching artists)`);
 
-    // Step 4: Deduplicate by artist + album (keep POPSTORE versions)
+    // Step 4: DON'T deduplicate - show all results (including POPSTORE + VinylCastle duplicates)
+    // We'll handle merging in the frontend later
+    const uniqueResults = combinedResults;
+    
+    /*
+    // Old deduplication code - commented out
     const seen = new Set();
     const uniqueResults = [];
     
@@ -264,12 +269,16 @@ export default async function handler(req, res) {
         uniqueResults.push(item);
       }
     }
+    */
     
-    // Step 5: Sort by year (newest first) to show recent releases at top
+    // Step 5: Sort - retailers first, then Discogs
     uniqueResults.sort((a, b) => {
-      // POPSTORE items always stay at top (they have prices!)
-      if (a.source === 'popstore' && b.source !== 'popstore') return -1;
-      if (b.source === 'popstore' && a.source !== 'popstore') return 1;
+      // POPSTORE and VinylCastle items stay at top (they have prices!)
+      const aIsRetailer = (a.source === 'popstore' || a.source === 'vinylcastle');
+      const bIsRetailer = (b.source === 'popstore' || b.source === 'vinylcastle');
+      
+      if (aIsRetailer && !bIsRetailer) return -1;
+      if (bIsRetailer && !aIsRetailer) return 1;
       
       // Then sort by year
       const yearA = parseInt(a.year) || 0;
@@ -333,14 +342,22 @@ export default async function handler(req, res) {
       console.log(`Found Discogs prices for ${pricesFound}/${top20Discogs.length} albums`);
     }
 
-    console.log(`Returning ${uniqueResults.length} unique results (${popstoreResults.length} from POPSTORE, ${uniqueResults.length - popstoreResults.length} from Discogs)`);
+    console.log(`Returning ${combinedResults.length} total results`);
+    
+    // Count by source
+    const popstoreCount = combinedResults.filter(r => r.source === 'popstore').length;
+    const vinylcastleCount = combinedResults.filter(r => r.source === 'vinylcastle').length;
+    const discogsCount = combinedResults.filter(r => r.source === 'discogs').length;
+    
+    console.log(`Breakdown: ${popstoreCount} POPSTORE, ${vinylcastleCount} VinylCastle, ${discogsCount} Discogs`);
 
     return res.status(200).json({
       query: q,
-      total: uniqueResults.length,
-      popstore_count: popstoreResults.length,
-      discogs_count: uniqueResults.length - popstoreResults.length,
-      results: uniqueResults
+      total: combinedResults.length,
+      popstore_count: popstoreCount,
+      vinylcastle_count: vinylcastleCount,
+      discogs_count: discogsCount,
+      results: combinedResults
     });
 
   } catch (error) {
