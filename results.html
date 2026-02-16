@@ -406,16 +406,42 @@
                     // Show buy button for each option (sorted by price, cheapest first)
                     item.buyOptions.forEach(option => {
                         const priceNum = typeof option.price === 'number' ? option.price : parseFloat(option.price);
-                        html += '<a href="' + option.link + '" target="_blank" rel="noopener noreferrer" class="block w-full py-2 px-4 text-center text-white font-medium rounded-lg mb-2 transition-all hover:opacity-90" style="background-color: #FF6B6B;">';
-                        if (item.buyOptions.length > 1) {
-                            html += option.storeName + ' - £' + priceNum.toFixed(2);
-                        } else {
-                            html += 'Buy at ' + option.storeName;
+                        const isInStock = option.availability && (option.availability === 'In Stock' || option.availability === 'in_stock');
+                        const stockBadge = isInStock ? '<span style="color: #10B981; font-size: 11px;">✓ In Stock</span>' : '';
+                        
+                        // Get retailer favicon/logo
+                        let retailerDomain = '';
+                        if (option.source === 'popstore') {
+                            retailerDomain = 'popstore.co.uk';
+                        } else if (option.source === 'vinylcastle') {
+                            retailerDomain = 'vinylcastle.com';
                         }
+                        const faviconUrl = retailerDomain ? 'https://www.google.com/s2/favicons?domain=' + retailerDomain + '&sz=64' : '';
+                        
+                        html += '<a href="' + option.link + '" target="_blank" rel="noopener noreferrer" class="block w-full py-3 px-4 text-center font-medium rounded-lg mb-2 transition-all hover:shadow-md" style="background-color: white; border: 2px solid #FF6B6B; color: #1F2937;">';
+                        html += '<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">';
+                        
+                        // Left side: Logo + Store name
+                        html += '<div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">';
+                        if (faviconUrl) {
+                            html += '<img src="' + faviconUrl + '" alt="' + option.storeName + '" style="width: 20px; height: 20px; flex-shrink: 0;" onerror="this.style.display=\'none\'">';
+                        }
+                        html += '<span style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' + option.storeName + '</span>';
+                        html += '</div>';
+                        
+                        // Right side: Price + Stock
+                        html += '<div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">';
+                        html += '<span style="font-weight: 700; color: #FF6B6B; font-size: 16px;">£' + priceNum.toFixed(2) + '</span>';
+                        if (stockBadge) {
+                            html += stockBadge;
+                        }
+                        html += '</div>';
+                        
+                        html += '</div>';
                         html += '</a>';
                     });
                     
-                    html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full py-2 px-4 text-gray-700 font-medium rounded-lg border border-gray-300 text-sm">Or find at other retailers</button>';
+                    html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full py-2 px-4 text-gray-700 font-medium rounded-lg border border-gray-300 text-sm hover:bg-gray-50 transition-all">Or find at other retailers</button>';
                 } else if (item.discogs_url) {
                     // Discogs-only album
                     html += '<p class="text-xs text-gray-500 mb-3">' + item.format + '</p>';
