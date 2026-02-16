@@ -440,13 +440,10 @@
                         html += '</div>';
                         html += '</a>';
                     });
-                    
-                    html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full py-2 px-4 text-gray-700 font-medium rounded-lg border border-gray-300 text-sm hover:bg-gray-50 transition-all">Or find at other retailers</button>';
                 } else if (item.discogs_url) {
                     // Discogs-only album
                     html += '<p class="text-xs text-gray-500 mb-3">' + item.format + '</p>';
                     html += '<a href="' + item.discogs_url + '" target="_blank" rel="noopener noreferrer" class="block w-full py-2 px-4 text-center text-white font-medium rounded-lg mb-2 transition-all hover:opacity-90" style="background-color: #FF6B6B;">View on Discogs</a>';
-                    html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full py-2 px-4 text-gray-700 font-medium rounded-lg border border-gray-300 text-sm">Find at retailers</button>';
                 } else {
                     // Show Discogs marketplace price if available
                     if (item.price && item.price_source === 'discogs_marketplace') {
@@ -460,9 +457,6 @@
                     // Different button text based on whether we have Discogs price
                     if (item.discogs_url) {
                         html += '<a href="' + item.discogs_url + '" target="_blank" rel="noopener noreferrer" class="block w-full py-2 px-4 text-center text-white font-medium rounded-lg mb-2 transition-all hover:opacity-90" style="background-color: #FF6B6B;">View on Discogs</a>';
-                        html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full py-2 px-4 text-gray-700 font-medium rounded-lg border border-gray-300 text-sm">Or find at retailers</button>';
-                    } else {
-                        html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full py-2 px-4 text-white font-medium rounded-lg transition-all hover:opacity-90" style="background-color: #FF6B6B;">Find Retailers</button>';
                     }
                 }
                 
@@ -491,14 +485,17 @@
                 html += '</div>';
                 html += '</div>';
                 
+                // Find More Stores button
+                html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full mt-2 py-2 px-4 text-gray-600 font-medium rounded-lg border border-gray-200 text-sm hover:bg-gray-50 transition-all">Find more stores</button>';
+                
                 html += '<div id="stores-' + index + '" class="stores-collapsed mt-3 space-y-2">';
                 
                 stores.forEach(store => {
-                    html += '<a href="' + store.url + encodeURIComponent(searchTerm) + '" target="_blank" rel="noopener noreferrer" onclick="trackStoreClick(\'' + store.name + '\', \'' + item.album.replace(/'/g, "\\'") + '\')" class="store-button flex items-center gap-2 py-2 px-3 rounded text-sm font-medium text-white hover:opacity-90" style="background-color: #FF6B6B;">';
+                    html += '<a href="' + store.url + encodeURIComponent(searchTerm) + '" target="_blank" rel="noopener noreferrer" onclick="trackStoreClick(\'' + store.name + '\', \'' + item.album.replace(/'/g, "\\'") + '\')" class="store-button flex items-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all hover:shadow-sm" style="background-color: white; border: 2px solid #FF6B6B; color: #1F2937;">';
                     const faviconUrl = 'https://www.google.com/s2/favicons?domain=' + store.domain + '&sz=64';
-                    html += '<img src="' + faviconUrl + '" alt="' + store.name + '" class="w-4 h-4 flex-shrink-0" onerror="this.style.display=\'none\'">';
+                    html += '<img src="' + faviconUrl + '" alt="' + store.name + '" class="w-5 h-5 flex-shrink-0" onerror="this.style.display=\'none\'">';
                     html += '<span class="flex-1 text-left">' + store.name + '</span>';
-                    html += '<svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>';
+                    html += '<svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="#FF6B6B" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>';
                     html += '</a>';
                 });
                 
