@@ -279,23 +279,12 @@
         
         const stores = [
             {name: 'POP Store', url: 'https://www.awin1.com/cread.php?awinmid=118493&awinaffid=2772514&ued=https://www.wearepopstore.com/search?q=', domain: 'wearepopstore.com'},
-            {name: 'Rough Trade', url: 'https://www.roughtrade.com/search?q=', domain: 'roughtrade.com'},
-            {name: 'HMV', url: 'https://www.hmv.com/store/music/vinyl?text=', domain: 'hmv.com'},
-            {name: 'Juno Records', url: 'https://www.juno.co.uk/search/?q%5Ball%5D%5B%5D=', domain: 'juno.co.uk'},
-            {name: 'Amazon UK', url: 'https://www.amazon.co.uk/s?k=', domain: 'amazon.co.uk'},
-            {name: 'Banquet Records', url: 'https://www.banquetrecords.com/search?q=', domain: 'banquetrecords.com'},
-            {name: 'Zavvi', url: 'https://www.zavvi.com/search?q=', domain: 'zavvi.com'},
-            {name: 'Rarewaves', url: 'https://www.rarewaves.com/search?q=', domain: 'rarewaves.com'},
             {name: 'Norman Records', url: 'https://www.normanrecords.com/search?q=', domain: 'normanrecords.com'},
             {name: 'Assai Records', url: 'https://assai.co.uk/page/1/?s=', domain: 'assai.co.uk'},
-            {name: 'Monorail Music', url: 'https://www.monorailmusic.com/?s=', domain: 'monorailmusic.com'},
             {name: 'Resident Music', url: 'https://www.resident-music.com/search?q=', domain: 'resident-music.com'},
-            {name: 'Piccadilly Records', url: 'https://www.piccadillyrecords.com/search?q=', domain: 'piccadillyrecords.com'},
-            {name: 'Record Store', url: 'https://recordstore.co.uk/search?q=', domain: 'recordstore.co.uk'},
             {name: 'Sounds Like Vinyl', url: 'https://soundslikevinyl.com/search?q=', domain: 'soundslikevinyl.com'},
             {name: 'The Sound of Vinyl', url: 'https://thesoundofvinyl.com/search?q=', domain: 'thesoundofvinyl.com'},
             {name: 'Merchbar', url: 'https://www.merchbar.com/search?q=', domain: 'merchbar.com'},
-            {name: 'EMP', url: 'https://www.emp.co.uk/search/?q=', domain: 'emp.co.uk'},
             {name: 'Vinyl Castle', url: 'https://www.vinylcastle.com/search?q=', domain: 'vinylcastle.com'},
             {name: 'Lost in Vinyl', url: 'https://www.lostinvinyl.org/page/1/?s=', domain: 'lostinvinyl.org'}
         ];
@@ -467,12 +456,13 @@
                     {name: 'Banquet', url: 'https://www.banquetrecords.com/search?q=', domain: 'banquetrecords.com'},
                     {name: 'Juno', url: 'https://www.juno.co.uk/search/?q%5Ball%5D%5B%5D=', domain: 'juno.co.uk'},
                     {name: 'Recordstore', url: 'https://recordstore.co.uk/search?q=', domain: 'recordstore.co.uk'},
+                    {name: 'Fopp', url: 'https://www.fopp.com/search?term=', domain: 'fopp.com'},
                     {name: 'EMP', url: 'https://www.emp.co.uk/search?q=', domain: 'emp.co.uk'}
                 ];
                 
                 html += '<div class="mt-3 pt-3 border-t border-gray-100">';
                 html += '<p class="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wide">Also check:</p>';
-                html += '<div class="grid grid-cols-5 gap-1.5">';
+                html += '<div class="grid grid-cols-6 gap-1.5">';
                 
                 topStores.forEach(store => {
                     const faviconUrl = 'https://www.google.com/s2/favicons?domain=' + store.domain + '&sz=64';
