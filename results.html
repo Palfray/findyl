@@ -441,12 +441,12 @@
                         html += '</a>';
                     });
                     
-                    html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full py-2 px-4 text-gray-700 font-medium rounded-lg border border-gray-300 text-sm hover:bg-gray-50 transition-all">Or find at other retailers</button>';
+                    html += '<button data-index="' + index + '" class="toggle-stores-btn w-full py-2 px-4 text-gray-700 font-medium rounded-lg border border-gray-300 text-sm hover:bg-gray-50 transition-all">Or find at other retailers</button>';
                 } else if (item.discogs_url) {
                     // Discogs-only album
                     html += '<p class="text-xs text-gray-500 mb-3">' + item.format + '</p>';
                     html += '<a href="' + item.discogs_url + '" target="_blank" rel="noopener noreferrer" class="block w-full py-2 px-4 text-center text-white font-medium rounded-lg mb-2 transition-all hover:opacity-90" style="background-color: #FF6B6B;">View on Discogs</a>';
-                    html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full py-2 px-4 text-gray-700 font-medium rounded-lg border border-gray-300 text-sm">Find at retailers</button>';
+                    html += '<button data-index="' + index + '" class="toggle-stores-btn w-full py-2 px-4 text-gray-700 font-medium rounded-lg border border-gray-300 text-sm">Find at retailers</button>';
                 } else {
                     // Show Discogs marketplace price if available
                     if (item.price && item.price_source === 'discogs_marketplace') {
@@ -460,9 +460,9 @@
                     // Different button text based on whether we have Discogs price
                     if (item.discogs_url) {
                         html += '<a href="' + item.discogs_url + '" target="_blank" rel="noopener noreferrer" class="block w-full py-2 px-4 text-center text-white font-medium rounded-lg mb-2 transition-all hover:opacity-90" style="background-color: #FF6B6B;">View on Discogs</a>';
-                        html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full py-2 px-4 text-gray-700 font-medium rounded-lg border border-gray-300 text-sm">Or find at retailers</button>';
+                        html += '<button data-index="' + index + '" class="toggle-stores-btn w-full py-2 px-4 text-gray-700 font-medium rounded-lg border border-gray-300 text-sm">Or find at retailers</button>';
                     } else {
-                        html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full py-2 px-4 text-white font-medium rounded-lg transition-all hover:opacity-90" style="background-color: #FF6B6B;">Find Retailers</button>';
+                        html += '<button data-index="' + index + '" class="toggle-stores-btn w-full py-2 px-4 text-white font-medium rounded-lg transition-all hover:opacity-90" style="background-color: #FF6B6B;">Find Retailers</button>';
                     }
                 }
                 
@@ -470,7 +470,7 @@
                 
                 const searchTerm = item.artist + ' ' + item.album;
                 stores.forEach(store => {
-                    html += '<a href="' + store.url + encodeURIComponent(searchTerm) + '" target="_blank" rel="noopener noreferrer" onclick="trackStoreClick(\'' + store.name + '\', \'' + item.album.replace(/'/g, "\\'") + '\')" class="store-button flex items-center gap-2 py-2 px-3 rounded text-sm font-medium text-white hover:opacity-90" style="background-color: #FF6B6B;">';
+                    html += '<a href="' + store.url + encodeURIComponent(searchTerm) + '" target="_blank" rel="noopener noreferrer" data-store-name="' + store.name + '" data-album="' + item.album + '" class="store-link store-button flex items-center gap-2 py-2 px-3 rounded text-sm font-medium text-white hover:opacity-90" style="background-color: #FF6B6B;">';
                     const faviconUrl = 'https://www.google.com/s2/favicons?domain=' + store.domain + '&sz=64';
                     html += '<img src="' + faviconUrl + '" alt="' + store.name + '" class="w-4 h-4 flex-shrink-0" onerror="this.style.display=\'none\'">';
                     html += '<span class="flex-1 text-left">' + store.name + '</span>';
@@ -483,6 +483,26 @@
             });
             
             container.innerHTML = html;
+            
+            // Event delegation for toggle stores buttons
+            container.addEventListener('click', function(e) {
+                if (e.target.classList.contains('toggle-stores-btn')) {
+                    const index = e.target.getAttribute('data-index');
+                    toggleStores(parseInt(index));
+                }
+            });
+            
+            // Event delegation for store links (tracking)
+            container.addEventListener('click', function(e) {
+                const storeLink = e.target.closest('.store-link');
+                if (storeLink) {
+                    const storeName = storeLink.getAttribute('data-store-name');
+                    const album = storeLink.getAttribute('data-album');
+                    if (storeName && album) {
+                        trackStoreClick(storeName, album);
+                    }
+                }
+            });
         }
 
         // Execute search on page load
@@ -657,7 +677,7 @@
                     const artistName = match.name || match;
                     const highlighted = artistName.replace(regex, '<strong>$1</strong>');
                     
-                    html += '<div class="autocomplete-item" onclick="selectHeaderSuggestion(\'' + artistName.replace(/'/g, "\\'") + '\')">';
+                    html += '<div class="autocomplete-item" data-suggestion="' + artistName.replace(/'/g, '&apos;') + '">';
                     html += highlighted;
                     if (match.source === 'popstore') {
                         html += ' <span style="font-size: 10px; color: #FF6B6B;">●</span>';
@@ -670,7 +690,7 @@
                     const highlightedAlbum = albumName.replace(regex, '<strong>$1</strong>');
                     const searchQuery = artistName + ' ' + albumName;
                     
-                    html += '<div class="autocomplete-item" onclick="selectHeaderSuggestion(\'' + searchQuery.replace(/'/g, "\\'") + '\')">';
+                    html += '<div class="autocomplete-item" data-suggestion="' + searchQuery.replace(/'/g, '&apos;') + '">';
                     html += '<div style="display: flex; align-items: center; gap: 6px;">';
                     html += '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0; color: #FF6B6B;">';
                     html += '<circle cx="12" cy="12" r="10"></circle>';
@@ -698,6 +718,16 @@
             
             headerAutocomplete.innerHTML = html;
             headerAutocomplete.classList.add('show');
+            
+            // Event delegation for autocomplete items
+            headerAutocomplete.querySelectorAll('.autocomplete-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const suggestion = this.getAttribute('data-suggestion');
+                    if (suggestion) {
+                        selectHeaderSuggestion(suggestion);
+                    }
+                });
+            });
         }
         
         function selectHeaderSuggestion(searchQuery) {
