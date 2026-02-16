@@ -278,14 +278,12 @@
         const searchQuery = params.get('q') || '';
         
         const stores = [
-            {name: 'POP Store', url: 'https://www.awin1.com/cread.php?awinmid=118493&awinaffid=2772514&ued=https://www.wearepopstore.com/search?q=', domain: 'wearepopstore.com'},
             {name: 'Norman Records', url: 'https://www.normanrecords.com/search?q=', domain: 'normanrecords.com'},
             {name: 'Assai Records', url: 'https://assai.co.uk/page/1/?s=', domain: 'assai.co.uk'},
             {name: 'Resident Music', url: 'https://www.resident-music.com/search?q=', domain: 'resident-music.com'},
             {name: 'Sounds Like Vinyl', url: 'https://soundslikevinyl.com/search?q=', domain: 'soundslikevinyl.com'},
             {name: 'The Sound of Vinyl', url: 'https://thesoundofvinyl.com/search?q=', domain: 'thesoundofvinyl.com'},
             {name: 'Merchbar', url: 'https://www.merchbar.com/search?q=', domain: 'merchbar.com'},
-            {name: 'Vinyl Castle', url: 'https://www.vinylcastle.com/search?q=', domain: 'vinylcastle.com'},
             {name: 'Lost in Vinyl', url: 'https://www.lostinvinyl.org/page/1/?s=', domain: 'lostinvinyl.org'}
         ];
 
@@ -476,7 +474,7 @@
                 html += '</div>';
                 
                 // Find More Stores button
-                html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full mt-2 py-2 px-4 text-gray-600 font-medium rounded-lg border border-gray-200 text-sm hover:bg-gray-50 transition-all">Find more stores</button>';
+                html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full mt-2 py-2 px-4 text-gray-600 font-medium rounded-lg border border-gray-200 text-sm hover:bg-gray-50 transition-all">More stores</button>';
                 
                 html += '<div id="stores-' + index + '" class="stores-collapsed mt-3 space-y-2">';
                 
