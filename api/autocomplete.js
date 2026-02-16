@@ -1,7 +1,7 @@
 // API endpoint for artist autocomplete
 // Searches POPSTORE + Discogs for artist suggestions
 
-import popstoreProducts from '../popstore-products.json';
+import popstoreProducts from './popstore-products.json';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
