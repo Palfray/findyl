@@ -431,23 +431,11 @@
                     // Discogs-only album
                     html += '<p class="text-xs text-gray-500 mb-2">' + item.format + '</p>';
                     
-                    // Show price if available
-                    if (item.price && item.price_source === 'discogs_marketplace') {
-                        const priceNum = typeof item.price === 'number' ? item.price : parseFloat(item.price);
-                        html += '<p class="text-lg font-bold mb-2" style="color: #FF6B6B;">From £' + priceNum.toFixed(2) + '</p>';
-                    }
-                    
-                    // Discogs button with logo
+                    // Discogs button with logo (no pricing - we don't fetch marketplace data)
                     html += '<a href="' + item.discogs_url + '" target="_blank" rel="noopener noreferrer" class="block w-full py-3 px-4 text-center font-medium rounded-lg mb-2 transition-all hover:shadow-md" style="background-color: white; border: 2px solid #FF6B6B; color: #1F2937;">';
-                    html += '<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">';
-                    html += '<div style="display: flex; align-items: center; gap: 8px; flex: 1;">';
+                    html += '<div style="display: flex; align-items: center; justify-content: center; gap: 8px;">';
                     html += '<img src="https://www.google.com/s2/favicons?domain=discogs.com&sz=64" alt="Discogs" style="width: 20px; height: 20px; flex-shrink: 0;" onerror="this.style.display=\'none\'">';
-                    html += '<span style="font-weight: 500;">Discogs</span>';
-                    html += '</div>';
-                    if (item.price && item.price_source === 'discogs_marketplace') {
-                        const priceNum = typeof item.price === 'number' ? item.price : parseFloat(item.price);
-                        html += '<span style="font-weight: 700; color: #FF6B6B;">From £' + priceNum.toFixed(2) + '</span>';
-                    }
+                    html += '<span style="font-weight: 500;">View on Discogs</span>';
                     html += '</div>';
                     html += '</a>';
                 } else {
@@ -460,18 +448,12 @@
                     // Show format/year if from Discogs
                     html += '<p class="text-xs text-gray-500 mb-2">' + (item.year ? item.year + ' • ' : '') + item.format + '</p>';
                     
-                    // Discogs button with logo and pricing
+                    // Discogs button with logo
                     if (item.discogs_url) {
                         html += '<a href="' + item.discogs_url + '" target="_blank" rel="noopener noreferrer" class="block w-full py-3 px-4 text-center font-medium rounded-lg mb-2 transition-all hover:shadow-md" style="background-color: white; border: 2px solid #FF6B6B; color: #1F2937;">';
-                        html += '<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">';
-                        html += '<div style="display: flex; align-items: center; gap: 8px; flex: 1;">';
+                        html += '<div style="display: flex; align-items: center; justify-content: center; gap: 8px;">';
                         html += '<img src="https://www.google.com/s2/favicons?domain=discogs.com&sz=64" alt="Discogs" style="width: 20px; height: 20px; flex-shrink: 0;" onerror="this.style.display=\'none\'">';
-                        html += '<span style="font-weight: 500;">Discogs</span>';
-                        html += '</div>';
-                        if (item.price && item.price_source === 'discogs_marketplace') {
-                            const priceNum = typeof item.price === 'number' ? item.price : parseFloat(item.price);
-                            html += '<span style="font-weight: 700; color: #FF6B6B;">From £' + priceNum.toFixed(2) + '</span>';
-                        }
+                        html += '<span style="font-weight: 500;">View on Discogs</span>';
                         html += '</div>';
                         html += '</a>';
                     }
