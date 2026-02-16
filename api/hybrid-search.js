@@ -1,8 +1,8 @@
 // Hybrid Search API - Searches POPSTORE, VinylCastle, then Discogs
 // Returns combined results with prices where available
 
-import popstoreProducts from '../popstore-products.json';
-import vinylcastleProducts from '../vinylcastle-products.json';
+import popstoreProducts from './popstore-products.json';
+import vinylcastleProducts from './vinylcastle-products.json';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
