@@ -168,9 +168,39 @@ export default async function handler(req, res) {
     
     console.log('📦 Merged retailers into', albumMap.size, 'unique albums');
     
-    // Add Discogs results (only if not already in retailers)
+    // Add Discogs results (only if not already in retailers AND artist matches)
     discogsResults.forEach(d => {
       const discogsTitle = d.title.toLowerCase();
+      
+      // Extract artist from Discogs title (before first " - ")
+      const parts = d.title.split(' - ');
+      const artist = parts[0] || 'Unknown Artist';
+      const artistLower = artist.toLowerCase();
+      
+      // Apply same strict artist matching as POPSTORE/VinylCastle
+      const artistWithoutThe = artistLower.replace(/^the\s+/, '');
+      const searchWithoutThe = searchTerm.replace(/^the\s+/, '');
+      
+      const artistMatch = artistLower === searchTerm || 
+                         artistWithoutThe === searchWithoutThe ||
+                         artistLower.startsWith(searchTerm + ' ') ||
+                         artistLower.endsWith(' ' + searchTerm) ||
+                         artistLower.includes(' ' + searchTerm + ' ');
+      
+      // For multi-word searches, ONLY include if artist matches
+      // For single-word searches, can match album too
+      let shouldInclude = false;
+      if (searchTerm.includes(' ')) {
+        // Multi-word: must match artist
+        shouldInclude = artistMatch;
+      } else {
+        // Single word: match artist OR album
+        const album = parts.slice(1).join(' - ') || d.title;
+        const albumLower = album.toLowerCase();
+        shouldInclude = artistMatch || albumLower.includes(searchTerm);
+      }
+      
+      if (!shouldInclude) return;
       
       // Check if already have this album from retailers
       let isDuplicate = false;
@@ -187,15 +217,12 @@ export default async function handler(req, res) {
       }
       
       if (!isDuplicate) {
-        // Extract artist and album from Discogs title
-        const parts = d.title.split(' - ');
-        const artist = parts[0] || 'Unknown Artist';
-        const album = parts.slice(1).join(' - ') || d.title;
+        const albumTitle = parts.slice(1).join(' - ') || d.title;
         
-        const key = `${artist.toLowerCase()}|||${album.toLowerCase()}`;
+        const key = `${artist.toLowerCase()}|||${albumTitle.toLowerCase()}`;
         albumMap.set(key, {
           artist: artist,
-          album: album,
+          album: albumTitle,
           cover: d.cover_image || d.thumb || 'https://via.placeholder.com/300x300?text=Vinyl+Record',
           year: d.year ? parseInt(d.year) : null,
           discogs_url: d.uri ? `https://www.discogs.com${d.uri}` : null,
