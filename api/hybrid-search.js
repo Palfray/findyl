@@ -19,19 +19,23 @@ export default async function handler(req, res) {
   const searchTermLower = searchTerm; // For clarity in code
 
   try {
+    // Debug: Check if JSON files loaded
+    console.log(`Loaded ${popstoreProducts?.length || 0} POPSTORE products`);
+    console.log(`Loaded ${vinylcastleProducts?.length || 0} VinylCastle products`);
+    
     // Step 1: Search POPSTORE products with better matching
     const searchTermLower = searchTerm.toLowerCase();
     
-    const popstoreResults = popstoreProducts.filter(product => {
-      const artistLower = product.artist.toLowerCase();
-      const albumLower = product.album.toLowerCase();
+    const popstoreResults = popstoreProducts?.filter(product => {
+      const artistLower = product.artist?.toLowerCase() || '';
+      const albumLower = product.album?.toLowerCase() || '';
       
       // Check if search term matches artist name (more strict)
       const artistMatch = artistLower.includes(searchTermLower) || 
                          searchTermLower.includes(artistLower);
       
       // Or if it matches the full title
-      const titleMatch = product.search_text.includes(searchTermLower);
+      const titleMatch = product.search_text?.toLowerCase().includes(searchTermLower);
       
       // Or if searching for specific album
       const albumMatch = albumLower.includes(searchTermLower);
@@ -47,29 +51,27 @@ export default async function handler(req, res) {
       }
       
       return false;
-    });
+    }) || [];
 
     console.log(`POPSTORE found ${popstoreResults.length} matches for "${q}"`);
 
-    // Step 2: Search VinylCastle products (same logic as POPSTORE)
-    const vinylcastleResults = vinylcastleProducts.filter(product => {
-      const artistLower = product.artist.toLowerCase();
-      const albumLower = product.album.toLowerCase();
+    // Step 2: Search VinylCastle products (more lenient - many are "Various Artists")
+    const vinylcastleResults = vinylcastleProducts?.filter(product => {
+      const artistLower = product.artist?.toLowerCase() || '';
+      const albumLower = product.album?.toLowerCase() || '';
       
-      const artistMatch = artistLower.includes(searchTermLower) || 
-                         searchTermLower.includes(artistLower);
+      // Since most VinylCastle products are "Various Artists", 
+      // we search primarily by album name
       const albumMatch = albumLower.includes(searchTermLower);
       
-      if (artistMatch) {
-        return true;
-      } else if (albumMatch && searchTermLower.split(' ').some(word => 
-        word.length > 3 && artistLower.includes(word)
-      )) {
-        return true;
-      }
+      // Also check artist if it's not "Various Artists"
+      const artistMatch = artistLower !== 'various artists' && 
+                         (artistLower.includes(searchTermLower) || 
+                          searchTermLower.includes(artistLower));
       
-      return false;
-    });
+      // Match if either artist OR album matches
+      return artistMatch || albumMatch;
+    }) || [];
 
     console.log(`VinylCastle found ${vinylcastleResults.length} matches for "${q}"`);
 
