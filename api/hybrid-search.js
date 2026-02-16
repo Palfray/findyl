@@ -35,22 +35,19 @@ export default async function handler(req, res) {
                          artistLower.endsWith(' ' + searchTerm) ||
                          artistLower.includes(' ' + searchTerm + ' ');
       
-      // For album matching, only match if:
-      // 1. Single word search (like "Revolver"), OR
-      // 2. Multi-word search AND artist name also partially matches
-      let albumMatch = false;
-      if (searchTerm.split(' ').length === 1) {
-        // Single word - match album freely
-        albumMatch = albumLower.includes(searchTerm);
-      } else {
-        // Multi-word - album matches AND artist contains at least one word from search
-        const searchWords = searchTerm.split(' ').filter(w => w.length > 2 && w !== 'the');
-        const albumContainsSearch = albumLower.includes(searchTerm);
-        const artistHasSearchWord = searchWords.some(word => artistLower.includes(word));
-        albumMatch = albumContainsSearch && artistHasSearchWord;
-      }
+      // If artist matches, include it
+      if (artistMatch) return true;
       
-      return artistMatch || albumMatch;
+      // For album matching:
+      // - Single word searches: match album title freely
+      // - Multi-word searches: DON'T match album (too many false positives)
+      if (searchTerm.includes(' ')) {
+        // Multi-word search - already checked artist above, don't check album
+        return false;
+      } else {
+        // Single word search - check album
+        return albumLower.includes(searchTerm);
+      }
     });
     
     console.log('✅ POPSTORE found:', popstoreResults.length, 'matches');
@@ -80,20 +77,17 @@ export default async function handler(req, res) {
                          artistLower.endsWith(' ' + searchTerm) ||
                          artistLower.includes(' ' + searchTerm + ' ');
       
-      // For album matching, only match if:
-      // 1. Single word search, OR
-      // 2. Multi-word search AND artist name also partially matches
-      let albumMatch = false;
-      if (searchTerm.split(' ').length === 1) {
-        albumMatch = albumLower.includes(searchTerm);
-      } else {
-        const searchWords = searchTerm.split(' ').filter(w => w.length > 2 && w !== 'the');
-        const albumContainsSearch = albumLower.includes(searchTerm);
-        const artistHasSearchWord = searchWords.some(word => artistLower.includes(word));
-        albumMatch = albumContainsSearch && artistHasSearchWord;
-      }
+      // If artist matches, include it
+      if (artistMatch) return true;
       
-      return artistMatch || albumMatch;
+      // For album matching:
+      // - Single word searches: match album title freely
+      // - Multi-word searches: DON'T match album (too many false positives)
+      if (searchTerm.includes(' ')) {
+        return false;
+      } else {
+        return albumLower.includes(searchTerm);
+      }
     });
     
     console.log('✅ VinylCastle found:', vinylcastleResults.length, 'matches');
