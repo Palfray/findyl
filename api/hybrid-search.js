@@ -1,7 +1,6 @@
-// Minimal Working Hybrid Search - POPSTORE ONLY (to test)
-// Once this works, we'll add VinylCastle back
-
+// Hybrid Search - POPSTORE + VinylCastle
 import popstoreProducts from './popstore-products.json';
+import vinylcastleProducts from './vinylcastle-products.json';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -27,26 +26,54 @@ export default async function handler(req, res) {
     
     console.log('✅ POPSTORE found:', popstoreResults.length, 'matches');
 
-    // Format POPSTORE results
-    const results = popstoreResults.map(p => ({
-      source: 'popstore',
-      title: `${p.artist} - ${p.album}`,
-      artist: p.artist,
-      album: p.album,
-      year: null,
-      format: 'Vinyl',
-      cover: p.image,
-      price: p.price,
-      currency: 'GBP',
-      buy_link: p.link,
-      availability: p.availability
-    }));
+    // Search VinylCastle  
+    const vinylcastleResults = vinylcastleProducts.filter(product => {
+      const artistLower = product.artist?.toLowerCase() || '';
+      const albumLower = product.album?.toLowerCase() || '';
+      return artistLower.includes(searchTerm) || albumLower.includes(searchTerm);
+    });
+    
+    console.log('✅ VinylCastle found:', vinylcastleResults.length, 'matches');
 
-    console.log('📤 Returning', results.length, 'results to frontend');
+    // Combine results
+    const results = [
+      // POPSTORE first
+      ...popstoreResults.map(p => ({
+        source: 'popstore',
+        title: `${p.artist} - ${p.album}`,
+        artist: p.artist,
+        album: p.album,
+        year: null,
+        format: 'Vinyl',
+        cover: p.image,
+        price: p.price,
+        currency: 'GBP',
+        buy_link: p.link,
+        availability: p.availability
+      })),
+      // VinylCastle next
+      ...vinylcastleResults.map(v => ({
+        source: 'vinylcastle',
+        title: `${v.artist} - ${v.album}`,
+        artist: v.artist,
+        album: v.album,
+        year: null,
+        format: 'Vinyl',
+        cover: v.image,
+        price: v.price,
+        currency: 'GBP',
+        buy_link: v.link,
+        availability: v.availability
+      }))
+    ];
+
+    console.log('📤 Returning', results.length, 'total results');
 
     return res.status(200).json({
       query: q,
       total: results.length,
+      popstore_count: popstoreResults.length,
+      vinylcastle_count: vinylcastleResults.length,
       results: results
     });
 
