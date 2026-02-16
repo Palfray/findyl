@@ -493,7 +493,6 @@
                 
                 html += '<div id="stores-' + index + '" class="stores-collapsed mt-3 space-y-2">';
                 
-                const searchTerm = item.artist + ' ' + item.album;
                 stores.forEach(store => {
                     html += '<a href="' + store.url + encodeURIComponent(searchTerm) + '" target="_blank" rel="noopener noreferrer" onclick="trackStoreClick(\'' + store.name + '\', \'' + item.album.replace(/'/g, "\\'") + '\')" class="store-button flex items-center gap-2 py-2 px-3 rounded text-sm font-medium text-white hover:opacity-90" style="background-color: #FF6B6B;">';
                     const faviconUrl = 'https://www.google.com/s2/favicons?domain=' + store.domain + '&sz=64';
