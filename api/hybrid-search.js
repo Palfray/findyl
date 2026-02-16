@@ -2,6 +2,7 @@
 // Returns combined results with prices where available
 
 import popstoreProducts from '../popstore-products.json';
+import vinylcastleProducts from '../vinylcastle-products.json';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -49,6 +50,31 @@ export default async function handler(req, res) {
     });
 
     console.log(`POPSTORE found ${popstoreResults.length} matches for "${q}"`);
+
+    // Step 1b: Search VinylCastle products (same matching logic as POPSTORE)
+    const vinylcastleResults = vinylcastleProducts.filter(product => {
+      const artistLower = product.artist.toLowerCase();
+      const albumLower = product.album.toLowerCase();
+
+      const artistMatch = artistLower.includes(searchTermLower) ||
+                         searchTermLower.includes(artistLower);
+
+      const titleMatch = product.search_text.includes(searchTermLower);
+
+      const albumMatch = albumLower.includes(searchTermLower);
+
+      if (artistMatch) {
+        return true;
+      } else if (albumMatch && searchTermLower.split(' ').some(word =>
+        word.length > 3 && artistLower.includes(word)
+      )) {
+        return true;
+      }
+
+      return false;
+    });
+
+    console.log(`VinylCastle found ${vinylcastleResults.length} matches for "${q}"`);
 
     // Step 2: Search Discogs API
     // Use general search for better coverage
@@ -130,15 +156,31 @@ export default async function handler(req, res) {
         buy_link: p.link, // Already has affiliate tracking!
         availability: p.availability
       })),
-      // Then add Discogs results (deduplicate against POPSTORE)
+      ...vinylcastleResults.map(p => ({
+        source: 'vinylcastle',
+        title: `${p.artist} - ${p.album}`,
+        artist: p.artist,
+        album: p.album,
+        year: null,
+        format: 'Vinyl',
+        cover: p.image,
+        price: p.price,
+        currency: p.currency || 'GBP',
+        buy_link: p.link,
+        availability: p.availability
+      })),
+      // Then add Discogs results (deduplicate against POPSTORE + VinylCastle)
       ...discogsResults
         .filter(d => {
           const discogsTitle = d.title.toLowerCase();
           const discogsArtist = (d.title.split(' - ')[0] || '').toLowerCase().trim();
           
-          // Don't add if we already have it from POPSTORE
-          const isDuplicate = popstoreResults.some(p => 
-            discogsTitle.includes(p.artist.toLowerCase()) && 
+          // Don't add if we already have it from POPSTORE or VinylCastle
+          const isDuplicate = popstoreResults.some(p =>
+            discogsTitle.includes(p.artist.toLowerCase()) &&
+            discogsTitle.includes(p.album.toLowerCase())
+          ) || vinylcastleResults.some(p =>
+            discogsTitle.includes(p.artist.toLowerCase()) &&
             discogsTitle.includes(p.album.toLowerCase())
           );
           
@@ -220,11 +262,14 @@ export default async function handler(req, res) {
     }
     
     // Step 5: Sort by year (newest first) to show recent releases at top
+    const retailerSources = new Set(['popstore', 'vinylcastle']);
     uniqueResults.sort((a, b) => {
-      // POPSTORE items always stay at top (they have prices!)
-      if (a.source === 'popstore' && b.source !== 'popstore') return -1;
-      if (b.source === 'popstore' && a.source !== 'popstore') return 1;
-      
+      // Retailer items (with prices) always stay at top
+      const aIsRetailer = retailerSources.has(a.source);
+      const bIsRetailer = retailerSources.has(b.source);
+      if (aIsRetailer && !bIsRetailer) return -1;
+      if (bIsRetailer && !aIsRetailer) return 1;
+
       // Then sort by year
       const yearA = parseInt(a.year) || 0;
       const yearB = parseInt(b.year) || 0;
@@ -287,13 +332,16 @@ export default async function handler(req, res) {
       console.log(`Found Discogs prices for ${pricesFound}/${top20Discogs.length} albums`);
     }
 
-    console.log(`Returning ${uniqueResults.length} unique results (${popstoreResults.length} from POPSTORE, ${uniqueResults.length - popstoreResults.length} from Discogs)`);
+    const vcCount = uniqueResults.filter(r => r.source === 'vinylcastle').length;
+    const discogsUniqueCount = uniqueResults.filter(r => r.source === 'discogs').length;
+    console.log(`Returning ${uniqueResults.length} unique results (${popstoreResults.length} POPSTORE, ${vcCount} VinylCastle, ${discogsUniqueCount} Discogs)`);
 
     return res.status(200).json({
       query: q,
       total: uniqueResults.length,
       popstore_count: popstoreResults.length,
-      discogs_count: uniqueResults.length - popstoreResults.length,
+      vinylcastle_count: vcCount,
+      discogs_count: discogsUniqueCount,
       results: uniqueResults
     });
 

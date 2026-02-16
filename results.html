@@ -296,7 +296,7 @@
             {name: 'The Sound of Vinyl', url: 'https://thesoundofvinyl.com/search?q=', domain: 'thesoundofvinyl.com'},
             {name: 'Merchbar', url: 'https://www.merchbar.com/search?q=', domain: 'merchbar.com'},
             {name: 'EMP', url: 'https://www.emp.co.uk/search/?q=', domain: 'emp.co.uk'},
-            {name: 'Vinyl Castle', url: 'https://www.vinylcastle.com/search?q=', domain: 'vinylcastle.com'},
+            {name: 'Vinyl Castle', url: 'https://www.awin1.com/cread.php?awinmid=109172&awinaffid=2772514&ued=https%3A%2F%2Fwww.vinylcastle.co.uk%2Fsearch%3Fq%3D', domain: 'vinylcastle.co.uk'},
             {name: 'Lost in Vinyl', url: 'https://www.lostinvinyl.org/page/1/?s=', domain: 'lostinvinyl.org'}
         ];
 
@@ -364,30 +364,35 @@
             
             container.style.display = 'grid';
             
-            // Count POPSTORE vs Discogs
+            // Count results by source
             const popstoreCount = results.filter(r => r.source === 'popstore').length;
-            const discogsCount = results.length - popstoreCount;
-            
-            if (popstoreCount > 0) {
-                document.getElementById('searchSubtitle').textContent = `Found ${results.length} albums (${popstoreCount} with prices from POP Store)`;
+            const vinylcastleCount = results.filter(r => r.source === 'vinylcastle').length;
+            const retailerCount = popstoreCount + vinylcastleCount;
+
+            if (retailerCount > 0) {
+                const parts = [];
+                if (popstoreCount > 0) parts.push(`${popstoreCount} from POP Store`);
+                if (vinylcastleCount > 0) parts.push(`${vinylcastleCount} from Vinyl Castle`);
+                document.getElementById('searchSubtitle').textContent = `Found ${results.length} albums (${parts.join(', ')} with prices)`;
             } else {
                 document.getElementById('searchSubtitle').textContent = `Found ${results.length} albums`;
             }
             
             let html = '';
             results.forEach((item, index) => {
-                const hasPOPSTOREPrice = item.source === 'popstore';
-                
                 html += '<div class="vinyl-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">';
                 html += '<img src="' + item.cover + '" alt="' + item.album + '" class="album-cover" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23667eea%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2248%22 fill=%22white%22%3E💿%3C/text%3E%3C/svg%3E\'">';
                 html += '<div class="p-4">';
                 html += '<h3 class="font-normal text-base mb-1 line-clamp-1">' + item.artist + '</h3>';
                 html += '<p class="text-sm text-gray-600 mb-2 line-clamp-1">' + item.album + '</p>';
                 
-                // Show price if from POPSTORE
-                if (hasPOPSTOREPrice) {
+                // Show price if from a retailer (POPSTORE or VinylCastle)
+                const isRetailer = item.source === 'popstore' || item.source === 'vinylcastle';
+                const storeName = item.source === 'vinylcastle' ? 'Vinyl Castle' : 'POP Store';
+
+                if (isRetailer) {
                     html += '<p class="text-lg font-bold mb-2" style="color: #FF6B6B;">£' + item.price + '</p>';
-                    html += '<a href="' + item.buy_link + '" target="_blank" rel="noopener noreferrer" class="block w-full py-2 px-4 text-center text-white font-medium rounded-lg mb-2" style="background-color: #FF6B6B;">Buy at POP Store</a>';
+                    html += '<a href="' + item.buy_link + '" target="_blank" rel="noopener noreferrer" class="block w-full py-2 px-4 text-center text-white font-medium rounded-lg mb-2" style="background-color: #FF6B6B;">Buy at ' + storeName + '</a>';
                     html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full py-2 px-4 text-gray-700 font-medium rounded-lg border border-gray-300 text-sm">Or find at other retailers</button>';
                 } else {
                     // Show Discogs marketplace price if available
@@ -460,10 +465,12 @@
             
             switch(sortValue) {
                 case 'relevance':
-                    // Original order (POPSTORE first, then by year)
+                    // Original order (retailers first, then by year)
                     sorted.sort((a, b) => {
-                        if (a.source === 'popstore' && b.source !== 'popstore') return -1;
-                        if (b.source === 'popstore' && a.source !== 'popstore') return 1;
+                        const aRetailer = a.source === 'popstore' || a.source === 'vinylcastle';
+                        const bRetailer = b.source === 'popstore' || b.source === 'vinylcastle';
+                        if (aRetailer && !bRetailer) return -1;
+                        if (bRetailer && !aRetailer) return 1;
                         const yearA = parseInt(a.year) || 0;
                         const yearB = parseInt(b.year) || 0;
                         return yearB - yearA;

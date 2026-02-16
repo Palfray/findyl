@@ -2,6 +2,7 @@
 // Searches POPSTORE + Discogs for artist suggestions
 
 import popstoreProducts from '../popstore-products.json';
+import vinylcastleProducts from '../vinylcastle-products.json';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -17,44 +18,61 @@ export default async function handler(req, res) {
   const searchTerm = q.toLowerCase().trim();
 
   try {
-    // Step 1: Get POPSTORE suggestions (artists + albums)
-    const popstoreArtistSet = new Set();
-    const popstoreAlbums = [];
-    
+    // Step 1: Get retailer suggestions (POPSTORE + VinylCastle artists + albums)
+    const retailerArtistSet = new Set();
+    const retailerAlbums = [];
+
+    // Process POPSTORE products
     popstoreProducts.forEach(product => {
-      const artist = product.artist;
-      const album = product.album;
-      
-      // Add unique artists
-      popstoreArtistSet.add(artist);
-      
-      // Check if album name matches search
-      if (album.toLowerCase().includes(searchTerm)) {
-        popstoreAlbums.push({
+      retailerArtistSet.add(product.artist);
+      if (product.album.toLowerCase().includes(searchTerm)) {
+        retailerAlbums.push({
           type: 'album',
-          artist: artist,
-          album: album,
+          artist: product.artist,
+          album: product.album,
           source: 'popstore'
         });
       }
     });
-    
-    const popstoreArtists = Array.from(popstoreArtistSet);
-    
-    // Filter POPSTORE artists that match
-    const popstoreArtistMatches = popstoreArtists
+
+    // Process VinylCastle products
+    vinylcastleProducts.forEach(product => {
+      retailerArtistSet.add(product.artist);
+      if (product.album.toLowerCase().includes(searchTerm)) {
+        retailerAlbums.push({
+          type: 'album',
+          artist: product.artist,
+          album: product.album,
+          source: 'vinylcastle'
+        });
+      }
+    });
+
+    const retailerArtists = Array.from(retailerArtistSet);
+
+    // Filter retailer artists that match
+    const popstoreArtistMatches = retailerArtists
       .filter(artist => artist.toLowerCase().includes(searchTerm))
-      .slice(0, 3) // Max 3 artists from POPSTORE
+      .slice(0, 3) // Max 3 artists from retailers
       .map(artist => ({
         type: 'artist',
         name: artist,
         source: 'popstore'
       }));
-    
-    // Limit POPSTORE album matches
-    const popstoreAlbumMatches = popstoreAlbums.slice(0, 2); // Max 2 albums from POPSTORE
 
-    console.log(`POPSTORE: ${popstoreArtistMatches.length} artist matches, ${popstoreAlbumMatches.length} album matches for "${q}"`);
+    // Deduplicate album matches by artist+album
+    const seenRetailerAlbums = new Set();
+    const dedupedAlbums = retailerAlbums.filter(a => {
+      const key = `${a.artist.toLowerCase()}-${a.album.toLowerCase()}`;
+      if (seenRetailerAlbums.has(key)) return false;
+      seenRetailerAlbums.add(key);
+      return true;
+    });
+
+    // Limit retailer album matches
+    const popstoreAlbumMatches = dedupedAlbums.slice(0, 2); // Max 2 albums from retailers
+
+    console.log(`Retailers: ${popstoreArtistMatches.length} artist matches, ${popstoreAlbumMatches.length} album matches for "${q}"`);
 
     // Step 2: Search Discogs for artists AND albums
     const discogsUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(q)}&type=release&format=vinyl&per_page=20&key=${process.env.DISCOGS_CONSUMER_KEY}&secret=${process.env.DISCOGS_CONSUMER_SECRET}`;
