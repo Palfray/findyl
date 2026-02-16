@@ -22,7 +22,23 @@ export default async function handler(req, res) {
     const popstoreResults = popstoreProducts.filter(product => {
       const artistLower = product.artist?.toLowerCase() || '';
       const albumLower = product.album?.toLowerCase() || '';
-      return artistLower.includes(searchTerm) || albumLower.includes(searchTerm);
+      
+      // For artist matching, be more strict
+      // Remove "the" from both for comparison
+      const artistWithoutThe = artistLower.replace(/^the\s+/, '');
+      const searchWithoutThe = searchTerm.replace(/^the\s+/, '');
+      
+      // Artist match: exact match or search term is contained as whole word
+      const artistMatch = artistLower === searchTerm || 
+                         artistWithoutThe === searchWithoutThe ||
+                         artistLower.startsWith(searchTerm + ' ') ||
+                         artistLower.endsWith(' ' + searchTerm) ||
+                         artistLower.includes(' ' + searchTerm + ' ');
+      
+      // Album match: contains search term
+      const albumMatch = albumLower.includes(searchTerm);
+      
+      return artistMatch || albumMatch;
     });
     
     console.log('✅ POPSTORE found:', popstoreResults.length, 'matches');
@@ -42,7 +58,19 @@ export default async function handler(req, res) {
       
       if (isCoverAlbum) return false;
       
-      return artistLower.includes(searchTerm) || albumLower.includes(searchTerm);
+      // For artist matching, be more strict
+      const artistWithoutThe = artistLower.replace(/^the\s+/, '');
+      const searchWithoutThe = searchTerm.replace(/^the\s+/, '');
+      
+      const artistMatch = artistLower === searchTerm || 
+                         artistWithoutThe === searchWithoutThe ||
+                         artistLower.startsWith(searchTerm + ' ') ||
+                         artistLower.endsWith(' ' + searchTerm) ||
+                         artistLower.includes(' ' + searchTerm + ' ');
+      
+      const albumMatch = albumLower.includes(searchTerm);
+      
+      return artistMatch || albumMatch;
     });
     
     console.log('✅ VinylCastle found:', vinylcastleResults.length, 'matches');
