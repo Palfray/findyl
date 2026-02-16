@@ -368,22 +368,20 @@
             container.style.display = 'grid';
             
             // Count retailer vs Discogs results
-            const retailerCount = results.filter(r => r.sources && r.sources.length > 0).length;
+            const popstoreCount = results.filter(r => r.source === 'popstore').length;
+            const vinylcastleCount = results.filter(r => r.source === 'vinylcastle').length;
+            const retailerCount = popstoreCount + vinylcastleCount;
             const discogsCount = results.length - retailerCount;
             
             if (retailerCount > 0) {
-                // Count total buy options
-                const totalBuyOptions = results.reduce((sum, r) => {
-                    return sum + (r.sources ? r.sources.length : 0);
-                }, 0);
-                document.getElementById('searchSubtitle').textContent = `Found ${results.length} albums (${totalBuyOptions} buy options from UK retailers)`;
+                document.getElementById('searchSubtitle').textContent = `Found ${results.length} albums (${retailerCount} with prices from UK retailers)`;
             } else {
                 document.getElementById('searchSubtitle').textContent = `Found ${results.length} albums`;
             }
             
             let html = '';
             results.forEach((item, index) => {
-                const hasSources = item.sources && item.sources.length > 0;
+                const hasRetailerPrice = item.source === 'popstore' || item.source === 'vinylcastle';
                 
                 html += '<div class="vinyl-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">';
                 html += '<img src="' + item.cover + '" alt="' + item.album + '" class="album-cover" onerror="this.src=\'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23667eea%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2248%22 fill=%22white%22%3E💿%3C/text%3E%3C/svg%3E\'">';
@@ -391,20 +389,11 @@
                 html += '<h3 class="font-normal text-base mb-1 line-clamp-1">' + item.artist + '</h3>';
                 html += '<p class="text-sm text-gray-600 mb-2 line-clamp-1">' + item.album + '</p>';
                 
-                // If we have multiple sources (POPSTORE + VinylCastle), show all buy options
-                if (hasSources) {
-                    // Show lowest price prominently
-                    const lowestPrice = Math.min(...item.sources.map(s => s.price));
-                    html += '<p class="text-lg font-bold mb-3" style="color: #FF6B6B;">From £' + lowestPrice.toFixed(2) + '</p>';
-                    
-                    // Show buy button for each source
-                    item.sources.forEach(source => {
-                        const storeName = source.source === 'popstore' ? 'POP Store' : 'VinylCastle';
-                        html += '<a href="' + source.link + '" target="_blank" rel="noopener noreferrer" class="block w-full py-2 px-4 text-center text-white font-medium rounded-lg mb-2 transition-all hover:opacity-90" style="background-color: #FF6B6B;">';
-                        html += storeName + ' - £' + source.price.toFixed(2);
-                        html += '</a>';
-                    });
-                    
+                // Show price if from retailer
+                if (hasRetailerPrice) {
+                    const storeName = item.source === 'popstore' ? 'POP Store' : 'VinylCastle';
+                    html += '<p class="text-lg font-bold mb-2" style="color: #FF6B6B;">£' + item.price.toFixed(2) + '</p>';
+                    html += '<a href="' + item.buy_link + '" target="_blank" rel="noopener noreferrer" class="block w-full py-2 px-4 text-center text-white font-medium rounded-lg mb-2 transition-all hover:opacity-90" style="background-color: #FF6B6B;">Buy at ' + storeName + '</a>';
                     html += '<button onclick="toggleStores(' + index + ')" id="btn-' + index + '" class="w-full py-2 px-4 text-gray-700 font-medium rounded-lg border border-gray-300 text-sm">Or find at other retailers</button>';
                 } else {
                     // Show Discogs marketplace price if available
