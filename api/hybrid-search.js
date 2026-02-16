@@ -91,11 +91,12 @@ export default async function handler(req, res) {
     console.log('✅ VinylCastle found:', vinylcastleResults.length, 'matches');
 
     // Search Discogs API
-    const discogsUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(q)}&type=release&format=vinyl&per_page=100&key=${process.env.DISCOGS_CONSUMER_KEY}&secret=${process.env.DISCOGS_CONSUMER_SECRET}`;
+    const discogsUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(q)}&type=release&format=vinyl&per_page=100`;
 
     const discogsResponse = await fetch(discogsUrl, {
       headers: {
         'User-Agent': 'Findyl/1.0 +https://findyl.co.uk',
+        'Authorization': `Discogs key=${process.env.DISCOGS_CONSUMER_KEY}, secret=${process.env.DISCOGS_CONSUMER_SECRET}`
       },
     });
 
