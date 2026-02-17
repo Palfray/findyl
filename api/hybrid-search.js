@@ -40,15 +40,19 @@ export default async function handler(req, res) {
     // STEP 2: Search VinylCastle via separate endpoint (file too large to bundle)
     let vinylCastleResults = [];
     try {
-      const vcResponse = await fetch(
-        `${process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000'}/api/vinylcastle-search?q=${encodeURIComponent(q)}`
-      );
+      // Build the correct URL for the VinylCastle endpoint
+      const baseUrl = req.headers.host ? `https://${req.headers.host}` : 'http://localhost:3000';
+      const vcUrl = `${baseUrl}/api/vinylcastle-search?q=${encodeURIComponent(q)}`;
+      
+      console.log('🔍 Calling VinylCastle endpoint:', vcUrl);
+      
+      const vcResponse = await fetch(vcUrl);
       
       if (vcResponse.ok) {
         vinylCastleResults = await vcResponse.json();
         console.log('✅ VinylCastle found:', vinylCastleResults.length, 'products');
       } else {
-        console.error('❌ VinylCastle endpoint error:', vcResponse.status);
+        console.error('❌ VinylCastle endpoint returned:', vcResponse.status, vcResponse.statusText);
       }
     } catch (error) {
       console.error('❌ VinylCastle error:', error.message);
