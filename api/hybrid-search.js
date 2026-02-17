@@ -180,12 +180,21 @@ export default async function handler(req, res) {
       for (let [existingKey, album] of albumMap) {
         const [existingArtist, existingAlbum] = existingKey.split('|||');
         
-        // Check if same artist and album title matches (fuzzy)
+        // Check if same artist
         if (existingArtist === vc.artist.toLowerCase()) {
-          // Exact match or one contains the other
-          if (existingAlbum === cleanAlbum.toLowerCase() ||
-              existingAlbum.includes(cleanAlbum.toLowerCase()) || 
-              cleanAlbum.toLowerCase().includes(existingAlbum)) {
+          const cleanVcAlbum = cleanAlbum.toLowerCase();
+          const cleanExistingAlbum = existingAlbum;
+          
+          // Remove "the" from start for comparison
+          const vcWithoutThe = cleanVcAlbum.replace(/^the\s+/i, '');
+          const existingWithoutThe = cleanExistingAlbum.replace(/^the\s+/i, '');
+          
+          // Check multiple match conditions
+          const exactMatch = cleanExistingAlbum === cleanVcAlbum;
+          const theMatch = vcWithoutThe === existingWithoutThe;
+          const containsMatch = cleanExistingAlbum.includes(cleanVcAlbum) || cleanVcAlbum.includes(cleanExistingAlbum);
+          
+          if (exactMatch || theMatch || containsMatch) {
             // Add as another buy option to existing album
             console.log(`  ✅ Matched with existing album:`, existingKey);
             album.buyOptions.push(vinylCastleOption);
