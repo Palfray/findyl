@@ -1,5 +1,5 @@
 // API endpoint for artist autocomplete
-// Searches POPSTORE + Discogs for artist suggestions
+// Searches POPSTORE + MusicBrainz for artist suggestions
 
 import popstoreProducts from './popstore-products.json';
 
@@ -56,86 +56,49 @@ export default async function handler(req, res) {
 
     console.log(`POPSTORE: ${popstoreArtistMatches.length} artist matches, ${popstoreAlbumMatches.length} album matches for "${q}"`);
 
-    // Step 2: Search Discogs for artists AND albums
-    const discogsUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(q)}&type=release&format=vinyl&per_page=20&key=${process.env.DISCOGS_CONSUMER_KEY}&secret=${process.env.DISCOGS_CONSUMER_SECRET}`;
+    // Step 2: Search MusicBrainz for artists
+    const musicbrainzUrl = `https://musicbrainz.org/ws/2/artist/?query=${encodeURIComponent(q)}&fmt=json&limit=10`;
 
-    const discogsResponse = await fetch(discogsUrl, {
+    const musicbrainzResponse = await fetch(musicbrainzUrl, {
       headers: {
-        'User-Agent': 'Findyl/1.0 +https://findyl.co.uk',
+        'User-Agent': 'findyl/1.0 (https://findyl.co.uk)',
       },
     });
 
-    let discogsArtistMatches = [];
-    let discogsAlbumMatches = [];
+    let musicbrainzArtistMatches = [];
 
-    if (discogsResponse.ok) {
-      const discogsData = await discogsResponse.json();
+    if (musicbrainzResponse.ok) {
+      const musicbrainzData = await musicbrainzResponse.json();
       
-      const artistSet = new Set();
-      const albums = [];
-      
-      // Process releases to extract both artists and albums
-      (discogsData.results || []).forEach(result => {
-        if (result.title && result.title.includes(' - ')) {
-          const parts = result.title.split(' - ');
-          const artistName = parts[0].trim();
-          const albumName = parts.slice(1).join(' - ').trim(); // Handle multi-dash titles
-          
-          const artistLower = artistName.toLowerCase();
-          const albumLower = albumName.toLowerCase();
-          
-          // Add artist if it matches search term
-          if (artistLower.includes(searchTerm)) {
-            artistSet.add(artistName);
-          }
-          
-          // Add album if album name matches search term
-          if (albumLower.includes(searchTerm)) {
-            albums.push({
-              type: 'album',
-              artist: artistName,
-              album: albumName,
-              source: 'discogs'
-            });
-          }
-        }
-      });
-      
-      // Convert artists to matches
-      discogsArtistMatches = Array.from(artistSet)
+      // Filter and map MusicBrainz artists
+      musicbrainzArtistMatches = (musicbrainzData.artists || [])
+        .filter(artist => {
+          const name = artist.name.toLowerCase();
+          const searchLower = searchTerm.toLowerCase();
+          // Only include if name matches search term
+          return name.includes(searchLower) || searchLower.includes(name);
+        })
         // Remove duplicates from POPSTORE
         .filter(artist => 
-          !popstoreArtistMatches.some(pm => pm.name.toLowerCase() === artist.toLowerCase())
+          !popstoreArtistMatches.some(pm => pm.name.toLowerCase() === artist.name.toLowerCase())
         )
-        .slice(0, 4) // Max 4 artists from Discogs
+        .slice(0, 4) // Max 4 artists from MusicBrainz
         .map(artist => ({
           type: 'artist',
-          name: artist,
-          source: 'discogs'
+          name: artist.name,
+          disambiguation: artist.disambiguation || '',
+          country: artist.country || '',
+          source: 'musicbrainz'
         }));
-      
-      // Get unique albums (deduplicate by album name)
-      const uniqueAlbums = [];
-      const seenAlbums = new Set();
-      
-      albums.forEach(album => {
-        const key = `${album.artist.toLowerCase()}-${album.album.toLowerCase()}`;
-        if (!seenAlbums.has(key)) {
-          seenAlbums.add(key);
-          uniqueAlbums.push(album);
-        }
-      });
-      
-      discogsAlbumMatches = uniqueAlbums.slice(0, 3); // Max 3 albums from Discogs
 
-      console.log(`Discogs: ${discogsArtistMatches.length} artist matches, ${discogsAlbumMatches.length} album matches for "${q}"`);
+      console.log(`MusicBrainz: ${musicbrainzArtistMatches.length} artist matches for "${q}"`);
     } else {
-      console.error(`Discogs API error: ${discogsResponse.status}`);
+      console.error(`MusicBrainz API error: ${musicbrainzResponse.status}`);
     }
 
     // Step 3: Combine all suggestions (artists first, then albums)
-    const allArtists = [...popstoreArtistMatches, ...discogsArtistMatches];
-    const allAlbums = [...popstoreAlbumMatches, ...discogsAlbumMatches];
+    const allArtists = [...popstoreArtistMatches, ...musicbrainzArtistMatches];
+    const allAlbums = [...popstoreAlbumMatches];
     
     // Prioritize: Artists first (max 5), then albums (max 3)
     const allMatches = [
