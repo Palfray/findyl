@@ -117,6 +117,30 @@ export default async function handler(req, res) {
         album = titleParts.slice(1).join(' - ').trim();
       }
       
+      // Filter by artist for multi-word searches
+      if (searchTerm.includes(' ')) {
+        const artistLower = artist.toLowerCase();
+        const artistWithoutThe = artistLower.replace(/^the\s+/, '');
+        const searchWithoutThe = searchTerm.replace(/^the\s+/, '');
+        
+        // For "the X" searches, be very strict
+        const isTheSearch = searchTerm.startsWith('the ');
+        let artistMatch;
+        
+        if (isTheSearch) {
+          // ONLY match exact artist name with or without "the"
+          artistMatch = artistLower === searchTerm || artistWithoutThe === searchWithoutThe;
+        } else {
+          // For other multi-word searches, require exact match or starts with
+          artistMatch = artistLower === searchTerm || artistLower.startsWith(searchTerm + ' ');
+        }
+        
+        if (!artistMatch) {
+          console.log(`  ❌ POPSTORE: Filtered out "${artist}" - doesn't match "${searchTerm}"`);
+          return; // Skip this result
+        }
+      }
+      
       // Clean album name (remove vinyl variants/editions)
       const cleanAlbum = album
         .replace(/,.*$/, '') // Remove everything after comma
@@ -154,6 +178,30 @@ export default async function handler(req, res) {
     console.log('🔄 Processing', vinylCastleResults.length, 'VinylCastle results');
     
     vinylCastleResults.forEach((vc, idx) => {
+      // Filter by artist for multi-word searches
+      if (searchTerm.includes(' ')) {
+        const artistLower = vc.artist.toLowerCase();
+        const artistWithoutThe = artistLower.replace(/^the\s+/, '');
+        const searchWithoutThe = searchTerm.replace(/^the\s+/, '');
+        
+        // For "the X" searches, be very strict
+        const isTheSearch = searchTerm.startsWith('the ');
+        let artistMatch;
+        
+        if (isTheSearch) {
+          // ONLY match exact artist name with or without "the"
+          artistMatch = artistLower === searchTerm || artistWithoutThe === searchWithoutThe;
+        } else {
+          // For other multi-word searches, require exact match or starts with
+          artistMatch = artistLower === searchTerm || artistLower.startsWith(searchTerm + ' ');
+        }
+        
+        if (!artistMatch) {
+          console.log(`  ❌ VC: Filtered out "${vc.artist}" - doesn't match "${searchTerm}"`);
+          return; // Skip this result
+        }
+      }
+      
       // Normalize album names for better matching (remove variant details)
       const cleanAlbum = vc.album
         .replace(/,.*$/, '') // Remove everything after comma (variant details)
