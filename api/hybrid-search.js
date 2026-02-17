@@ -129,7 +129,13 @@ export default async function handler(req, res) {
 
     // Add VinylCastle results
     vinylCastleResults.forEach(vc => {
-      const key = `${vc.artist.toLowerCase()}|||${vc.album.toLowerCase()}`;
+      // Normalize album names for better matching (remove variant details)
+      const cleanAlbum = vc.album
+        .replace(/,.*$/, '') // Remove everything after comma (variant details)
+        .replace(/\s*\(.*?\)\s*/g, '') // Remove parentheses content
+        .trim();
+      
+      const key = `${vc.artist.toLowerCase()}|||${cleanAlbum.toLowerCase()}`;
       
       const price = parseFloat(vc.price);
       const vinylCastleOption = {
@@ -140,14 +146,27 @@ export default async function handler(req, res) {
         availability: vc.in_stock === 'in_stock' ? 'In Stock' : 'Out of Stock'
       };
       
-      if (albumMap.has(key)) {
-        // Add as another buy option
-        albumMap.get(key).buyOptions.push(vinylCastleOption);
-      } else {
+      // Try to match with existing albums
+      let matched = false;
+      for (let [existingKey, album] of albumMap) {
+        const [existingArtist, existingAlbum] = existingKey.split('|||');
+        
+        // Check if same artist and album title contains the clean album name
+        if (existingArtist === vc.artist.toLowerCase() && 
+            (existingAlbum.includes(cleanAlbum.toLowerCase()) || 
+             cleanAlbum.toLowerCase().includes(existingAlbum))) {
+          // Add as another buy option to existing album
+          album.buyOptions.push(vinylCastleOption);
+          matched = true;
+          break;
+        }
+      }
+      
+      if (!matched) {
         // Create new album entry
         albumMap.set(key, {
           artist: vc.artist,
-          album: vc.album,
+          album: cleanAlbum,
           year: null,
           format: 'Vinyl',
           cover: vc.image_url || '',
