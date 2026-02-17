@@ -293,7 +293,7 @@
             document.getElementById('headerSearch').value = searchQuery;
         }
 
-        // Search via our hybrid API endpoint (POPSTORE + Discogs)
+        // Search via our hybrid API endpoint (POPSTORE + VinylCastle + MusicBrainz)
         async function searchVinyl(query) {
             try {
                 const response = await fetch('/api/hybrid-search?q=' + encodeURIComponent(query));
@@ -304,7 +304,7 @@
                 
                 const data = await response.json();
                 console.log('Hybrid search results:', data);
-                return data.results || [];
+                return data; // Return array directly (not data.results)
             } catch (error) {
                 console.error('Error fetching vinyl:', error);
                 return [];
