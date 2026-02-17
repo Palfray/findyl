@@ -40,8 +40,13 @@ export default async function handler(req, res) {
     // STEP 2: Load VinylCastle products from JSON
     let vinylCastleResults = [];
     try {
-      const vcData = await import('./vinylcastle-products.json');
-      const allProducts = vcData.default || vcData;
+      // Try to import VinylCastle data - must be in api/ directory
+      const vcModule = await import('./vinylcastle-products.json', {
+        assert: { type: 'json' }
+      });
+      const allProducts = vcModule.default || vcModule;
+      
+      console.log('📦 VinylCastle total products loaded:', allProducts.length);
       
       // Search VinylCastle products
       vinylCastleResults = allProducts.filter(product => {
@@ -49,9 +54,10 @@ export default async function handler(req, res) {
         return productText.includes(searchTerm);
       }).slice(0, 50); // Limit to 50 results
       
-      console.log('✅ VinylCastle found:', vinylCastleResults.length, 'products');
+      console.log('✅ VinylCastle found:', vinylCastleResults.length, 'products for query:', q);
     } catch (error) {
       console.error('❌ VinylCastle error:', error.message);
+      console.error('⚠️  Make sure vinylcastle-products.json is in the api/ directory');
     }
 
     // STEP 3: Search MusicBrainz
@@ -100,6 +106,9 @@ export default async function handler(req, res) {
       
       const key = `${artist.toLowerCase()}|||${album.toLowerCase()}`;
       
+      // Build proper POPSTORE URL
+      const popstoreUrl = p.url.startsWith('http') ? p.url : `https://www.wearepopstore.com${p.url}`;
+      
       if (!albumMap.has(key)) {
         albumMap.set(key, {
           artist: artist,
@@ -110,7 +119,7 @@ export default async function handler(req, res) {
           buyOptions: [{
             storeName: 'POP Store',
             price: parseFloat(p.price),
-            link: `https://www.awin1.com/cread.php?awinmid=118493&awinaffid=2772514&ued=${encodeURIComponent(p.url)}`,
+            link: `https://www.awin1.com/cread.php?awinmid=118493&awinaffid=2772514&ued=${encodeURIComponent(popstoreUrl)}`,
             source: 'popstore',
             availability: p.available ? 'In Stock' : 'Out of Stock'
           }]
