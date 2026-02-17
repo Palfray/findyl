@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales - findyl</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Serif+Text:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'DM Serif Display', serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <a href="/" class="flex items-center gap-2">
+                    <svg width="40" height="40" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="50" r="48" fill="#FF6B6B" stroke="white" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="35" fill="none" stroke="white" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="22" fill="none" stroke="white" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="6" fill="white"/>
+                    </svg>
+                    <span class="text-2xl font-bold">findyl</span>
+                </a>
+                <nav class="flex gap-6">
+                    <a href="/local-stores" class="text-gray-600 hover:text-gray-900">Find a store</a>
+                    <a href="/sales" class="text-gray-900 font-semibold">Sales</a>
+                    <a href="/about" class="text-gray-600 hover:text-gray-900">About</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-16">
+        <!-- Hero Section -->
+        <div class="text-center mb-16">
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6" style="background-color: #FFE5E5;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FF6B6B" stroke-width="2">
+                    <path d="M9 2L7.17 4M15 2l1.83 2M9 16v5M15 16v5M3.5 9.5l1 2M20.5 9.5l-1 2M3 13h18M5 21h14"/>
+                    <path d="M12 3v10"/>
+                </svg>
+            </div>
+            <h1 class="text-5xl font-bold mb-4">Vinyl Sales</h1>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                Live deals and discounts from top UK vinyl retailers
+            </p>
+        </div>
+
+        <!-- Coming Soon Message -->
+        <div class="max-w-3xl mx-auto">
+            <div class="bg-white rounded-lg shadow-sm p-12 text-center">
+                <div class="mb-8">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full" style="background-color: #FFE5E5; color: #FF6B6B;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        <span class="font-semibold">Coming Soon</span>
+                    </div>
+                </div>
+                
+                <h2 class="text-3xl font-bold mb-4">We're curating the best vinyl deals</h2>
+                <p class="text-lg text-gray-600 mb-8">
+                    This page will feature live sales and special offers from UK vinyl retailers including:
+                </p>
+
+                <!-- Retailer Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+                    <div class="flex flex-col items-center gap-2 p-4 rounded-lg bg-gray-50">
+                        <img src="https://www.google.com/s2/favicons?domain=wearepopstore.com&sz=64" alt="POPSTORE" class="w-12 h-12">
+                        <span class="text-sm font-medium">POPSTORE</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-2 p-4 rounded-lg bg-gray-50">
+                        <img src="https://www.google.com/s2/favicons?domain=vinylcastle.co.uk&sz=64" alt="Vinyl Castle" class="w-12 h-12">
+                        <span class="text-sm font-medium">Vinyl Castle</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-2 p-4 rounded-lg bg-gray-50">
+                        <img src="https://www.google.com/s2/favicons?domain=emp.co.uk&sz=64" alt="EMP UK" class="w-12 h-12">
+                        <span class="text-sm font-medium">EMP UK</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-2 p-4 rounded-lg bg-gray-50">
+                        <img src="https://www.google.com/s2/favicons?domain=roughtrade.com&sz=64" alt="Rough Trade" class="w-12 h-12">
+                        <span class="text-sm font-medium">Rough Trade</span>
+                    </div>
+                </div>
+
+                <!-- Features -->
+                <div class="grid md:grid-cols-3 gap-6 text-left">
+                    <div class="p-6 rounded-lg bg-gray-50">
+                        <div class="w-12 h-12 rounded-lg flex items-center justify-center mb-4" style="background-color: #FFE5E5;">
+                            <span class="text-2xl">💰</span>
+                        </div>
+                        <h3 class="font-bold mb-2">Price Drops</h3>
+                        <p class="text-sm text-gray-600">Track price changes on your favorite albums</p>
+                    </div>
+                    <div class="p-6 rounded-lg bg-gray-50">
+                        <div class="w-12 h-12 rounded-lg flex items-center justify-center mb-4" style="background-color: #FFE5E5;">
+                            <span class="text-2xl">⚡</span>
+                        </div>
+                        <h3 class="font-bold mb-2">Flash Sales</h3>
+                        <p class="text-sm text-gray-600">Limited-time offers updated daily</p>
+                    </div>
+                    <div class="p-6 rounded-lg bg-gray-50">
+                        <div class="w-12 h-12 rounded-lg flex items-center justify-center mb-4" style="background-color: #FFE5E5;">
+                            <span class="text-2xl">🔔</span>
+                        </div>
+                        <h3 class="font-bold mb-2">Sale Alerts</h3>
+                        <p class="text-sm text-gray-600">Get notified when albums go on sale</p>
+                    </div>
+                </div>
+
+                <!-- CTA -->
+                <div class="mt-12 pt-8 border-t border-gray-200">
+                    <p class="text-gray-600 mb-6">In the meantime, search for albums to compare prices</p>
+                    <a href="/" class="inline-block px-8 py-3 rounded-full text-white font-semibold hover:opacity-90 transition-opacity" style="background-color: #FF6B6B;">
+                        Start Searching
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 py-8">
+            <div class="text-center text-gray-600">
+                <p class="mb-2">© 2026 findyl. Find vinyl records from UK retailers.</p>
+                <p class="text-sm">Compare prices across POPSTORE, Vinyl Castle, EMP UK, and more.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
