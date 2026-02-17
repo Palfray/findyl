@@ -40,11 +40,13 @@ export default async function handler(req, res) {
     // STEP 2: Load VinylCastle products from JSON
     let vinylCastleResults = [];
     try {
-      // Try to import VinylCastle data - must be in api/ directory
-      const vcModule = await import('./vinylcastle-products.json', {
-        assert: { type: 'json' }
-      });
-      const allProducts = vcModule.default || vcModule;
+      // Use fs to read JSON file - works better in Vercel
+      const fs = await import('fs');
+      const path = await import('path');
+      
+      const filePath = path.join(process.cwd(), 'api', 'vinylcastle-products.json');
+      const fileContent = fs.readFileSync(filePath, 'utf-8');
+      const allProducts = JSON.parse(fileContent);
       
       console.log('📦 VinylCastle total products loaded:', allProducts.length);
       
@@ -58,6 +60,7 @@ export default async function handler(req, res) {
     } catch (error) {
       console.error('❌ VinylCastle error:', error.message);
       console.error('⚠️  Make sure vinylcastle-products.json is in the api/ directory');
+      console.error('⚠️  File path attempted:', error.path || 'unknown');
     }
 
     // STEP 3: Search MusicBrainz
