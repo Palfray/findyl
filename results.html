@@ -163,26 +163,40 @@
             }
         }
 
-        async function getLatestAlbumArt(artistId) {
+        // Try Spotify first for artist image, fallback to MusicBrainz album art
+        async function getArtistImage(artistName, musicBrainzId) {
+            // Try Spotify first (better quality artist photos)
             try {
-                // Get latest release group for this artist
+                const response = await fetch(`/api/spotify-artist?name=${encodeURIComponent(artistName)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.found && data.artist.images && data.artist.images.length > 0) {
+                        // Use 320px image (good for cards), fallback to first available
+                        const image = data.artist.images.find(img => img.width === 320) || data.artist.images[0];
+                        return image.url;
+                    }
+                }
+            } catch (err) {
+                console.warn('Spotify image fetch failed, trying MusicBrainz', err);
+            }
+
+            // Fallback: MusicBrainz album art
+            try {
                 const response = await fetch(
-                    `https://musicbrainz.org/ws/2/release-group?artist=${artistId}&type=album&limit=1&fmt=json`,
+                    `https://musicbrainz.org/ws/2/release-group?artist=${musicBrainzId}&type=album&limit=1&fmt=json`,
                     { headers: { 'User-Agent': 'findyl/1.0 (https://findyl.co.uk)' } }
                 );
-                
-                if (!response.ok) return null;
-                
-                const data = await response.json();
-                const releaseGroups = data['release-groups'] || [];
-                
-                if (releaseGroups.length > 0) {
-                    const rgId = releaseGroups[0].id;
-                    return `https://coverartarchive.org/release-group/${rgId}/front-250`;
+                if (response.ok) {
+                    const data = await response.json();
+                    const releaseGroups = data['release-groups'] || [];
+                    if (releaseGroups.length > 0) {
+                        return `https://coverartarchive.org/release-group/${releaseGroups[0].id}/front-250`;
+                    }
                 }
-            } catch (error) {
-                console.error('Error fetching album art:', error);
+            } catch (err) {
+                console.warn('MusicBrainz art fetch failed', err);
             }
+
             return null;
         }
 
@@ -190,11 +204,11 @@
             const container = document.getElementById('results');
             container.classList.remove('hidden');
 
-            // Fetch album art for all artists in parallel
+            // Fetch artist images in parallel (Spotify → MusicBrainz → initials)
             const artistsWithArt = await Promise.all(
                 artists.map(async artist => ({
                     ...artist,
-                    albumArt: await getLatestAlbumArt(artist.id)
+                    albumArt: await getArtistImage(artist.name, artist.id)
                 }))
             );
 
