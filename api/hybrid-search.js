@@ -224,25 +224,37 @@ export default async function handler(req, res) {
       const album = mb.title;
       const artistLower = artist.toLowerCase();
       
-      // Apply lenient artist matching
+      // Apply strict artist matching for multi-word searches
       const artistWithoutThe = artistLower.replace(/^the\s+/, '');
       const searchWithoutThe = searchTerm.replace(/^the\s+/, '');
       
-      // For multi-word artist names, check if search terms appear in the artist
-      const searchWords = searchTerm.split(' ').filter(w => w.length > 2);
-      const allWordsMatch = searchWords.every(word => artistLower.includes(word.toLowerCase()));
+      // Strict matching for multi-word searches (like "the national")
+      const exactMatch = artistLower === searchTerm;
+      const exactWithoutThe = artistWithoutThe === searchWithoutThe;
+      const startsWithMatch = artistLower.startsWith(searchTerm + ' ') || artistLower === searchTerm;
       
-      const artistMatch = artistLower === searchTerm || 
-                         artistWithoutThe === searchWithoutThe ||
-                         artistLower.startsWith(searchTerm) ||
-                         artistLower.includes(' ' + searchTerm) ||
-                         allWordsMatch;
+      // For searches starting with "the", be very strict
+      const isTheSearch = searchTerm.startsWith('the ');
+      
+      let artistMatch;
+      if (isTheSearch) {
+        // For "the X" searches, ONLY match if artist is exactly "the X" or "X"
+        artistMatch = exactMatch || exactWithoutThe;
+      } else if (searchTerm.includes(' ')) {
+        // For multi-word searches, require exact match or starts with
+        artistMatch = exactMatch || startsWithMatch;
+      } else {
+        // For single-word searches, be more lenient
+        artistMatch = artistLower === searchTerm || 
+                     artistLower.startsWith(searchTerm) ||
+                     artistLower.includes(' ' + searchTerm);
+      }
       
       // For multi-word searches, ONLY include if artist matches
       // For single-word searches, can match album too
       let shouldInclude = false;
       if (searchTerm.includes(' ')) {
-        // Multi-word: must match artist
+        // Multi-word: must match artist exactly
         shouldInclude = artistMatch;
       } else {
         // Single word: match artist OR album
