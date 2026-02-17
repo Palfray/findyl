@@ -151,7 +151,9 @@
                 } else {
                     document.getElementById('results-count').textContent = 
                         `Found ${filteredArtists.length} ${filteredArtists.length === 1 ? 'artist' : 'artists'}`;
-                    displayResults(filteredArtists);
+                    
+                    // Fetch latest album art for each artist
+                    await displayResults(filteredArtists);
                 }
 
             } catch (error) {
@@ -161,15 +163,53 @@
             }
         }
 
-        function displayResults(artists) {
+        async function getLatestAlbumArt(artistId) {
+            try {
+                // Get latest release group for this artist
+                const response = await fetch(
+                    `https://musicbrainz.org/ws/2/release-group?artist=${artistId}&type=album&limit=1&fmt=json`,
+                    { headers: { 'User-Agent': 'findyl/1.0 (https://findyl.co.uk)' } }
+                );
+                
+                if (!response.ok) return null;
+                
+                const data = await response.json();
+                const releaseGroups = data['release-groups'] || [];
+                
+                if (releaseGroups.length > 0) {
+                    const rgId = releaseGroups[0].id;
+                    return `https://coverartarchive.org/release-group/${rgId}/front-250`;
+                }
+            } catch (error) {
+                console.error('Error fetching album art:', error);
+            }
+            return null;
+        }
+
+        async function displayResults(artists) {
             const container = document.getElementById('results');
             container.classList.remove('hidden');
 
-            container.innerHTML = artists.map(artist => {
+            // Fetch album art for all artists in parallel
+            const artistsWithArt = await Promise.all(
+                artists.map(async artist => ({
+                    ...artist,
+                    albumArt: await getLatestAlbumArt(artist.id)
+                }))
+            );
+
+            container.innerHTML = artistsWithArt.map(artist => {
                 const name = artist.name;
                 const disambiguation = artist.disambiguation || '';
                 const type = artist.type || '';
                 const country = artist.country || '';
+                
+                // Get initials for fallback
+                const initials = name.split(' ')
+                    .filter(word => word.length > 0)
+                    .map(word => word[0].toUpperCase())
+                    .slice(0, 2)
+                    .join('');
                 
                 // Build meta info
                 const meta = [];
@@ -181,12 +221,16 @@
                     <a href="/artist?name=${encodeURIComponent(name)}" 
                        class="artist-card block bg-white rounded-lg shadow-sm p-6 hover:shadow-md">
                         <div class="flex items-start gap-4">
-                            <div class="w-16 h-16 bg-gray-200 rounded-full flex-shrink-0 flex items-center justify-center">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                    <circle cx="12" cy="7" r="4"/>
-                                </svg>
-                            </div>
+                            ${artist.albumArt ? `
+                                <img src="${artist.albumArt}" 
+                                     alt="${name}" 
+                                     class="w-16 h-16 rounded-full object-cover flex-shrink-0"
+                                     onerror="this.outerHTML='<div class=\\"w-16 h-16 bg-coral-100 rounded-full flex-shrink-0 flex items-center justify-center\\"><span class=\\"text-coral-600 font-bold text-xl\\">${initials}</span></div>'">
+                            ` : `
+                                <div class="w-16 h-16 bg-coral-100 rounded-full flex-shrink-0 flex items-center justify-center">
+                                    <span class="text-coral-600 font-bold text-xl">${initials}</span>
+                                </div>
+                            `}
                             <div class="flex-1 min-w-0">
                                 <h3 class="text-xl font-bold text-gray-900 mb-1">${name}</h3>
                                 ${meta.length > 0 ? `<p class="text-gray-600 text-sm">${meta.join(' • ')}</p>` : ''}
