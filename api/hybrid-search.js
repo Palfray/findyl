@@ -1,3 +1,4 @@
+// Updated 2025-02-17
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', true);
