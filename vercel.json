@@ -1,40 +1,13 @@
 {
   "rewrites": [
-    {
-      "source": "/artist",
-      "destination": "/artist.html"
-    },
-    {
-      "source": "/album",
-      "destination": "/album.html"
-    },
-    {
-      "source": "/results",
-      "destination": "/results.html"
-    },
-    {
-      "source": "/stores",
-      "destination": "/stores.html"
-    },
-    {
-      "source": "/about",
-      "destination": "/about.html"
-    },
-    {
-      "source": "/sales",
-      "destination": "/sales.html"
-    },
-    {
-      "source": "/local-stores",
-      "destination": "/local-stores.html"
-    },
-    {
-      "source": "/articles",
-      "destination": "/articles.html"
-    },
-    {
-      "source": "/articles/:slug",
-      "destination": "/articles/:slug.html"
-    }
+    { "source": "/artist", "destination": "/artist.html" },
+    { "source": "/album", "destination": "/album.html" },
+    { "source": "/results", "destination": "/results.html" },
+    { "source": "/stores", "destination": "/stores.html" },
+    { "source": "/about", "destination": "/about.html" },
+    { "source": "/sales", "destination": "/sales.html" },
+    { "source": "/local-stores", "destination": "/local-stores.html" },
+    { "source": "/articles", "destination": "/articles.html" },
+    { "source": "/articles/best-selling-vinyl-2025", "destination": "/articles/best-selling-vinyl-2025.html" }
   ]
 }
