@@ -9,37 +9,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body { font-family: 'DM Serif Display', serif; }
-        #map { height: 480px; width: 100%; border-radius: 12px; z-index: 0; }
-        .store-card {
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .store-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-        }
-        .leaflet-popup-content-wrapper {
-            border-radius: 10px;
-            font-family: 'DM Serif Display', serif;
-        }
-        .leaflet-popup-content {
-            margin: 12px 16px;
-        }
-        .tab-btn.active {
-            background: #FF6B6B;
-            color: white;
-        }
-        .tab-btn {
-            transition: all 0.2s;
-        }
+        .store-card { transition: transform 0.2s, box-shadow 0.2s; }
+        .store-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .store-card { animation: fadeIn 0.3s ease forwards; }
+        .store-card { animation: fadeIn 0.25s ease forwards; opacity: 0; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -49,14 +27,14 @@
         <div class="max-w-6xl mx-auto px-4 py-5">
             <div class="flex items-center justify-between">
                 <a href="/" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                    <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
                         <circle cx="20" cy="20" r="19" fill="#FF6B6B"/>
                         <circle cx="20" cy="20" r="15" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
                         <circle cx="20" cy="20" r="11" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
                         <circle cx="20" cy="20" r="6" fill="white"/>
                         <circle cx="20" cy="20" r="2" fill="#FF6B6B"/>
                     </svg>
-                    <span style="font-family:'DM Serif Display',serif" class="text-2xl">findyl</span>
+                    <span class="text-2xl">findyl</span>
                 </a>
                 <div class="flex items-center gap-4">
                     <a href="/about" class="text-gray-600 hover:text-gray-900 text-sm">About</a>
@@ -70,61 +48,41 @@
 
         <!-- Title -->
         <div class="text-center mb-10">
-            <h1 class="text-4xl sm:text-5xl mb-3" style="font-family:'DM Serif Display',serif">Local Record Stores</h1>
-            <p class="text-gray-500 text-base">Find independent record stores across the UK & Ireland</p>
-            <p class="text-sm text-gray-400 mt-1"><span id="storeCount">273</span> stores · Source: Record Store Day UK</p>
+            <h1 class="text-4xl sm:text-5xl mb-3">Local Record Stores</h1>
+            <p class="text-gray-500">Find independent record stores across the UK & Ireland</p>
+            <p class="text-sm text-gray-400 mt-1">
+                <span id="storeCount">0</span> stores · Source: Record Store Day UK
+            </p>
         </div>
 
-        <!-- Search + Controls -->
-        <div class="flex flex-col sm:flex-row gap-3 mb-6 max-w-3xl mx-auto">
-            <div class="flex-1 bg-white rounded-full px-5 py-3 shadow-sm border border-gray-200 flex items-center gap-2">
+        <!-- Search -->
+        <div class="max-w-2xl mx-auto mb-8">
+            <div class="bg-white rounded-full px-5 py-3 shadow-sm border border-gray-200 flex items-center gap-3">
                 <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <circle cx="11" cy="11" r="8" stroke-width="2"/>
                     <path d="M21 21l-4.35-4.35" stroke-width="2" stroke-linecap="round"/>
                 </svg>
-                <input
-                    type="text"
-                    id="searchInput"
-                    placeholder="Search by name or city..."
-                    class="w-full outline-none text-sm bg-transparent"
-                />
+                <input type="text" id="searchInput" placeholder="Search by store name or city..."
+                    class="w-full outline-none text-sm bg-transparent"/>
+                <button id="clearBtn" class="text-gray-300 hover:text-gray-500 hidden flex-shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
             </div>
-            <button id="nearMeBtn" class="bg-white border border-gray-200 shadow-sm rounded-full px-5 py-3 text-sm font-medium text-gray-700 hover:border-red-300 hover:text-red-500 transition-all flex items-center gap-2 justify-center">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                </svg>
-                Near Me
-            </button>
         </div>
 
-        <!-- Tab Toggle -->
-        <div class="flex gap-2 mb-6 max-w-xs">
-            <button id="tabMap" class="tab-btn active rounded-full px-5 py-2 text-sm font-medium border border-gray-200" onclick="showTab('map')">
-                🗺 Map
-            </button>
-            <button id="tabList" class="tab-btn rounded-full px-5 py-2 text-sm font-medium bg-white border border-gray-200 text-gray-600" onclick="showTab('list')">
-                ☰ List
-            </button>
-        </div>
+        <!-- Store Grid -->
+        <div id="storesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
-        <!-- Map View -->
-        <div id="mapView" class="mb-8">
-            <div id="map" class="shadow-md"></div>
-            <p id="geocodeStatus" class="text-xs text-gray-400 mt-2 text-right">Loading store locations...</p>
-        </div>
-
-        <!-- List View -->
-        <div id="listView" class="hidden">
-            <div id="storesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-            <div id="noResults" class="text-center py-12 hidden">
-                <p class="text-gray-500">No stores found matching your search.</p>
-            </div>
+        <!-- No Results -->
+        <div id="noResults" class="text-center py-16 hidden">
+            <p class="text-gray-400 text-lg">No stores found for "<span id="noResultsQuery"></span>"</p>
+            <button id="clearSearch" class="mt-4 text-sm hover:underline" style="color:#FF6B6B">Clear search</button>
         </div>
 
     </main>
 
-    <!-- Footer -->
     <footer class="bg-white border-t border-gray-200 mt-16">
         <div class="max-w-6xl mx-auto px-4 py-8 text-center text-sm text-gray-500">
             <p>Store data sourced from <a href="https://www.recordstoreday.co.uk" target="_blank" class="hover:underline" style="color:#FF6B6B">Record Store Day UK</a></p>
@@ -134,353 +92,17 @@
 
     <script>
         const stores = [
-            {"name": "Off The Record", "location": "UK"},
-            {"name": "Lion Vibes", "location": "UK"},
-            {"name": "Derricks", "location": "UK"},
-            {"name": "Choons", "location": "UK"},
-            {"name": "12 Bar Music and Social", "location": "UK"},
-            {"name": "Townsend Records", "location": "Great Harwood"},
-            {"name": "Area 51 Records", "location": "UK"},
-            {"name": "VOD Music", "location": "UK"},
-            {"name": "Golden Discs", "location": "Cork"},
-            {"name": "Golden Discs", "location": "Dundalk"},
-            {"name": "Ignite Record Store", "location": "UK"},
-            {"name": "Far Land Records", "location": "UK"},
-            {"name": "Music Mania", "location": "UK"},
-            {"name": "Concorde Music Shop", "location": "UK"},
-            {"name": "The Second 45", "location": "UK"},
-            {"name": "World of Echo", "location": "UK"},
-            {"name": "Revolution Records Halesowen", "location": "UK"},
-            {"name": "Rough Trade Bristol", "location": "Bristol"},
-            {"name": "Raves from the Grave", "location": "UK"},
-            {"name": "Slipped Discs Billericay", "location": "UK"},
-            {"name": "Dash The Henge Store", "location": "UK"},
-            {"name": "Empire Records", "location": "UK"},
-            {"name": "Spillers Records", "location": "Cardiff"},
-            {"name": "Slide Record Shop", "location": "UK"},
-            {"name": "Monorail Music", "location": "Glasgow"},
-            {"name": "Regency Records", "location": "UK"},
-            {"name": "Specialist Subject", "location": "UK"},
-            {"name": "Save Our Souls Records", "location": "UK"},
-            {"name": "Clocktower Records", "location": "UK"},
-            {"name": "Big Moon Records", "location": "UK"},
-            {"name": "Roan Records", "location": "UK"},
-            {"name": "Phonica Records", "location": "London"},
-            {"name": "Truck Oxford", "location": "Oxford"},
-            {"name": "Music Mania Ltd", "location": "UK"},
-            {"name": "Vintage & Vinyl", "location": "UK"},
-            {"name": "Sound Cellar", "location": "UK"},
-            {"name": "Voxbox", "location": "UK"},
-            {"name": "Vinyl Attraction", "location": "UK"},
-            {"name": "Raven Retail", "location": "UK"},
-            {"name": "Vinyl Underground", "location": "UK"},
-            {"name": "Starr Records", "location": "UK"},
-            {"name": "Jacaranda Records", "location": "Liverpool"},
-            {"name": "Tower Records", "location": "Dublin"},
-            {"name": "Tubeway Records", "location": "UK"},
-            {"name": "Saturnalia Records", "location": "UK"},
-            {"name": "Museum Vinyl", "location": "UK"},
-            {"name": "Five Rise Records", "location": "UK"},
-            {"name": "Black Circle Records", "location": "UK"},
-            {"name": "The Vault Collective", "location": "UK"},
-            {"name": "Up North Records", "location": "UK"},
-            {"name": "Slow Century Records", "location": "UK"},
-            {"name": "Heathen Chemistry", "location": "UK"},
-            {"name": "Beyond Vinyl", "location": "UK"},
-            {"name": "Number One Records", "location": "UK"},
-            {"name": "Rubber Soul Records", "location": "UK"},
-            {"name": "Good Vibes Neighbourhood Store", "location": "UK"},
-            {"name": "Intense Records", "location": "Nottingham"},
-            {"name": "Record Room", "location": "UK"},
-            {"name": "Golden Discs", "location": "Drogheda"},
-            {"name": "Golden Discs", "location": "Galway"},
-            {"name": "Golden Discs", "location": "Swords"},
-            {"name": "Crash Records", "location": "Leeds"},
-            {"name": "Ventnor Exchange", "location": "UK"},
-            {"name": "Soul Brother", "location": "London"},
-            {"name": "Red House Records", "location": "UK"},
-            {"name": "Spun Out", "location": "UK"},
-            {"name": "Sound Records IOM", "location": "Isle of Man"},
-            {"name": "The Vinyl Whistle", "location": "UK"},
-            {"name": "Sounds Of The Universe", "location": "London"},
-            {"name": "Bella Union Vinyl Shop", "location": "UK"},
-            {"name": "S T Records", "location": "UK"},
-            {"name": "Stone Rock Records", "location": "UK"},
-            {"name": "Sister Ray", "location": "London"},
-            {"name": "Left for Dead", "location": "UK"},
-            {"name": "Love Music", "location": "UK"},
-            {"name": "Peckham Soul", "location": "London"},
-            {"name": "Steamboat Records", "location": "UK"},
-            {"name": "Revo Records", "location": "UK"},
-            {"name": "Seedee Jons", "location": "UK"},
-            {"name": "Future Audio", "location": "UK"},
-            {"name": "Jam Records", "location": "UK"},
-            {"name": "Spinning Discs Sheffield", "location": "Sheffield"},
-            {"name": "The LP Cafe", "location": "UK"},
-            {"name": "The Record Shop Ltd", "location": "UK"},
-            {"name": "Honest Jon's Records", "location": "London"},
-            {"name": "Sound Records", "location": "UK"},
-            {"name": "Venus Vinyl", "location": "UK"},
-            {"name": "Grooves Records", "location": "UK"},
-            {"name": "Music's Not Dead", "location": "UK"},
-            {"name": "The Vinyl Frontier", "location": "UK"},
-            {"name": "Record Vault", "location": "UK"},
-            {"name": "Polar Bear", "location": "UK"},
-            {"name": "Vinyl Head Record Shop", "location": "UK"},
-            {"name": "Casbah Records", "location": "UK"},
-            {"name": "Jumbo Records", "location": "Leeds"},
-            {"name": "Tough Love St Leonards", "location": "UK"},
-            {"name": "Strip Joint Records", "location": "UK"},
-            {"name": "Yew Tree Records", "location": "UK"},
-            {"name": "Over The Moon Records", "location": "UK"},
-            {"name": "Underground Solution", "location": "UK"},
-            {"name": "Golden Discs", "location": "Athlone"},
-            {"name": "JM Records", "location": "UK"},
-            {"name": "The Musical Box", "location": "UK"},
-            {"name": "Hundred Records", "location": "UK"},
-            {"name": "Vinylicious", "location": "UK"},
-            {"name": "Record Surplus", "location": "UK"},
-            {"name": "Unearthed Records", "location": "UK"},
-            {"name": "Vinylheads", "location": "UK"},
-            {"name": "Spun Records", "location": "UK"},
-            {"name": "Longplay", "location": "Dublin"},
-            {"name": "Berwick Street Record Emporium", "location": "London"},
-            {"name": "Sounds Good", "location": "UK"},
-            {"name": "Crumbs Records", "location": "UK"},
-            {"name": "Spin Inn", "location": "Cork"},
-            {"name": "SIDESHOW Records", "location": "UK"},
-            {"name": "Rough Trade East", "location": "London"},
-            {"name": "Play Music", "location": "UK"},
-            {"name": "Resonance Records", "location": "UK"},
-            {"name": "Flipside Records", "location": "UK"},
-            {"name": "Rhythm Section International", "location": "London"},
-            {"name": "Banquet Records", "location": "Kingston"},
-            {"name": "Vinilo Records", "location": "UK"},
-            {"name": "Norman Records", "location": "Leeds"},
-            {"name": "Drift Records", "location": "UK"},
-            {"name": "Music Zone", "location": "UK"},
-            {"name": "Record Archive", "location": "UK"},
-            {"name": "Wax Lyrical", "location": "UK"},
-            {"name": "Coda Music", "location": "Edinburgh"},
-            {"name": "Beat Records", "location": "UK"},
-            {"name": "Deja Vu Records", "location": "UK"},
-            {"name": "Music Box", "location": "UK"},
-            {"name": "Revolution Records", "location": "UK"},
-            {"name": "Acid Jazz Records", "location": "London"},
-            {"name": "Vinyl Revival", "location": "UK"},
-            {"name": "Third Eye Records", "location": "UK"},
-            {"name": "Flatpack Records", "location": "UK"},
-            {"name": "Good Vibrations", "location": "UK"},
-            {"name": "Underground Records", "location": "UK"},
-            {"name": "Lost In Music", "location": "UK"},
-            {"name": "Beatin' Rhythm", "location": "Manchester"},
-            {"name": "Pie & Vinyl", "location": "UK"},
-            {"name": "Electric Elephant Records", "location": "UK"},
-            {"name": "Vinyl Tap", "location": "UK"},
-            {"name": "Deep Cuts", "location": "London"},
-            {"name": "Reckless Records", "location": "London"},
-            {"name": "Selectadisc", "location": "Nottingham"},
-            {"name": "Probe Records", "location": "Liverpool"},
-            {"name": "Fopp", "location": "Glasgow"},
-            {"name": "Vinyl Exchange", "location": "Manchester"},
-            {"name": "Pure Groove", "location": "London"},
-            {"name": "Ray's Jazz", "location": "London"},
-            {"name": "Shockwaves", "location": "UK"},
-            {"name": "All Ages Records", "location": "London"},
-            {"name": "Love Vinyl", "location": "London"},
-            {"name": "Haggle Vinyl", "location": "London"},
-            {"name": "Record Shack", "location": "London"},
-            {"name": "Flashback Records", "location": "London"},
-            {"name": "Eldica", "location": "London"},
-            {"name": "Out On The Floor", "location": "London"},
-            {"name": "Sounds Of The Universe", "location": "London"},
-            {"name": "Intoxica!", "location": "London"},
-            {"name": "Minus Zero Records", "location": "London"},
-            {"name": "Haggle", "location": "London"},
-            {"name": "Record & Tape Exchange", "location": "London"},
-            {"name": "Vinyl Junkies", "location": "London"},
-            {"name": "Lucky Seven Records", "location": "London"},
-            {"name": "Bear Tree Records", "location": "Sheffield"},
-            {"name": "Warp Records", "location": "Sheffield"},
-            {"name": "Catty Records", "location": "UK"},
-            {"name": "Global Groove", "location": "UK"},
-            {"name": "RPM Records", "location": "Edinburgh"},
-            {"name": "Elvis Shakespeare", "location": "Edinburgh"},
-            {"name": "Underground Solu'shn", "location": "Edinburgh"},
-            {"name": "Vinyl Villains", "location": "Edinburgh"},
-            {"name": "Missing Records", "location": "UK"},
-            {"name": "Avalanche Records", "location": "Edinburgh"},
-            {"name": "Hog's Head Beer Cafe", "location": "UK"},
-            {"name": "Hot Salvation", "location": "UK"},
-            {"name": "Diverse Vinyl", "location": "UK"},
-            {"name": "Cool Discs Music", "location": "UK"},
-            {"name": "Piccadilly Records", "location": "Manchester"},
-            {"name": "Rockabuy Records", "location": "UK"},
-            {"name": "Townsend Records", "location": "Clitheroe"},
-            {"name": "Record Collector", "location": "Sheffield"},
-            {"name": "Wah Wah Records", "location": "UK"},
-            {"name": "Spinning Around Records", "location": "UK"},
-            {"name": "Tangled Parrot", "location": "Hereford"},
-            {"name": "Assai", "location": "Dundee"},
-            {"name": "Rarekind Records", "location": "UK"},
-            {"name": "Just Dropped In", "location": "UK"},
-            {"name": "Vinyl Audio Cafe", "location": "UK"},
-            {"name": "Rough Trade Vintage", "location": "London"},
-            {"name": "Back to Mono", "location": "UK"},
-            {"name": "33 RPM", "location": "UK"},
-            {"name": "Dig Vinyl", "location": "West Kirby"},
-            {"name": "Tasty Records", "location": "UK"},
-            {"name": "RPM Music", "location": "UK"},
-            {"name": "Spindizzy Records", "location": "UK"},
-            {"name": "Pure Vinyl Records", "location": "UK"},
-            {"name": "Andy's Records", "location": "UK"},
-            {"name": "Reggie's Retro Record Store", "location": "UK"},
-            {"name": "Resident Music", "location": "Brighton"},
-            {"name": "Assai", "location": "Edinburgh"},
-            {"name": "101 Collectors Records", "location": "UK"},
-            {"name": "Beatdown Records", "location": "UK"},
-            {"name": "Bell, Book Candle", "location": "UK"},
-            {"name": "Smugglers Records", "location": "UK"},
-            {"name": "Europa Music", "location": "UK"},
-            {"name": "Cruisin Records", "location": "UK"},
-            {"name": "The Orpington", "location": "UK"},
-            {"name": "Toms Record Shop", "location": "UK"},
-            {"name": "Grinning Soul Records", "location": "UK"},
-            {"name": "Level Crossing Records", "location": "UK"},
-            {"name": "Hectic Records", "location": "UK"},
-            {"name": "Wax and Beans", "location": "UK"},
-            {"name": "Some Great Reward", "location": "UK"},
-            {"name": "Stax of Wax", "location": "Salisbury"},
-            {"name": "Galaxy Records", "location": "Poole"},
-            {"name": "Groove Junction", "location": "UK"},
-            {"name": "Fat Cat Records", "location": "UK"},
-            {"name": "Hot Dogma", "location": "UK"},
-            {"name": "Spiller's Records", "location": "Cardiff"},
-            {"name": "Backtrack Records", "location": "UK"},
-            {"name": "Broken Records", "location": "UK"},
-            {"name": "Music Minded", "location": "UK"},
-            {"name": "Bowerbird Records", "location": "UK"},
-            {"name": "Dragon Records", "location": "UK"},
-            {"name": "Record Hunter", "location": "Dublin"},
-            {"name": "Golden Discs", "location": "Navan"},
-            {"name": "vinyl109", "location": "UK"},
-            {"name": "Manic Street Music", "location": "Carmarthen"},
-            {"name": "Ear Worm Records", "location": "UK"},
-            {"name": "Abbey Records", "location": "UK"},
-            {"name": "Timewarp Music", "location": "Aberdeen"},
-            {"name": "Vinyl Lounge", "location": "UK"},
-            {"name": "Music Stop", "location": "UK"},
-            {"name": "Arcade Records", "location": "UK"},
-            {"name": "Deckchair Records", "location": "UK"},
-            {"name": "Zebedee's Records", "location": "UK"},
-            {"name": "The Record Bar", "location": "Leeds"},
-            {"name": "Yorkshire Sound", "location": "Selby"},
-            {"name": "Underground Music", "location": "UK"},
-            {"name": "Spin It Records", "location": "UK"},
-            {"name": "Maestro Records", "location": "UK"},
-            {"name": "Global Groove", "location": "UK"}
+            {"name":"Off The Record","location":"UK"},{"name":"Lion Vibes","location":"UK"},{"name":"Derricks","location":"UK"},{"name":"Choons","location":"UK"},{"name":"12 Bar Music and Social","location":"UK"},{"name":"Townsend Records","location":"Great Harwood"},{"name":"Area 51 Records","location":"UK"},{"name":"VOD Music","location":"UK"},{"name":"Golden Discs","location":"Cork"},{"name":"Golden Discs","location":"Dundalk"},{"name":"Ignite Record Store","location":"UK"},{"name":"Far Land Records","location":"UK"},{"name":"Music Mania","location":"UK"},{"name":"Concorde Music Shop","location":"UK"},{"name":"The Second 45","location":"UK"},{"name":"World of Echo","location":"UK"},{"name":"Revolution Records Halesowen","location":"UK"},{"name":"Rough Trade Bristol","location":"Bristol"},{"name":"Raves from the Grave","location":"UK"},{"name":"Slipped Discs Billericay","location":"UK"},{"name":"Dash The Henge Store","location":"UK"},{"name":"Empire Records","location":"UK"},{"name":"Spillers Records","location":"Cardiff"},{"name":"Slide Record Shop","location":"UK"},{"name":"Monorail Music","location":"Glasgow"},{"name":"Regency Records","location":"UK"},{"name":"Specialist Subject","location":"UK"},{"name":"Save Our Souls Records","location":"UK"},{"name":"Clocktower Records","location":"UK"},{"name":"Big Moon Records","location":"UK"},{"name":"Roan Records","location":"UK"},{"name":"Phonica Records","location":"London"},{"name":"Truck Oxford","location":"Oxford"},{"name":"Music Mania Ltd","location":"UK"},{"name":"Vintage & Vinyl","location":"UK"},{"name":"Sound Cellar","location":"UK"},{"name":"Voxbox","location":"UK"},{"name":"Vinyl Attraction","location":"UK"},{"name":"Raven Retail","location":"UK"},{"name":"Vinyl Underground","location":"UK"},{"name":"Starr Records","location":"UK"},{"name":"Jacaranda Records","location":"Liverpool"},{"name":"Tower Records","location":"Dublin"},{"name":"Tubeway Records","location":"UK"},{"name":"Saturnalia Records","location":"UK"},{"name":"Museum Vinyl","location":"UK"},{"name":"Five Rise Records","location":"UK"},{"name":"Black Circle Records","location":"UK"},{"name":"The Vault Collective","location":"UK"},{"name":"Up North Records","location":"UK"},{"name":"Slow Century Records","location":"UK"},{"name":"Heathen Chemistry","location":"UK"},{"name":"Beyond Vinyl","location":"UK"},{"name":"Number One Records","location":"UK"},{"name":"Rubber Soul Records","location":"UK"},{"name":"Good Vibes Neighbourhood Store","location":"UK"},{"name":"Intense Records","location":"Nottingham"},{"name":"Record Room","location":"UK"},{"name":"Golden Discs","location":"Drogheda"},{"name":"Golden Discs","location":"Galway"},{"name":"Golden Discs","location":"Swords"},{"name":"Crash Records","location":"Leeds"},{"name":"Ventnor Exchange","location":"UK"},{"name":"Soul Brother","location":"London"},{"name":"Red House Records","location":"UK"},{"name":"Spun Out","location":"UK"},{"name":"Sound Records IOM","location":"Isle of Man"},{"name":"The Vinyl Whistle","location":"UK"},{"name":"Sounds Of The Universe","location":"London"},{"name":"Bella Union Vinyl Shop","location":"UK"},{"name":"S T Records","location":"UK"},{"name":"Stone Rock Records","location":"UK"},{"name":"Sister Ray","location":"London"},{"name":"Left for Dead","location":"UK"},{"name":"Love Music","location":"UK"},{"name":"Peckham Soul","location":"London"},{"name":"Steamboat Records","location":"UK"},{"name":"Revo Records","location":"UK"},{"name":"Seedee Jons","location":"UK"},{"name":"Future Audio","location":"UK"},{"name":"Jam Records","location":"UK"},{"name":"Spinning Discs Sheffield","location":"Sheffield"},{"name":"The LP Cafe","location":"UK"},{"name":"The Record Shop Ltd","location":"UK"},{"name":"Honest Jon's Records","location":"London"},{"name":"Sound Records","location":"UK"},{"name":"Venus Vinyl","location":"UK"},{"name":"Grooves Records","location":"UK"},{"name":"Music's Not Dead","location":"UK"},{"name":"The Vinyl Frontier","location":"UK"},{"name":"Record Vault","location":"UK"},{"name":"Polar Bear","location":"UK"},{"name":"Vinyl Head Record Shop","location":"UK"},{"name":"Casbah Records","location":"UK"},{"name":"Jumbo Records","location":"Leeds"},{"name":"Tough Love St Leonards","location":"UK"},{"name":"Strip Joint Records","location":"UK"},{"name":"Yew Tree Records","location":"UK"},{"name":"Over The Moon Records","location":"UK"},{"name":"Underground Solution","location":"UK"},{"name":"Golden Discs","location":"Athlone"},{"name":"JM Records","location":"UK"},{"name":"The Musical Box","location":"UK"},{"name":"Hundred Records","location":"UK"},{"name":"Longplay","location":"Dublin"},{"name":"Berwick Street Record Emporium","location":"London"},{"name":"Spin Inn","location":"Cork"},{"name":"Rough Trade East","location":"London"},{"name":"Rhythm Section International","location":"London"},{"name":"Banquet Records","location":"Kingston"},{"name":"Norman Records","location":"Leeds"},{"name":"Coda Music","location":"Edinburgh"},{"name":"Acid Jazz Records","location":"London"},{"name":"Beatin' Rhythm","location":"Manchester"},{"name":"Deep Cuts","location":"London"},{"name":"Reckless Records","location":"London"},{"name":"Selectadisc","location":"Nottingham"},{"name":"Probe Records","location":"Liverpool"},{"name":"Fopp","location":"Glasgow"},{"name":"Vinyl Exchange","location":"Manchester"},{"name":"Pure Groove","location":"London"},{"name":"All Ages Records","location":"London"},{"name":"Love Vinyl","location":"London"},{"name":"Flashback Records","location":"London"},{"name":"Eldica","location":"London"},{"name":"Intoxica!","location":"London"},{"name":"Record & Tape Exchange","location":"London"},{"name":"Vinyl Junkies","location":"London"},{"name":"Lucky Seven Records","location":"London"},{"name":"Bear Tree Records","location":"Sheffield"},{"name":"RPM Records","location":"Edinburgh"},{"name":"Elvis Shakespeare","location":"Edinburgh"},{"name":"Vinyl Villains","location":"Edinburgh"},{"name":"Avalanche Records","location":"Edinburgh"},{"name":"Piccadilly Records","location":"Manchester"},{"name":"Townsend Records","location":"Clitheroe"},{"name":"Record Collector","location":"Sheffield"},{"name":"Tangled Parrot","location":"Hereford"},{"name":"Assai","location":"Dundee"},{"name":"Rough Trade Vintage","location":"London"},{"name":"Dig Vinyl","location":"West Kirby"},{"name":"Resident Music","location":"Brighton"},{"name":"Assai","location":"Edinburgh"},{"name":"Stax of Wax","location":"Salisbury"},{"name":"Galaxy Records","location":"Poole"},{"name":"Spiller's Records","location":"Cardiff"},{"name":"Record Hunter","location":"Dublin"},{"name":"Golden Discs","location":"Navan"},{"name":"Manic Street Music","location":"Carmarthen"},{"name":"Timewarp Music","location":"Aberdeen"},{"name":"The Record Bar","location":"Leeds"},{"name":"Yorkshire Sound","location":"Selby"},{"name":"Wah Wah Records","location":"UK"},{"name":"Spinning Around Records","location":"UK"},{"name":"Rarekind Records","location":"UK"},{"name":"Just Dropped In","location":"UK"},{"name":"Vinyl Audio Cafe","location":"UK"},{"name":"Back to Mono","location":"UK"},{"name":"33 RPM","location":"UK"},{"name":"Tasty Records","location":"UK"},{"name":"RPM Music","location":"UK"},{"name":"Spindizzy Records","location":"UK"},{"name":"Pure Vinyl Records","location":"UK"},{"name":"Andy's Records","location":"UK"},{"name":"Reggie's Retro Record Store","location":"UK"},{"name":"101 Collectors Records","location":"UK"},{"name":"Beatdown Records","location":"UK"},{"name":"Bell, Book Candle","location":"UK"},{"name":"Smugglers Records","location":"UK"},{"name":"Europa Music","location":"UK"},{"name":"Cruisin Records","location":"UK"},{"name":"The Orpington","location":"UK"},{"name":"Toms Record Shop","location":"UK"},{"name":"Grinning Soul Records","location":"UK"},{"name":"Level Crossing Records","location":"UK"},{"name":"Hectic Records","location":"UK"},{"name":"Wax and Beans","location":"UK"},{"name":"Some Great Reward","location":"UK"},{"name":"Maestro Records","location":"UK"},{"name":"Global Groove","location":"UK"},{"name":"Diverse Vinyl","location":"UK"},{"name":"Cool Discs Music","location":"UK"},{"name":"Rockabuy Records","location":"UK"},{"name":"Missing Records","location":"UK"},{"name":"Catty Records","location":"UK"},{"name":"Hog's Head Beer Cafe","location":"UK"},{"name":"Hot Salvation","location":"UK"},{"name":"Backtrack Records","location":"UK"},{"name":"Broken Records","location":"UK"},{"name":"Music Minded","location":"UK"},{"name":"Bowerbird Records","location":"UK"},{"name":"Dragon Records","location":"UK"},{"name":"vinyl109","location":"UK"},{"name":"Ear Worm Records","location":"UK"},{"name":"Abbey Records","location":"UK"},{"name":"Vinyl Lounge","location":"UK"},{"name":"Music Stop","location":"UK"},{"name":"Arcade Records","location":"UK"},{"name":"Deckchair Records","location":"UK"},{"name":"Zebedee's Records","location":"UK"},{"name":"Underground Music","location":"UK"},{"name":"Spin It Records","location":"UK"},{"name":"Vinylicious","location":"UK"},{"name":"Record Surplus","location":"UK"},{"name":"Unearthed Records","location":"UK"},{"name":"Vinylheads","location":"UK"},{"name":"Spun Records","location":"UK"},{"name":"Sounds Good","location":"UK"},{"name":"Crumbs Records","location":"UK"},{"name":"SIDESHOW Records","location":"UK"},{"name":"Play Music","location":"UK"},{"name":"Resonance Records","location":"UK"},{"name":"Flipside Records","location":"UK"},{"name":"Vinilo Records","location":"UK"},{"name":"Drift Records","location":"UK"},{"name":"Music Zone","location":"UK"},{"name":"Record Archive","location":"UK"},{"name":"Wax Lyrical","location":"UK"},{"name":"Beat Records","location":"UK"},{"name":"Deja Vu Records","location":"UK"},{"name":"Music Box","location":"UK"},{"name":"Revolution Records","location":"UK"},{"name":"Vinyl Revival","location":"UK"},{"name":"Third Eye Records","location":"UK"},{"name":"Flatpack Records","location":"UK"},{"name":"Good Vibrations","location":"UK"},{"name":"Underground Records","location":"UK"},{"name":"Lost In Music","location":"UK"},{"name":"Pie & Vinyl","location":"UK"},{"name":"Electric Elephant Records","location":"UK"},{"name":"Vinyl Tap","location":"UK"},{"name":"Shockwaves","location":"UK"},{"name":"Haggle Vinyl","location":"London"},{"name":"Record Shack","location":"London"},{"name":"Out On The Floor","location":"London"},{"name":"Minus Zero Records","location":"London"},{"name":"Haggle","location":"London"},{"name":"Ray's Jazz","location":"London"},{"name":"Underground Solu'shn","location":"Edinburgh"}
         ];
 
-        // --- MAP SETUP ---
-        const map = L.map('map').setView([54.5, -3.5], 6);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
-            maxZoom: 18
-        }).addTo(map);
-
-        const customIcon = L.divIcon({
-            className: '',
-            html: `<div style="width:28px;height:28px;background:#FF6B6B;border:3px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center">
-                       <div style="width:6px;height:6px;background:white;border-radius:50%"></div>
-                   </div>`,
-            iconSize: [28, 28],
-            iconAnchor: [14, 14],
-            popupAnchor: [0, -16]
-        });
-
-        // Geocode stores that have a real city (not just "UK")
-        const geocodableStores = stores.filter(s => s.location !== 'UK' && s.location !== 'Isle of Man');
-        let geocoded = 0;
-        const statusEl = document.getElementById('geocodeStatus');
-
-        async function geocodeStore(store, index) {
-            // Stagger requests to respect Nominatim rate limit (1/sec)
-            await new Promise(r => setTimeout(r, index * 1100));
-            try {
-                const query = encodeURIComponent(`${store.name}, ${store.location}, UK`);
-                const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1&countrycodes=gb,ie`, {
-                    headers: { 'User-Agent': 'findyl/1.0 (https://findyl.co.uk)' }
-                });
-                const data = await res.json();
-                if (data && data[0]) {
-                    const lat = parseFloat(data[0].lat);
-                    const lon = parseFloat(data[0].lon);
-                    const marker = L.marker([lat, lon], { icon: customIcon }).addTo(map);
-                    marker.bindPopup(`
-                        <div>
-                            <strong style="font-size:1rem">${store.name}</strong>
-                            <p style="color:#6B7280;font-size:0.8rem;margin:4px 0">${store.location}</p>
-                            <a href="https://www.google.com/maps/search/${encodeURIComponent(store.name + ' ' + store.location)}" 
-                               target="_blank" style="color:#FF6B6B;font-size:0.8rem">Open in Maps →</a>
-                        </div>
-                    `);
-                    geocoded++;
-                    statusEl.textContent = `${geocoded} stores mapped`;
-                }
-            } catch (e) {
-                // silently skip failed geocodes
-            }
+        function getInitials(name) {
+            return name.split(' ')
+                .filter(w => w.length > 1 && /[a-zA-Z]/.test(w[0]))
+                .map(w => w[0].toUpperCase())
+                .slice(0, 2).join('');
         }
 
-        // Geocode in batches
-        geocodableStores.forEach((store, i) => geocodeStore(store, i));
-
-        // --- NEAR ME ---
-        document.getElementById('nearMeBtn').addEventListener('click', () => {
-            if (!navigator.geolocation) {
-                alert('Geolocation not supported by your browser.');
-                return;
-            }
-            navigator.geolocation.getCurrentPosition(pos => {
-                const { latitude, longitude } = pos.coords;
-                map.setView([latitude, longitude], 11);
-                L.circleMarker([latitude, longitude], {
-                    radius: 10, fillColor: '#3B82F6', color: 'white',
-                    weight: 3, opacity: 1, fillOpacity: 0.9
-                }).addTo(map).bindPopup('You are here').openPopup();
-                showTab('map');
-            }, () => alert('Could not get your location.'));
-        });
-
-        // --- TAB SWITCHING ---
-        function showTab(tab) {
-            const mapView = document.getElementById('mapView');
-            const listView = document.getElementById('listView');
-            const tabMap = document.getElementById('tabMap');
-            const tabList = document.getElementById('tabList');
-            if (tab === 'map') {
-                mapView.classList.remove('hidden');
-                listView.classList.add('hidden');
-                tabMap.classList.add('active');
-                tabMap.classList.remove('bg-white', 'text-gray-600');
-                tabList.classList.remove('active');
-                tabList.classList.add('bg-white', 'text-gray-600');
-                map.invalidateSize();
-            } else {
-                listView.classList.remove('hidden');
-                mapView.classList.add('hidden');
-                tabList.classList.add('active');
-                tabList.classList.remove('bg-white', 'text-gray-600');
-                tabMap.classList.remove('active');
-                tabMap.classList.add('bg-white', 'text-gray-600');
-                renderCards(currentFiltered);
-            }
-        }
-
-        // --- STORE CARDS ---
-        let currentFiltered = stores;
-
-        function renderCards(list) {
+        function renderStores(list) {
             const grid = document.getElementById('storesGrid');
             const noResults = document.getElementById('noResults');
             document.getElementById('storeCount').textContent = list.length;
@@ -488,75 +110,84 @@
             if (list.length === 0) {
                 grid.innerHTML = '';
                 noResults.classList.remove('hidden');
+                document.getElementById('noResultsQuery').textContent = document.getElementById('searchInput').value;
                 return;
             }
+
             noResults.classList.add('hidden');
 
             grid.innerHTML = list.map((store, i) => {
                 const hasCity = store.location !== 'UK';
-                const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(store.name + (hasCity ? ' ' + store.location : '') + ' record store')}`;
-                const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(store.name + (hasCity ? ' ' + store.location : '') + ' record shop')}`;
-                const rsdUrl = `https://www.recordstoreday.co.uk/record-shop/${encodeURIComponent(store.name.toLowerCase().replace(/\s+/g, '-'))}`;
-                const initials = store.name.split(' ').filter(w => w.length > 1).map(w => w[0].toUpperCase()).slice(0, 2).join('');
+                const mapsQ = encodeURIComponent(`${store.name} record store${hasCity ? ' ' + store.location : ' UK'}`);
+                const webQ = encodeURIComponent(`${store.name}${hasCity ? ' ' + store.location : ''} record shop site`);
+                const rsdSlug = store.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                const initials = getInitials(store.name);
 
                 return `
-                <div class="store-card bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden" style="animation-delay:${Math.min(i * 20, 300)}ms">
-                    <div class="p-5">
-                        <div class="flex items-start gap-3 mb-3">
-                            <div style="width:40px;height:40px;min-width:40px;border-radius:10px;background:#FFE5E5;display:flex;align-items:center;justify-content:center">
-                                <span style="color:#FF6B6B;font-weight:700;font-size:0.85rem">${initials}</span>
-                            </div>
-                            <div>
-                                <h3 class="font-semibold text-gray-900 text-base leading-tight">${store.name}</h3>
-                                <p class="text-gray-500 text-sm mt-0.5 flex items-center gap-1">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    </svg>
-                                    ${hasCity ? store.location : 'UK'}
-                                </p>
-                            </div>
+                <div class="store-card bg-white rounded-xl border border-gray-100 shadow-sm p-5" style="animation-delay:${Math.min(i * 12, 500)}ms">
+                    <div class="flex items-start gap-3 mb-4">
+                        <div style="width:42px;height:42px;min-width:42px;border-radius:10px;background:#FFE5E5;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <span style="color:#FF6B6B;font-weight:700;font-size:0.8rem">${initials}</span>
                         </div>
-                        <div class="flex gap-2 flex-wrap">
-                            <a href="${mapsUrl}" target="_blank" rel="noopener"
-                               class="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-500 transition-colors">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-semibold text-gray-900 text-base leading-snug">${store.name}</h3>
+                            <p class="text-gray-400 text-sm mt-0.5 flex items-center gap-1">
+                                <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 </svg>
-                                Directions
-                            </a>
-                            <a href="${searchUrl}" target="_blank" rel="noopener"
-                               class="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-500 transition-colors">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                                </svg>
-                                Website
-                            </a>
-                            <a href="${rsdUrl}" target="_blank" rel="noopener"
-                               class="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-500 transition-colors">
-                                RSD Page
-                            </a>
+                                ${store.location}
+                            </p>
                         </div>
+                    </div>
+                    <div class="flex gap-2 flex-wrap">
+                        <a href="https://www.google.com/maps/search/${mapsQ}" target="_blank" rel="noopener"
+                           class="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-500 transition-colors font-medium">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                            </svg>
+                            Directions
+                        </a>
+                        <a href="https://www.google.com/search?q=${webQ}" target="_blank" rel="noopener"
+                           class="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-500 transition-colors font-medium">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                            </svg>
+                            Website
+                        </a>
+                        <a href="https://www.recordstoreday.co.uk/record-shop/${rsdSlug}" target="_blank" rel="noopener"
+                           class="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-500 transition-colors font-medium">
+                            RSD Page
+                        </a>
                     </div>
                 </div>`;
             }).join('');
         }
 
-        // Initial render of list (hidden until tab switch)
-        renderCards(stores);
+        renderStores(stores);
 
-        // --- SEARCH ---
-        document.getElementById('searchInput').addEventListener('input', function () {
+        const searchInput = document.getElementById('searchInput');
+        const clearBtn = document.getElementById('clearBtn');
+
+        searchInput.addEventListener('input', function () {
             const q = this.value.toLowerCase().trim();
-            currentFiltered = q === '' ? stores : stores.filter(s =>
+            clearBtn.classList.toggle('hidden', q === '');
+            renderStores(q === '' ? stores : stores.filter(s =>
                 s.name.toLowerCase().includes(q) || s.location.toLowerCase().includes(q)
-            );
-            document.getElementById('storeCount').textContent = currentFiltered.length;
-            // Update list if visible
-            const listView = document.getElementById('listView');
-            if (!listView.classList.contains('hidden')) {
-                renderCards(currentFiltered);
-            }
+            ));
+        });
+
+        clearBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            clearBtn.classList.add('hidden');
+            renderStores(stores);
+            searchInput.focus();
+        });
+
+        document.getElementById('clearSearch').addEventListener('click', () => {
+            searchInput.value = '';
+            clearBtn.classList.add('hidden');
+            renderStores(stores);
         });
     </script>
 </body>
