@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- EDIT: Page title for SEO -->
+    <title>ARTICLE TITLE - findyl</title>
+    <!-- EDIT: Meta description (150-160 chars, include target keyword) -->
+    <meta name="description" content="ARTICLE DESCRIPTION HERE">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="theme-color" content="#FF6B6B">
+
+    <!-- Open Graph (for sharing) -->
+    <meta property="og:title" content="ARTICLE TITLE - findyl">
+    <meta property="og:description" content="ARTICLE DESCRIPTION HERE">
+    <meta property="og:image" content="HERO IMAGE URL HERE">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://findyl.co.uk/articles/SLUG-HERE">
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4VKXNETWR4"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-4VKXNETWR4');
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root { --coral: #FF6B6B; --coral-light: #FFE5E5; }
+        body { font-family: 'DM Serif Display', serif; background: #F9FAFB; color: #1F2937; }
+        .serif { font-family: 'DM Serif Display', serif; font-weight: 400; }
+
+        /* Article body typography */
+        .article-body h2 { font-family: 'DM Serif Display', serif; font-size: 1.75rem; margin: 2.5rem 0 1rem; color: #111827; }
+        .article-body h3 { font-family: 'DM Serif Display', serif; font-size: 1.3rem; margin: 2rem 0 0.75rem; color: #111827; }
+        .article-body p { font-size: 1.0625rem; line-height: 1.8; margin-bottom: 1.25rem; color: #374151; }
+        .article-body ul { margin: 1rem 0 1.5rem 1.5rem; list-style: disc; }
+        .article-body ol { margin: 1rem 0 1.5rem 1.5rem; list-style: decimal; }
+        .article-body li { font-size: 1.0625rem; line-height: 1.8; margin-bottom: 0.4rem; color: #374151; }
+        .article-body a { color: var(--coral); text-decoration: underline; text-underline-offset: 3px; }
+        .article-body a:hover { opacity: 0.8; }
+        .article-body strong { font-weight: 400; color: #111827; }
+        .article-body blockquote {
+            border-left: 3px solid var(--coral);
+            padding: 0.5rem 0 0.5rem 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #111827;
+        }
+        .article-body hr { border: none; border-top: 1px solid #E5E7EB; margin: 2.5rem 0; }
+
+        /* Record card (for charts/pre-orders) */
+        .record-card { transition: transform 0.2s, box-shadow 0.2s; }
+        .record-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-20">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <svg width="150" height="50" viewBox="0 0 300 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <clipPath id="bottomHalf">
+                            <rect x="141" y="58" width="56" height="42"/>
+                        </clipPath>
+                    </defs>
+                    <g clip-path="url(#bottomHalf)">
+                        <g transform="translate(169, 58)">
+                            <circle cx="0" cy="0" r="28" fill="none" stroke="#FF6B6B" stroke-width="1"/>
+                            <circle cx="0" cy="0" r="22" fill="none" stroke="#FF6B6B" stroke-width="0.5" opacity="0.6"/>
+                            <circle cx="0" cy="0" r="16" fill="none" stroke="#FF6B6B" stroke-width="0.5" opacity="0.6"/>
+                            <circle cx="0" cy="0" r="9" fill="#FF6B6B"/>
+                            <circle cx="0" cy="0" r="3" fill="white"/>
+                        </g>
+                    </g>
+                    <text x="150" y="50" font-family="'DM Serif Display', serif" font-size="48" fill="#1F2937" text-anchor="middle" font-weight="400">findyl</text>
+                </svg>
+            </a>
+            <nav class="flex items-center gap-6 text-sm text-gray-900">
+                <a href="/" class="hover:text-gray-900">Search</a>
+                <a href="/local-stores" class="hover:text-gray-900">Stores</a>
+                <a href="/articles" class="font-normal" style="color:var(--coral)">Articles</a>
+                <a href="/about" class="hover:text-gray-900">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Image -->
+        <!-- EDIT: Replace src with your article image (Unsplash or other) -->
+        <div class="w-full h-72 md:h-96 overflow-hidden bg-gray-200">
+            <img src="HERO_IMAGE_URL" alt="ARTICLE TITLE"
+                 class="w-full h-full object-cover"/>
+        </div>
+
+        <!-- Article Container -->
+        <div class="max-w-2xl mx-auto px-4 py-12">
+
+            <!-- Breadcrumb -->
+            <nav class="flex items-center gap-2 text-sm text-gray-800 mb-8">
+                <a href="/articles" class="hover:text-gray-900">Articles</a>
+                <span>›</span>
+                <!-- EDIT: Category label and colour class -->
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-normal bg-orange-50 text-orange-600">Charts</span>
+            </nav>
+
+            <!-- Title & Meta -->
+            <header class="mb-10">
+                <!-- EDIT: Article title -->
+                <h1 class="serif text-4xl md:text-5xl mb-5 leading-tight">ARTICLE TITLE HERE</h1>
+                <div class="flex items-center gap-4 text-sm text-gray-800">
+                    <span>By findyl</span>
+                    <span>·</span>
+                    <!-- EDIT: Publish date -->
+                    <time datetime="2026-02-17">17 February 2026</time>
+                    <span>·</span>
+                    <!-- EDIT: Estimated read time -->
+                    <span>5 min read</span>
+                </div>
+            </header>
+
+            <!-- =============================================
+                 ARTICLE BODY — Edit everything below here
+                 ============================================= -->
+            <div class="article-body">
+
+                <p>
+                    INTRO PARAGRAPH — Set the scene. What is this article about and why does it matter to vinyl collectors?
+                </p>
+
+                <h2>Section Heading</h2>
+                <p>
+                    Body copy goes here. Write naturally, include relevant artist names, album titles, and search terms people would use.
+                </p>
+
+                <!-- Example: Record card (use for charts/pre-orders) -->
+                <!--
+                <div class="record-card bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-4 flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg font-normal serif flex-shrink-0" style="background:#FFE5E5;color:#FF6B6B">1</div>
+                    <div class="flex-1">
+                        <p class="font-normal text-gray-900">Album Title</p>
+                        <p class="text-sm text-gray-900">Artist Name</p>
+                    </div>
+                    <a href="/album?name=Album+Title&artist=Artist+Name"
+                       class="text-sm font-normal hover:underline flex-shrink-0" style="color:#FF6B6B">Find it →</a>
+                </div>
+                -->
+
+                <h2>Another Section</h2>
+                <p>More body copy here.</p>
+
+                <blockquote>
+                    A notable quote or highlight from the article can go here.
+                </blockquote>
+
+                <hr>
+
+                <p>Closing paragraph — wrap up the article and ideally include a call to action.</p>
+
+            </div>
+            <!-- End article body -->
+
+            <!-- CTA Box -->
+            <div class="mt-12 p-6 rounded-xl text-white text-center" style="background:var(--coral)">
+                <p class="serif text-xl mb-2">Find these records on findyl</p>
+                <p class="text-sm opacity-90 mb-4">Search prices across UK retailers in seconds</p>
+                <a href="/" class="inline-block bg-white rounded-full px-6 py-2.5 text-sm font-normal hover:opacity-90 transition-opacity" style="color:var(--coral)">
+                    Search vinyl now →
+                </a>
+            </div>
+
+            <!-- Back to articles -->
+            <div class="mt-10 pt-8 border-t border-gray-200">
+                <a href="/articles" class="text-sm font-normal hover:underline" style="color:var(--coral)">
+                    ← Back to all articles
+                </a>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-8">
+        <div class="max-w-6xl mx-auto px-4 py-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-900">
+            <div class="flex items-center gap-2">
+                <svg width="80" height="27" viewBox="0 0 300 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs><clipPath id="bH"><rect x="141" y="58" width="56" height="42"/></clipPath></defs>
+                    <g clip-path="url(#bH)">
+                        <g transform="translate(169, 58)">
+                            <circle cx="0" cy="0" r="28" fill="none" stroke="#FF6B6B" stroke-width="1"/>
+                            <circle cx="0" cy="0" r="9" fill="#FF6B6B"/>
+                            <circle cx="0" cy="0" r="3" fill="white"/>
+                        </g>
+                    </g>
+                    <text x="150" y="50" font-family="'DM Serif Display', serif" font-size="48" fill="#1F2937" text-anchor="middle" font-weight="400">findyl</text>
+                </svg>
+            </div>
+            <nav class="flex gap-6">
+                <a href="/" class="hover:text-gray-900">Search</a>
+                <a href="/local-stores" class="hover:text-gray-900">Stores</a>
+                <a href="/articles" class="hover:text-gray-900">Articles</a>
+                <a href="/about" class="hover:text-gray-900">About</a>
+            </nav>
+            <p>© 2026 findyl. UK vinyl discovery.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
