@@ -120,9 +120,9 @@ export default async function handler(req, res) {
       // Clean album name (remove vinyl variants/editions)
       const cleanAlbum = album
         .replace(/,.*$/, '') // Remove everything after comma
-        .replace(/\s*\(.*?\)\s*/g, '') // Remove parentheses
-        .replace(/\s+(vinyl|lp|2xlp|3xlp|double|triple|deluxe|limited|edition)(\s|$)/gi, ' ') // Remove format words
-        .replace(/\s+/g, ' ') // Normalize spaces
+        .replace(/\(.*?\)/g, '') // Remove parentheses content
+        .replace(/\b(vinyl|lp|2xlp|3xlp|double|triple|deluxe|limited|edition|gatefold|coloured|colored)\b/gi, '') // Remove format words
+        .replace(/\s+/g, ' ') // Normalize multiple spaces to single space
         .trim();
       
       const key = `${artist.toLowerCase()}|||${cleanAlbum.toLowerCase()}`;
@@ -157,9 +157,9 @@ export default async function handler(req, res) {
       // Normalize album names for better matching (remove variant details)
       const cleanAlbum = vc.album
         .replace(/,.*$/, '') // Remove everything after comma (variant details)
-        .replace(/\s*\(.*?\)\s*/g, '') // Remove parentheses content
-        .replace(/\s+(vinyl|lp|2xlp|3xlp|double|triple|deluxe|limited|edition)(\s|$)/gi, ' ') // Remove format words
-        .replace(/\s+/g, ' ') // Normalize spaces
+        .replace(/\(.*?\)/g, '') // Remove parentheses content
+        .replace(/\b(vinyl|lp|2xlp|3xlp|double|triple|deluxe|limited|edition|gatefold|coloured|colored)\b/gi, '') // Remove format words
+        .replace(/\s+/g, ' ') // Normalize multiple spaces to single space
         .trim();
       
       console.log(`VC ${idx + 1}: "${vc.album}" → "${cleanAlbum}"`);
