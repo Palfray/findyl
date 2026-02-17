@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    { "source": "/artist", "destination": "/artist.html" },
+    { "source": "/album", "destination": "/album.html" },
+    { "source": "/results", "destination": "/results.html" },
+    { "source": "/stores", "destination": "/stores.html" },
+    { "source": "/about", "destination": "/about.html" }
+  ]
+}
