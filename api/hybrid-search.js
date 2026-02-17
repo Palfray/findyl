@@ -46,16 +46,31 @@ export default async function handler(req, res) {
       
       console.log('🔍 Calling VinylCastle endpoint:', vcUrl);
       
-      const vcResponse = await fetch(vcUrl);
+      // Add timeout to prevent hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const vcResponse = await fetch(vcUrl, { signal: controller.signal });
+      clearTimeout(timeoutId);
       
       if (vcResponse.ok) {
         vinylCastleResults = await vcResponse.json();
         console.log('✅ VinylCastle found:', vinylCastleResults.length, 'products');
+        
+        if (vinylCastleResults.length > 0) {
+          console.log('First VC result:', JSON.stringify(vinylCastleResults[0]));
+        }
       } else {
+        const errorText = await vcResponse.text();
         console.error('❌ VinylCastle endpoint returned:', vcResponse.status, vcResponse.statusText);
+        console.error('Error details:', errorText);
       }
     } catch (error) {
-      console.error('❌ VinylCastle error:', error.message);
+      if (error.name === 'AbortError') {
+        console.error('❌ VinylCastle request timed out after 10 seconds');
+      } else {
+        console.error('❌ VinylCastle error:', error.message);
+      }
     }
 
     // STEP 3: Search MusicBrainz
@@ -126,12 +141,16 @@ export default async function handler(req, res) {
     });
 
     // Add VinylCastle results
-    vinylCastleResults.forEach(vc => {
+    console.log('🔄 Processing', vinylCastleResults.length, 'VinylCastle results');
+    
+    vinylCastleResults.forEach((vc, idx) => {
       // Normalize album names for better matching (remove variant details)
       const cleanAlbum = vc.album
         .replace(/,.*$/, '') // Remove everything after comma (variant details)
         .replace(/\s*\(.*?\)\s*/g, '') // Remove parentheses content
         .trim();
+      
+      console.log(`VC ${idx + 1}:`, vc.artist, '-', vc.album, '→', cleanAlbum);
       
       const key = `${vc.artist.toLowerCase()}|||${cleanAlbum.toLowerCase()}`;
       
@@ -154,6 +173,7 @@ export default async function handler(req, res) {
             (existingAlbum.includes(cleanAlbum.toLowerCase()) || 
              cleanAlbum.toLowerCase().includes(existingAlbum))) {
           // Add as another buy option to existing album
+          console.log(`  ✅ Matched with existing album:`, existingKey);
           album.buyOptions.push(vinylCastleOption);
           matched = true;
           break;
@@ -162,6 +182,7 @@ export default async function handler(req, res) {
       
       if (!matched) {
         // Create new album entry
+        console.log(`  ➕ Creating new album entry:`, key);
         albumMap.set(key, {
           artist: vc.artist,
           album: cleanAlbum,
