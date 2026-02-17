@@ -237,8 +237,8 @@
                 if (disambiguation) meta.push(disambiguation);
 
                 // Build avatar HTML
-                const avatarHtml = artist.image 
-                    ? `<img src="${artist.image}" alt="${name}" class="w-16 h-16 rounded-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:64px;height:64px;border-radius:50%;background-color:#FFE5E5;align-items:center;justify-content:center"><span style="color:#FF6B6B;font-weight:bold;font-size:1.25rem">${initials}</span></div>`
+                const avatarHtml = artist.image && !artist.image.includes('2a96cbd8b46e442fc41c2b86b821562f')
+                    ? `<img src="${artist.image}" alt="${name}" class="w-16 h-16 rounded-full object-cover" onerror="console.error('Image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex'"><div style="display:none;width:64px;height:64px;border-radius:50%;background-color:#FFE5E5;align-items:center;justify-content:center"><span style="color:#FF6B6B;font-weight:bold;font-size:1.25rem">${initials}</span></div>`
                     : `<div style="width:64px;height:64px;border-radius:50%;background-color:#FFE5E5;display:flex;align-items:center;justify-content:center"><span style="color:#FF6B6B;font-weight:bold;font-size:1.25rem">${initials}</span></div>`;
 
                 return `
