@@ -90,13 +90,26 @@ export default async function handler(req, res) {
         const mbData = await mbResponse.json();
         musicBrainzResults = mbData['release-groups'] || [];
         
-        // Filter to albums only (exclude singles, EPs)
+        // Filter to OFFICIAL STUDIO ALBUMS only (exclude singles, EPs, compilations, live, etc.)
         musicBrainzResults = musicBrainzResults.filter(rg => {
           const primaryType = rg['primary-type'];
-          return primaryType === 'Album';
+          const secondaryTypes = rg['secondary-types'] || [];
+          
+          // Must be a primary Album
+          if (primaryType !== 'Album') return false;
+          
+          // Exclude compilations, live albums, soundtracks, remixes
+          const excludedTypes = ['compilation', 'live', 'soundtrack', 'remix', 'dj-mix', 'mixtape/street'];
+          const hasExcludedType = secondaryTypes.some(type => 
+            excludedTypes.includes(type.toLowerCase())
+          );
+          
+          if (hasExcludedType) return false;
+          
+          return true;
         });
         
-        console.log('✅ MusicBrainz found:', musicBrainzResults.length, 'albums');
+        console.log('✅ MusicBrainz found:', musicBrainzResults.length, 'studio albums');
       }
     } catch (error) {
       console.error('❌ MusicBrainz error:', error.message);
@@ -332,6 +345,8 @@ export default async function handler(req, res) {
         // Add new MusicBrainz-only album
         const mbid = mb.id;
         const year = mb['first-release-date'] ? mb['first-release-date'].substring(0, 4) : null;
+        
+        console.log(`  ➕ Adding MusicBrainz album: "${artist}" - "${album}" (${year || 'no year'})`);
         
         albumMap.set(key, {
           artist: artist,
