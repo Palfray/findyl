@@ -1,179 +1,156 @@
-// Complete Hybrid Search - POPSTORE + VinylCastle + Discogs
-// Sorted by original release date (newest first)
-import popstoreProducts from './popstore-products.json';
-import vinylcastleProducts from './vinylcastle-products.json';
-
 export default async function handler(req, res) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  // Enable CORS
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
   }
 
   const { q } = req.query;
-  if (!q || q.trim() === '') {
+
+  if (!q) {
     return res.status(400).json({ error: 'Search query required' });
   }
 
-  const searchTerm = q.toLowerCase().trim();
+  console.log('🔍 Searching for:', q);
 
   try {
-    console.log('🔍 Searching for:', q);
-    
-    // Search POPSTORE
-    const popstoreResults = popstoreProducts.filter(product => {
-      const artistLower = product.artist?.toLowerCase() || '';
-      const albumLower = product.album?.toLowerCase() || '';
-      
-      // For artist matching
-      // Remove "the" from both for comparison
-      const artistWithoutThe = artistLower.replace(/^the\s+/, '');
-      const searchWithoutThe = searchTerm.replace(/^the\s+/, '');
-      
-      // Artist match: more lenient - includes partial matches
-      const artistMatch = artistLower === searchTerm || 
-                         artistWithoutThe === searchWithoutThe ||
-                         artistLower.startsWith(searchTerm) ||
-                         artistLower.includes(' ' + searchTerm);
-      
-      // If artist matches, include it
-      if (artistMatch) return true;
-      
-      // For album matching:
-      // - Single word searches: match album title freely
-      // - Multi-word searches: DON'T match album (too many false positives)
-      if (searchTerm.includes(' ')) {
-        // Multi-word search - already checked artist above, don't check album
-        return false;
-      } else {
-        // Single word search - check album
-        return albumLower.includes(searchTerm);
+    const searchTerm = q.toLowerCase().trim();
+
+    // STEP 1: Search POPSTORE
+    let popstoreResults = [];
+    try {
+      const popstoreResponse = await fetch(
+        `https://www.awin1.com/cread.php?awinmid=118493&awinaffid=2772514&ued=https://www.wearepopstore.com/search/suggest.json?q=${encodeURIComponent(q)}&resources[type]=product&resources[limit]=20`
+      );
+
+      if (popstoreResponse.ok) {
+        const popstoreData = await popstoreResponse.json();
+        popstoreResults = popstoreData.resources?.results?.products || [];
+        console.log('✅ POPSTORE found:', popstoreResults.length, 'products');
       }
-    });
-    
-    console.log('✅ POPSTORE found:', popstoreResults.length, 'matches');
-
-    // Search VinylCastle  
-    const vinylcastleResults = vinylcastleProducts.filter(product => {
-      const artistLower = product.artist?.toLowerCase() || '';
-      const albumLower = product.album?.toLowerCase() || '';
-      
-      // Exclude cover/tribute albums
-      const isCoverAlbum = albumLower.includes('tribute') || 
-                          albumLower.includes('cover') ||
-                          albumLower.includes('lullaby renditions') ||
-                          albumLower.includes('rockabye baby') ||
-                          artistLower.includes('tribute') ||
-                          artistLower.includes('various');
-      
-      if (isCoverAlbum) return false;
-      
-      // For artist matching - more lenient
-      const artistWithoutThe = artistLower.replace(/^the\s+/, '');
-      const searchWithoutThe = searchTerm.replace(/^the\s+/, '');
-      
-      const artistMatch = artistLower === searchTerm || 
-                         artistWithoutThe === searchWithoutThe ||
-                         artistLower.startsWith(searchTerm) ||
-                         artistLower.includes(' ' + searchTerm);
-      
-      // If artist matches, include it
-      if (artistMatch) return true;
-      
-      // For album matching:
-      // - Single word searches: match album title freely
-      // - Multi-word searches: DON'T match album (too many false positives)
-      if (searchTerm.includes(' ')) {
-        return false;
-      } else {
-        return albumLower.includes(searchTerm);
-      }
-    });
-    
-    console.log('✅ VinylCastle found:', vinylcastleResults.length, 'matches');
-
-    // Search Discogs API
-    const discogsUrl = `https://api.discogs.com/database/search?q=${encodeURIComponent(q)}&type=release&format=vinyl&per_page=100`;
-
-    const discogsResponse = await fetch(discogsUrl, {
-      headers: {
-        'User-Agent': 'Findyl/1.0 +https://findyl.co.uk',
-        'Authorization': `Discogs key=${process.env.DISCOGS_CONSUMER_KEY}, secret=${process.env.DISCOGS_CONSUMER_SECRET}`
-      },
-    });
-
-    let discogsResults = [];
-    if (discogsResponse.ok) {
-      const discogsData = await discogsResponse.json();
-      discogsResults = discogsData.results || [];
-      
-      // Filter to albums only (no singles/EPs)
-      discogsResults = discogsResults.filter(release => {
-        const formats = (release.format || []).join(' ').toLowerCase();
-        
-        // Exclude singles and EPs
-        if (formats.includes('7"') || formats.includes('7\'')) return false;
-        if (formats.includes('single') && !formats.includes('12"')) return false;
-        if (formats.match(/\bep\b/i) && !formats.includes('lp')) return false;
-        
-        return true;
-      });
-      
-      console.log('✅ Discogs found:', discogsResults.length, 'albums');
+    } catch (error) {
+      console.error('❌ POPSTORE error:', error.message);
     }
 
-    // Merge results - create album map
+    // STEP 2: Load VinylCastle products from JSON
+    let vinylCastleResults = [];
+    try {
+      const vcData = await import('./vinylcastle-products.json');
+      const allProducts = vcData.default || vcData;
+      
+      // Search VinylCastle products
+      vinylCastleResults = allProducts.filter(product => {
+        const productText = `${product.artist} ${product.album}`.toLowerCase();
+        return productText.includes(searchTerm);
+      }).slice(0, 50); // Limit to 50 results
+      
+      console.log('✅ VinylCastle found:', vinylCastleResults.length, 'products');
+    } catch (error) {
+      console.error('❌ VinylCastle error:', error.message);
+    }
+
+    // STEP 3: Search MusicBrainz
+    let musicBrainzResults = [];
+    try {
+      const mbResponse = await fetch(
+        `https://musicbrainz.org/ws/2/release-group/?query=${encodeURIComponent(q)}&limit=100&fmt=json`,
+        {
+          headers: {
+            'User-Agent': 'findyl/1.0 (https://findyl.co.uk)',
+            'Accept': 'application/json'
+          }
+        }
+      );
+
+      if (mbResponse.ok) {
+        const mbData = await mbResponse.json();
+        musicBrainzResults = mbData['release-groups'] || [];
+        
+        // Filter to albums only (exclude singles, EPs)
+        musicBrainzResults = musicBrainzResults.filter(rg => {
+          const primaryType = rg['primary-type'];
+          return primaryType === 'Album';
+        });
+        
+        console.log('✅ MusicBrainz found:', musicBrainzResults.length, 'albums');
+      }
+    } catch (error) {
+      console.error('❌ MusicBrainz error:', error.message);
+    }
+
+    // STEP 4: Merge results - create album map
     const albumMap = new Map();
     
     // Add POPSTORE results
     popstoreResults.forEach(p => {
-      const key = `${p.artist.toLowerCase()}|||${p.album.toLowerCase()}`;
-      if (!albumMap.has(key)) {
-        albumMap.set(key, {
-          artist: p.artist,
-          album: p.album,
-          cover: p.image,
-          year: null, // Will be filled from Discogs if available
-          buyOptions: []
-        });
-      }
-      albumMap.get(key).buyOptions.push({
-        source: 'popstore',
-        storeName: 'POP Store',
-        price: p.price,
-        link: p.link,
-        availability: p.availability
-      });
-    });
-    
-    // Add VinylCastle results (merge with POPSTORE if same album)
-    vinylcastleResults.forEach(v => {
-      const key = `${v.artist.toLowerCase()}|||${v.album.toLowerCase()}`;
-      if (!albumMap.has(key)) {
-        albumMap.set(key, {
-          artist: v.artist,
-          album: v.album,
-          cover: v.image,
-          year: null,
-          buyOptions: []
-        });
-      }
-      albumMap.get(key).buyOptions.push({
-        source: 'vinylcastle',
-        storeName: 'VinylCastle',
-        price: v.price,
-        link: v.link,
-        availability: v.availability
-      });
-    });
-    
-    console.log('📦 Merged retailers into', albumMap.size, 'unique albums');
-    
-    // Add Discogs results (only if not already in retailers AND artist matches)
-    discogsResults.forEach(d => {
-      const discogsTitle = d.title.toLowerCase();
+      // Extract artist and album from title
+      const titleParts = p.title.split(' - ');
+      let artist = 'Unknown Artist';
+      let album = p.title;
       
-      // Extract artist from Discogs title (before first " - ")
-      const parts = d.title.split(' - ');
-      const artist = parts[0] || 'Unknown Artist';
+      if (titleParts.length >= 2) {
+        artist = titleParts[0].trim();
+        album = titleParts.slice(1).join(' - ').trim();
+      }
+      
+      const key = `${artist.toLowerCase()}|||${album.toLowerCase()}`;
+      
+      if (!albumMap.has(key)) {
+        albumMap.set(key, {
+          artist: artist,
+          album: album,
+          year: null,
+          format: 'Vinyl',
+          cover: p.image || '',
+          buyOptions: [{
+            storeName: 'POP Store',
+            price: parseFloat(p.price),
+            link: `https://www.awin1.com/cread.php?awinmid=118493&awinaffid=2772514&ued=${encodeURIComponent(p.url)}`,
+            source: 'popstore',
+            availability: p.available ? 'In Stock' : 'Out of Stock'
+          }]
+        });
+      }
+    });
+
+    // Add VinylCastle results
+    vinylCastleResults.forEach(vc => {
+      const key = `${vc.artist.toLowerCase()}|||${vc.album.toLowerCase()}`;
+      
+      const price = parseFloat(vc.price);
+      const vinylCastleOption = {
+        storeName: 'Vinyl Castle',
+        price: price,
+        link: vc.deeplink,
+        source: 'vinylcastle',
+        availability: vc.in_stock === 'in_stock' ? 'In Stock' : 'Out of Stock'
+      };
+      
+      if (albumMap.has(key)) {
+        // Add as another buy option
+        albumMap.get(key).buyOptions.push(vinylCastleOption);
+      } else {
+        // Create new album entry
+        albumMap.set(key, {
+          artist: vc.artist,
+          album: vc.album,
+          year: null,
+          format: 'Vinyl',
+          cover: vc.image_url || '',
+          buyOptions: [vinylCastleOption]
+        });
+      }
+    });
+
+    // Add MusicBrainz results (only if not already in retailers AND artist matches)
+    musicBrainzResults.forEach(mb => {
+      const artist = mb['artist-credit'] ? mb['artist-credit'][0].name : 'Unknown Artist';
+      const album = mb.title;
       const artistLower = artist.toLowerCase();
       
       // Apply lenient artist matching
@@ -188,7 +165,7 @@ export default async function handler(req, res) {
                          artistWithoutThe === searchWithoutThe ||
                          artistLower.startsWith(searchTerm) ||
                          artistLower.includes(' ' + searchTerm) ||
-                         allWordsMatch; // NEW: More lenient - all search words in artist name
+                         allWordsMatch;
       
       // For multi-word searches, ONLY include if artist matches
       // For single-word searches, can match album too
@@ -198,99 +175,83 @@ export default async function handler(req, res) {
         shouldInclude = artistMatch;
       } else {
         // Single word: match artist OR album
-        const album = parts.slice(1).join(' - ') || d.title;
         const albumLower = album.toLowerCase();
         shouldInclude = artistMatch || albumLower.includes(searchTerm);
       }
       
       if (!shouldInclude) return;
       
+      const key = `${artistLower}|||${album.toLowerCase()}`;
+      
       // Check if already have this album from retailers
       let isDuplicate = false;
-      for (let [key, album] of albumMap) {
-        if (discogsTitle.includes(album.artist.toLowerCase()) && 
-            discogsTitle.includes(album.album.toLowerCase())) {
+      for (let [existingKey] of albumMap) {
+        if (existingKey === key) {
           isDuplicate = true;
-          // Update year from Discogs if we don't have it
-          if (!album.year && d.year) {
-            album.year = parseInt(d.year);
+          // Update year from MusicBrainz if we don't have it
+          const existing = albumMap.get(key);
+          if (!existing.year && mb['first-release-date']) {
+            existing.year = mb['first-release-date'].substring(0, 4);
           }
           break;
         }
       }
       
       if (!isDuplicate) {
-        const albumTitle = parts.slice(1).join(' - ') || d.title;
+        // Add new MusicBrainz-only album
+        const mbid = mb.id;
+        const year = mb['first-release-date'] ? mb['first-release-date'].substring(0, 4) : null;
         
-        const key = `${artist.toLowerCase()}|||${albumTitle.toLowerCase()}`;
         albumMap.set(key, {
           artist: artist,
-          album: albumTitle,
-          cover: d.cover_image || d.thumb || 'https://via.placeholder.com/300x300?text=Vinyl+Record',
-          year: d.year ? parseInt(d.year) : null,
-          discogs_url: d.uri ? `https://www.discogs.com${d.uri}` : null,
-          buyOptions: [] // Discogs albums have no direct buy options
+          album: album,
+          year: year,
+          format: 'Vinyl',
+          cover: `https://coverartarchive.org/release-group/${mbid}/front-500`,
+          buyOptions: [],
+          musicbrainz_url: `https://musicbrainz.org/release-group/${mbid}`,
+          musicbrainz_id: mbid
         });
       }
     });
+
+    // Convert map to array and sort by price
+    let results = Array.from(albumMap.values());
     
-    console.log('📦 Total unique albums after Discogs:', albumMap.size);
-    
-    // Convert map to results array
-    const results = Array.from(albumMap.values()).map(album => {
-      const result = {
-        title: `${album.artist} - ${album.album}`,
-        artist: album.artist,
-        album: album.album,
-        year: album.year,
-        format: 'Vinyl',
-        cover: album.cover
-      };
+    // Sort: albums with buy options first (by lowest price), then MusicBrainz-only
+    results.sort((a, b) => {
+      const aHasPrice = a.buyOptions.length > 0;
+      const bHasPrice = b.buyOptions.length > 0;
       
-      // If has buy options, add them with lowest price first
-      if (album.buyOptions && album.buyOptions.length > 0) {
-        // Sort buy options by price (lowest first)
-        album.buyOptions.sort((a, b) => a.price - b.price);
-        
-        result.buyOptions = album.buyOptions;
-        result.price = album.buyOptions[0].price; // Lowest price
-        result.currency = 'GBP';
-      } else if (album.discogs_url) {
-        // Discogs-only album
-        result.discogs_url = album.discogs_url;
+      if (aHasPrice && !bHasPrice) return -1;
+      if (!aHasPrice && bHasPrice) return 1;
+      
+      if (aHasPrice && bHasPrice) {
+        const aMinPrice = Math.min(...a.buyOptions.map(opt => opt.price));
+        const bMinPrice = Math.min(...b.buyOptions.map(opt => opt.price));
+        return aMinPrice - bMinPrice;
       }
       
-      return result;
+      // Both have no prices - sort by year (newest first)
+      if (a.year && b.year) {
+        return parseInt(b.year) - parseInt(a.year);
+      }
+      if (a.year) return -1;
+      if (b.year) return 1;
+      
+      return 0;
     });
+
+    console.log('📦 Total unique albums:', results.length);
     
-    // Sort by release year (newest first), but retailers always at top
-    results.sort((a, b) => {
-      const aHasBuyOptions = a.buyOptions && a.buyOptions.length > 0;
-      const bHasBuyOptions = b.buyOptions && b.buyOptions.length > 0;
-      
-      // Retailers first
-      if (aHasBuyOptions && !bHasBuyOptions) return -1;
-      if (bHasBuyOptions && !aHasBuyOptions) return 1;
-      
-      // Then by year (newest first)
-      const yearA = a.year || 0;
-      const yearB = b.year || 0;
-      return yearB - yearA;
-    });
+    const withBuyOptions = results.filter(r => r.buyOptions.length > 0).length;
+    const musicBrainzOnly = results.filter(r => r.buyOptions.length === 0).length;
+    console.log(`💰 With prices: ${withBuyOptions}, 🎵 MusicBrainz only: ${musicBrainzOnly}`);
 
-    console.log('📤 Returning', results.length, 'sorted results');
-
-    return res.status(200).json({
-      query: q,
-      total: results.length,
-      results: results
-    });
+    return res.status(200).json(results);
 
   } catch (error) {
-    console.error('❌ Search error:', error);
-    return res.status(500).json({ 
-      error: 'Search failed',
-      message: error.message 
-    });
+    console.error('Search error:', error);
+    return res.status(500).json({ error: 'Search failed', details: error.message });
   }
 }
