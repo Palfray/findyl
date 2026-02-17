@@ -163,18 +163,44 @@
             }
         }
 
+        const LASTFM_API_KEY = 'd3f4facf02b4045ad1158dff7b3e813a';
+        
         async function getArtistImage(artistName) {
             try {
+                console.log('[Client] Fetching image for:', artistName);
+                
+                // Call Last.fm API directly
                 const response = await fetch(
-                    `/api/lastfm-artist?artist=${encodeURIComponent(artistName)}`
+                    `https://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=${encodeURIComponent(artistName)}&api_key=${LASTFM_API_KEY}&format=json`
                 );
                 
-                if (!response.ok) return null;
+                console.log('[Client] Response status:', response.status);
+                
+                if (!response.ok) {
+                    console.error('[Client] Failed to fetch artist image:', response.status);
+                    return null;
+                }
                 
                 const data = await response.json();
-                return data.image || null;
+                console.log('[Client] Artist data:', data);
+                
+                if (data.error) {
+                    console.error('[Client] Last.fm error:', data.message);
+                    return null;
+                }
+                
+                // Extract image URL (prefer extralarge, fallback to large)
+                const images = data.artist?.image || [];
+                const imageUrl = images.find(img => img.size === 'extralarge')?.['#text'] ||
+                                 images.find(img => img.size === 'large')?.['#text'] ||
+                                 images.find(img => img.size === 'medium')?.['#text'] ||
+                                 null;
+                
+                console.log('[Client] Image URL:', imageUrl);
+                
+                return imageUrl;
             } catch (error) {
-                console.error('Error fetching artist image:', error);
+                console.error('[Client] Error fetching artist image:', error);
                 return null;
             }
         }
