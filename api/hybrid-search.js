@@ -117,7 +117,17 @@ export default async function handler(req, res) {
         album = titleParts.slice(1).join(' - ').trim();
       }
       
-      const key = `${artist.toLowerCase()}|||${album.toLowerCase()}`;
+      // Clean album name (remove vinyl variants/editions)
+      const cleanAlbum = album
+        .replace(/,.*$/, '') // Remove everything after comma
+        .replace(/\s*\(.*?\)\s*/g, '') // Remove parentheses
+        .replace(/\s+(vinyl|lp|2xlp|3xlp|double|triple|deluxe|limited|edition)(\s|$)/gi, ' ') // Remove format words
+        .replace(/\s+/g, ' ') // Normalize spaces
+        .trim();
+      
+      const key = `${artist.toLowerCase()}|||${cleanAlbum.toLowerCase()}`;
+      
+      console.log(`POPSTORE: "${album}" → "${cleanAlbum}"`);
       
       // Build proper POPSTORE URL
       const popstoreUrl = p.url.startsWith('http') ? p.url : `https://www.wearepopstore.com${p.url}`;
@@ -125,7 +135,7 @@ export default async function handler(req, res) {
       if (!albumMap.has(key)) {
         albumMap.set(key, {
           artist: artist,
-          album: album,
+          album: cleanAlbum,
           year: null,
           format: 'Vinyl',
           cover: p.image || '',
@@ -148,9 +158,11 @@ export default async function handler(req, res) {
       const cleanAlbum = vc.album
         .replace(/,.*$/, '') // Remove everything after comma (variant details)
         .replace(/\s*\(.*?\)\s*/g, '') // Remove parentheses content
+        .replace(/\s+(vinyl|lp|2xlp|3xlp|double|triple|deluxe|limited|edition)(\s|$)/gi, ' ') // Remove format words
+        .replace(/\s+/g, ' ') // Normalize spaces
         .trim();
       
-      console.log(`VC ${idx + 1}:`, vc.artist, '-', vc.album, '→', cleanAlbum);
+      console.log(`VC ${idx + 1}: "${vc.album}" → "${cleanAlbum}"`);
       
       const key = `${vc.artist.toLowerCase()}|||${cleanAlbum.toLowerCase()}`;
       
@@ -168,15 +180,18 @@ export default async function handler(req, res) {
       for (let [existingKey, album] of albumMap) {
         const [existingArtist, existingAlbum] = existingKey.split('|||');
         
-        // Check if same artist and album title contains the clean album name
-        if (existingArtist === vc.artist.toLowerCase() && 
-            (existingAlbum.includes(cleanAlbum.toLowerCase()) || 
-             cleanAlbum.toLowerCase().includes(existingAlbum))) {
-          // Add as another buy option to existing album
-          console.log(`  ✅ Matched with existing album:`, existingKey);
-          album.buyOptions.push(vinylCastleOption);
-          matched = true;
-          break;
+        // Check if same artist and album title matches (fuzzy)
+        if (existingArtist === vc.artist.toLowerCase()) {
+          // Exact match or one contains the other
+          if (existingAlbum === cleanAlbum.toLowerCase() ||
+              existingAlbum.includes(cleanAlbum.toLowerCase()) || 
+              cleanAlbum.toLowerCase().includes(existingAlbum)) {
+            // Add as another buy option to existing album
+            console.log(`  ✅ Matched with existing album:`, existingKey);
+            album.buyOptions.push(vinylCastleOption);
+            matched = true;
+            break;
+          }
         }
       }
       
