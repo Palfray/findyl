@@ -5,9 +5,9 @@
 let cachedToken = null;
 let tokenExpiry = 0;
 
-async function getAccessToken() {
-  // Return cached token if still valid (with 60s buffer)
-  if (cachedToken && Date.now() < tokenExpiry - 60000) {
+async function getAccessToken(debug) {
+  // Force fresh token if debug mode
+  if (!debug && cachedToken && Date.now() < tokenExpiry - 60000) {
     return cachedToken;
   }
 
@@ -18,6 +18,8 @@ async function getAccessToken() {
     throw new Error('CREDENTIALS_MISSING: Spotify credentials not configured');
   }
 
+  console.log('Fetching new token. ClientID starts with:', clientId.slice(0, 8));
+
   const response = await fetch('https://accounts.spotify.com/api/token', {
     method: 'POST',
     headers: {
@@ -27,14 +29,17 @@ async function getAccessToken() {
     body: 'grant_type=client_credentials'
   });
 
+  const tokenBodyText = await response.text();
+  console.log('Token response status:', response.status, '| body:', tokenBodyText.slice(0, 300));
+
   if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`TOKEN_FAILED (${response.status}): ${body}`);
+    throw new Error(`TOKEN_FAILED (${response.status}): ${tokenBodyText}`);
   }
 
-  const data = await response.json();
+  const data = JSON.parse(tokenBodyText);
   cachedToken = data.access_token;
   tokenExpiry = Date.now() + (data.expires_in * 1000);
+  console.log('Token obtained successfully, expires in:', data.expires_in, 'seconds');
   return cachedToken;
 }
 
@@ -42,7 +47,7 @@ export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET');
-  res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=43200'); // Cache 24h
+  res.setHeader('Cache-Control', 'no-store'); // Disable cache while debugging
 
   const { name, debug } = req.query;
 
@@ -51,21 +56,25 @@ export default async function handler(req, res) {
   }
 
   try {
-    const token = await getAccessToken();
+    const token = await getAccessToken(debug === '1');
 
     // Search for artist on Spotify
     const searchUrl = `https://api.spotify.com/v1/search?q=artist:${encodeURIComponent(name)}&type=artist&limit=5&market=GB`;
+    console.log('Searching:', searchUrl);
+
     const searchResponse = await fetch(searchUrl, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
 
+    const searchBodyText = await searchResponse.text();
+    console.log('Search response status:', searchResponse.status, '| body:', searchBodyText.slice(0, 300));
+
     if (!searchResponse.ok) {
-      const body = await searchResponse.text();
       const retryAfter = searchResponse.headers.get('retry-after');
-      throw new Error(`SEARCH_FAILED (${searchResponse.status}): ${body}${retryAfter ? ' | Retry-After: ' + retryAfter + 's' : ''}`);
+      throw new Error(`SEARCH_FAILED (${searchResponse.status}): ${searchBodyText}${retryAfter ? ' | Retry-After: ' + retryAfter + 's' : ''}`);
     }
 
-    const searchData = await searchResponse.json();
+    const searchData = JSON.parse(searchBodyText);
     const artists = searchData.artists?.items || [];
 
     if (artists.length === 0) {
@@ -96,12 +105,12 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('Spotify artist error:', error.message);
-    
+
     // In debug mode, return the actual error
     if (debug === '1') {
       return res.status(500).json({ error: error.message });
     }
-    
+
     return res.status(500).json({ error: 'Failed to fetch artist data' });
   }
 }
