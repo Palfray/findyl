@@ -428,16 +428,9 @@
                         html += '</a>';
                     });
                 } else if (item.musicbrainz_url) {
-                    // MusicBrainz-only album
+                    // MusicBrainz-only album (no buy options available)
                     html += '<p class="text-xs text-gray-500 mb-2">' + item.format + '</p>';
-                    
-                    // MusicBrainz button with logo (no pricing - catalog only)
-                    html += '<a href="' + item.musicbrainz_url + '" target="_blank" rel="noopener noreferrer" class="block w-full py-3 px-4 text-center font-medium rounded-lg mb-2 transition-all hover:shadow-md" style="background-color: white; border: 2px solid #FF6B6B; color: #1F2937;">';
-                    html += '<div style="display: flex; align-items: center; justify-content: center; gap: 8px;">';
-                    html += '<img src="https://www.google.com/s2/favicons?domain=musicbrainz.org&sz=64" alt="MusicBrainz" style="width: 20px; height: 20px; flex-shrink: 0;" onerror="this.style.display=\'none\'">';
-                    html += '<span style="font-weight: 500;">View on MusicBrainz</span>';
-                    html += '</div>';
-                    html += '</a>';
+                    html += '<p class="text-sm text-gray-600 italic">No retailers currently stocking this album</p>';
                 } else {
                     // Show Discogs marketplace price if available
                     if (item.price && item.price_source === 'discogs_marketplace') {
@@ -448,14 +441,9 @@
                     // Show format/year if from MusicBrainz
                     html += '<p class="text-xs text-gray-500 mb-2">' + (item.year ? item.year + ' • ' : '') + item.format + '</p>';
                     
-                    // MusicBrainz button with logo
+                    // No buy options available message
                     if (item.musicbrainz_url) {
-                        html += '<a href="' + item.musicbrainz_url + '" target="_blank" rel="noopener noreferrer" class="block w-full py-3 px-4 text-center font-medium rounded-lg mb-2 transition-all hover:shadow-md" style="background-color: white; border: 2px solid #FF6B6B; color: #1F2937;">';
-                        html += '<div style="display: flex; align-items: center; justify-content: center; gap: 8px;">';
-                        html += '<img src="https://www.google.com/s2/favicons?domain=musicbrainz.org&sz=64" alt="MusicBrainz" style="width: 20px; height: 20px; flex-shrink: 0;" onerror="this.style.display=\'none\'">';
-                        html += '<span style="font-weight: 500;">View on MusicBrainz</span>';
-                        html += '</div>';
-                        html += '</a>';
+                        html += '<p class="text-sm text-gray-600 italic">No retailers currently stocking this album</p>';
                     }
                 }
                 
