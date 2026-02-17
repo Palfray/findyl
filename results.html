@@ -163,61 +163,42 @@
             }
         }
 
-        const LASTFM_API_KEY = 'd3f4facf02b4045ad1158dff7b3e813a';
-        
-        async function getArtistImage(artistName) {
+        async function getLatestAlbumArt(artistId) {
             try {
-                console.log('[Client] Fetching image for:', artistName);
-                
-                // Call Last.fm API directly
+                // Get latest release group for this artist
                 const response = await fetch(
-                    `https://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=${encodeURIComponent(artistName)}&api_key=${LASTFM_API_KEY}&format=json`
+                    `https://musicbrainz.org/ws/2/release-group?artist=${artistId}&type=album&limit=1&fmt=json`,
+                    { headers: { 'User-Agent': 'findyl/1.0 (https://findyl.co.uk)' } }
                 );
                 
-                console.log('[Client] Response status:', response.status);
-                
-                if (!response.ok) {
-                    console.error('[Client] Failed to fetch artist image:', response.status);
-                    return null;
-                }
+                if (!response.ok) return null;
                 
                 const data = await response.json();
-                console.log('[Client] Artist data:', data);
+                const releaseGroups = data['release-groups'] || [];
                 
-                if (data.error) {
-                    console.error('[Client] Last.fm error:', data.message);
-                    return null;
+                if (releaseGroups.length > 0) {
+                    const rgId = releaseGroups[0].id;
+                    return `https://coverartarchive.org/release-group/${rgId}/front-250`;
                 }
-                
-                // Extract image URL (prefer extralarge, fallback to large)
-                const images = data.artist?.image || [];
-                const imageUrl = images.find(img => img.size === 'extralarge')?.['#text'] ||
-                                 images.find(img => img.size === 'large')?.['#text'] ||
-                                 images.find(img => img.size === 'medium')?.['#text'] ||
-                                 null;
-                
-                console.log('[Client] Image URL:', imageUrl);
-                
-                return imageUrl;
             } catch (error) {
-                console.error('[Client] Error fetching artist image:', error);
-                return null;
+                console.error('Error fetching album art:', error);
             }
+            return null;
         }
 
         async function displayResults(artists) {
             const container = document.getElementById('results');
             container.classList.remove('hidden');
 
-            // Fetch artist images for all artists in parallel
-            const artistsWithImages = await Promise.all(
+            // Fetch album art for all artists in parallel
+            const artistsWithArt = await Promise.all(
                 artists.map(async artist => ({
                     ...artist,
-                    image: await getArtistImage(artist.name)
+                    albumArt: await getLatestAlbumArt(artist.id)
                 }))
             );
 
-            container.innerHTML = artistsWithImages.map(artist => {
+            container.innerHTML = artistsWithArt.map(artist => {
                 const name = artist.name;
                 const disambiguation = artist.disambiguation || '';
                 const type = artist.type || '';
@@ -237,8 +218,8 @@
                 if (disambiguation) meta.push(disambiguation);
 
                 // Build avatar HTML
-                const avatarHtml = artist.image && !artist.image.includes('2a96cbd8b46e442fc41c2b86b821562f')
-                    ? `<img src="${artist.image}" alt="${name}" class="w-16 h-16 rounded-full object-cover" onerror="console.error('Image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex'"><div style="display:none;width:64px;height:64px;border-radius:50%;background-color:#FFE5E5;align-items:center;justify-content:center"><span style="color:#FF6B6B;font-weight:bold;font-size:1.25rem">${initials}</span></div>`
+                const avatarHtml = artist.albumArt
+                    ? `<img src="${artist.albumArt}" alt="${name}" class="w-16 h-16 rounded-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:64px;height:64px;border-radius:50%;background-color:#FFE5E5;align-items:center;justify-content:center"><span style="color:#FF6B6B;font-weight:bold;font-size:1.25rem">${initials}</span></div>`
                     : `<div style="width:64px;height:64px;border-radius:50%;background-color:#FFE5E5;display:flex;align-items:center;justify-content:center"><span style="color:#FF6B6B;font-weight:bold;font-size:1.25rem">${initials}</span></div>`;
 
                 return `
