@@ -3,566 +3,351 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>findyl — Finding Vinyl, Made Simple</title>
-    <meta name="description" content="Search vinyl records across 17 UK retailers in one place. Find your next record from independent shops and major stores.">
-    
-    <!-- Favicon -->
+    <title>findyl - Find vinyl records from UK retailers</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <meta name="theme-color" content="#FF6B6B">
-    
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4VKXNETWR4"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-4VKXNETWR4');
-    </script>
-    
-    <!-- DM Serif Text Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Text:ital@0;1&display=swap" rel="stylesheet">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Serif+Text:ital@0;1&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: 'DM Serif Display', serif;
         }
         
-        .dm-serif {
-            font-family: 'DM Serif Text', serif;
+        /* Smooth scroll behavior */
+        html {
+            scroll-behavior: smooth;
         }
         
-        .search-container {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background-color: #FF6B6B;
-            padding: 20px;
-            position: relative;
-        }
-        
-        .search-box {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            padding: 8px;
-            transition: box-shadow 0.3s;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-        }
-        
-        .search-box:focus-within {
-            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-        }
-
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        
-        .coral-button {
-            background-color: #FF6B6B;
-            transition: all 0.2s;
-        }
-        
-        .coral-button:hover {
-            background-color: #FF5252;
-            transform: translateY(-1px);
-        }
-        
-        /* Menu button (top right) */
-        .menu-button {
-            position: absolute;
-            top: 2rem;
-            right: 2rem;
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            backdrop-filter: blur(10px);
-        }
-        
-        .menu-button:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-        
-        /* Dropdown menu */
-        .dropdown-menu {
-            position: absolute;
-            top: 5rem;
-            right: 2rem;
-            background: #FF6B6B;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(255, 107, 107, 0.3);
-            min-width: 250px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
+        /* Hero section starts tall */
+        #hero {
             transition: all 0.3s ease;
-            z-index: 1000;
-            overflow: hidden;
         }
         
-        .dropdown-menu.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
+        /* Sticky header */
+        #sticky-header {
+            transition: all 0.3s ease;
         }
         
-        .menu-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 16px 20px;
-            color: white;
-            text-decoration: none;
-            transition: all 0.2s;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        #sticky-header.scrolled {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         
-        .menu-item:last-child {
-            border-bottom: none;
+        /* Article card hover effect */
+        .article-card {
+            transition: transform 0.2s, box-shadow 0.2s;
         }
         
-        .menu-item:hover {
-            background-color: rgba(255, 255, 255, 0.15);
-            padding-left: 24px;
-        }
-        
-        .menu-item svg {
-            flex-shrink: 0;
-        }
-        
-        .logo-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0;
-            margin-bottom: 2rem;
-            position: relative;
-        }
-        
-        .logo-text {
-            margin: 0;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .logo-vinyl {
-            position: relative;
-            margin-top: 0px;
-            margin-left: 20px;
-        }
-        
-        /* Autocomplete dropdown */
-        .autocomplete-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-top: none;
-            border-radius: 0 0 12px 12px;
-            max-height: 300px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        
-        .autocomplete-dropdown.show {
-            display: block;
-        }
-        
-        .autocomplete-item {
-            padding: 12px 20px;
-            cursor: pointer;
-            transition: background 0.2s;
-            border-bottom: 1px solid #f3f4f6;
-        }
-        
-        .autocomplete-item:last-child {
-            border-bottom: none;
-        }
-        
-        .autocomplete-item:hover {
-            background-color: #fef2f2;
-            color: #FF6B6B;
-        }
-        
-        .autocomplete-item strong {
-            color: #FF6B6B;
-        }
-        
-        /* Mobile-specific fixes */
-        @media (max-width: 640px) {
-            .search-box {
-                flex-direction: row;
-                padding: 8px;
-                gap: 8px;
-                align-items: center;
-            }
-            
-            .search-box input {
-                padding: 14px 16px;
-                text-align: left;
-                font-size: 16px;
-                border-radius: 12px;
-                flex: 1;
-                min-width: 0;
-            }
-            
-            .coral-button {
-                width: 48px;
-                height: 48px;
-                padding: 0;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                flex-shrink: 0;
-            }
-            
-            .coral-button .button-text {
-                display: none;
-            }
-            
-            .coral-button .button-icon {
-                display: block;
-            }
-            
-            .logo-container {
-                flex-direction: column;
-                gap: 0;
-                margin-bottom: 1.5rem;
-            }
-            
-            .logo-text {
-                font-size: 3rem !important;
-            }
-            
-            .logo-vinyl {
-                width: 48px;
-                height: 28px;
-                margin-top: 0px;
-                margin-left: 14px;
-            }
-            
-            .menu-button {
-                top: 1rem;
-                right: 1rem;
-                padding: 8px;
-            }
-            
-            .dropdown-menu {
-                top: 3.5rem;
-                right: 1rem;
-                left: 1rem;
-                min-width: auto;
-            }
-            
-            .search-container {
-                padding: 32px 16px;
-            }
-            
-            /* Show vinyl icon on mobile, hide text */
-            .button-text {
-                display: none;
-            }
-            
-            .button-icon {
-                display: block !important;
-            }
-            
-            .coral-button {
-                width: 56px;
-                height: 56px;
-                padding: 14px !important;
-            }
-        }
-        
-        .button-icon {
-            display: none;
-        }
-        
-        /* Spinning animation for button */
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        .searching .button-icon {
-            animation: spin 1s linear infinite;
+        .article-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
         }
     </style>
 </head>
-<body>
-    <div class="search-container">
-        <!-- Menu Button (Top Right) -->
-        <button id="menuButton" class="menu-button" onclick="toggleMenu()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <line x1="3" y1="12" x2="21" y2="12"></line>
-                <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-        </button>
-        
-        <!-- Dropdown Menu -->
-        <div id="dropdownMenu" class="dropdown-menu">
-            <a href="local-stores.html" class="menu-item">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                    <circle cx="12" cy="10" r="3"></circle>
+<body class="bg-gray-50">
+    <!-- Hero Section -->
+    <div id="hero" class="py-16" style="background-color: #FF6B6B;">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <!-- Original Logo -->
+            <div class="mb-8 flex justify-center">
+                <svg width="300" height="100" viewBox="0 0 300 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Clip path for bottom half of vinyl -->
+                  <defs>
+                    <clipPath id="bottomHalf">
+                      <rect x="126" y="58" width="56" height="42"/>
+                    </clipPath>
+                  </defs>
+                  
+                  <!-- Vinyl Record (bottom half only) - moved further left -->
+                  <g clip-path="url(#bottomHalf)">
+                    <g transform="translate(154, 58)">
+                      <circle cx="0" cy="0" r="28" fill="none" stroke="white" stroke-width="1"/>
+                      <circle cx="0" cy="0" r="22" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
+                      <circle cx="0" cy="0" r="16" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
+                      <circle cx="0" cy="0" r="9" fill="white"/>
+                      <circle cx="0" cy="0" r="3" fill="#FF6B6B"/>
+                    </g>
+                  </g>
+                  
+                  <!-- findyl text -->
+                  <text x="150" y="50" font-family="'DM Serif Text', serif" font-size="48" fill="white" text-anchor="middle" font-weight="400">findyl</text>
                 </svg>
-                Local Record Stores
-            </a>
-            <a href="about.html" class="menu-item">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M12 16v-4"></path>
-                    <path d="M12 8h.01"></path>
-                </svg>
-                About
-            </a>
-        </div>
-        
-        <div class="logo-container">
-            <h1 class="text-white text-5xl sm:text-6xl font-normal tracking-tight dm-serif logo-text">findyl</h1>
+            </div>
             
-            <!-- Vinyl semicircle -->
-            <svg class="logo-vinyl" width="60" height="35" viewBox="0 0 60 35" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="30" cy="0" r="28" fill="none" stroke="white" stroke-width="1"/>
-                <circle cx="30" cy="0" r="22" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
-                <circle cx="30" cy="0" r="16" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
-                <circle cx="30" cy="0" r="9" fill="white"/>
-                <circle cx="30" cy="0" r="3" fill="#FF6B6B"/>
-            </svg>
-        </div>
-        
-        <p class="text-white text-lg sm:text-xl md:text-2xl font-light mb-8 tracking-wide dm-serif text-center px-4">
-            Your next vinyl awaits...
-        </p>
-        
-        <form action="results.html" method="get" class="w-full max-w-2xl px-4" onsubmit="trackSearch(); this.querySelector('button').classList.add('searching');">
-            <div class="search-box bg-white rounded-full flex items-center gap-2" style="position: relative;">
-                <div style="flex: 1; position: relative;">
+            <!-- Search Bar -->
+            <form id="search-form" class="max-w-2xl mx-auto">
+                <div class="relative">
                     <input 
                         type="text" 
-                        name="q"
-                        id="searchInput"
-                        placeholder="Search for artist or album..."
-                        class="flex-1 px-4 sm:px-6 py-3 sm:py-4 text-base sm:text-lg outline-none bg-transparent"
-                        style="min-width: 0; width: 100%;"
-                        required
+                        id="search-input"
+                        placeholder="Search for artists, albums..."
+                        class="w-full px-6 py-4 text-lg border-2 border-white rounded-full focus:outline-none text-gray-800 placeholder-gray-500"
                         autocomplete="off"
-                    >
-                    <div id="autocompleteDropdown" class="autocomplete-dropdown"></div>
+                    />
+                    <button type="submit" class="absolute right-4 top-1/2 -translate-y-1/2">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="M21 21l-4.35-4.35"/>
+                        </svg>
+                    </button>
                 </div>
-                <button 
-                    type="submit"
-                    class="coral-button text-white px-6 sm:px-8 py-3 font-semibold rounded-full whitespace-nowrap flex items-center justify-center"
-                    style="flex-shrink: 0;"
-                >
-                    <span class="button-text">Find Vinyl</span>
-                    <svg class="button-icon" width="28" height="28" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="20" cy="20" r="19" fill="none" stroke="white" stroke-width="1.5"/>
-                      <circle cx="20" cy="20" r="16" fill="none" stroke="white" stroke-width="1.2" opacity="0.8"/>
-                      <circle cx="20" cy="20" r="10" fill="white"/>
-                      <circle cx="20" cy="20" r="3" fill="#FF6B6B"/>
-                    </svg>
-                </button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 
+    <!-- Sticky Header (hidden initially, shows on scroll) -->
+    <header id="sticky-header" class="sticky top-0 z-50 hidden">
+        <!-- Coral search bar -->
+        <div class="border-b border-gray-200" style="background-color: #FF6B6B;">
+            <div class="max-w-7xl mx-auto px-4 py-3">
+                <!-- Logo & Search Row -->
+                <div class="flex items-center gap-4">
+                    <a href="/" class="flex items-center gap-1 flex-shrink-0">
+                        <!-- Compact logo - scaled down version -->
+                        <svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <defs>
+                            <clipPath id="bottomHalfSmall">
+                              <rect x="50" y="23" width="23" height="17"/>
+                            </clipPath>
+                          </defs>
+                          <g clip-path="url(#bottomHalfSmall)">
+                            <g transform="translate(61.6, 23)">
+                              <circle cx="0" cy="0" r="11.2" fill="none" stroke="white" stroke-width="0.8"/>
+                              <circle cx="0" cy="0" r="8.8" fill="none" stroke="white" stroke-width="0.4" opacity="0.6"/>
+                              <circle cx="0" cy="0" r="6.4" fill="none" stroke="white" stroke-width="0.4" opacity="0.6"/>
+                              <circle cx="0" cy="0" r="3.6" fill="white"/>
+                              <circle cx="0" cy="0" r="1.2" fill="#FF6B6B"/>
+                            </g>
+                          </g>
+                          <text x="60" y="20" font-family="'DM Serif Text', serif" font-size="19" fill="white" text-anchor="middle" font-weight="400">findyl</text>
+                        </svg>
+                    </a>
+                    
+                    <form id="sticky-search-form" class="flex-1 max-w-2xl">
+                        <div class="relative">
+                            <input 
+                                type="text" 
+                                id="sticky-search-input"
+                                placeholder="Search for artists, albums..."
+                                class="w-full px-4 py-2 border-2 border-white rounded-full focus:outline-none text-gray-800 placeholder-gray-500"
+                                autocomplete="off"
+                            />
+                            <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <path d="M21 21l-4.35-4.35"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- White menu bar -->
+        <div class="bg-white border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4">
+                <nav class="flex justify-center gap-8 py-3">
+                    <a href="/stores" class="text-gray-700 hover:text-gray-900">Find a store</a>
+                    <a href="/sales" class="text-gray-700 hover:text-gray-900">Sales</a>
+                    <a href="/about" class="text-gray-700 hover:text-gray-900">About</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Horizontal Menu (below hero) -->
+    <div class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4">
+            <nav class="flex justify-center gap-8 py-4">
+                <a href="/stores" class="text-gray-700 hover:text-gray-900 font-medium">Find a store</a>
+                <a href="/sales" class="text-gray-700 hover:text-gray-900 font-medium">Sales</a>
+                <a href="/about" class="text-gray-700 hover:text-gray-900 font-medium">About</a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-12">
+        <!-- Featured Articles Section -->
+        <section id="articles" class="mb-16">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-3xl font-bold">Featured Articles</h2>
+                <a href="#" class="text-gray-600 hover:text-gray-900">View all →</a>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Article 1 -->
+                <article class="article-card bg-white rounded-lg overflow-hidden shadow-sm">
+                    <div class="h-48 bg-gradient-to-br from-coral-400 to-coral-600" style="background: linear-gradient(135deg, #FF8E8E 0%, #FF6B6B 100%)">
+                        <!-- Placeholder for article image -->
+                    </div>
+                    <div class="p-6">
+                        <div class="text-sm text-gray-500 mb-2">Collecting Tips</div>
+                        <h3 class="text-xl font-bold mb-2">Essential Guide to Starting Your Vinyl Collection</h3>
+                        <p class="text-gray-600 mb-4">Everything you need to know about getting started with vinyl collecting in 2026.</p>
+                        <a href="#" class="text-coral-600 font-medium hover:underline" style="color: #FF6B6B">Read more →</a>
+                    </div>
+                </article>
+
+                <!-- Article 2 -->
+                <article class="article-card bg-white rounded-lg overflow-hidden shadow-sm">
+                    <div class="h-48 bg-gradient-to-br from-blue-400 to-blue-600">
+                        <!-- Placeholder for article image -->
+                    </div>
+                    <div class="p-6">
+                        <div class="text-sm text-gray-500 mb-2">New Releases</div>
+                        <h3 class="text-xl font-bold mb-2">This Week's Must-Have Vinyl Releases</h3>
+                        <p class="text-gray-600 mb-4">Discover the latest vinyl releases hitting UK stores this week.</p>
+                        <a href="#" class="text-coral-600 font-medium hover:underline" style="color: #FF6B6B">Read more →</a>
+                    </div>
+                </article>
+
+                <!-- Article 3 -->
+                <article class="article-card bg-white rounded-lg overflow-hidden shadow-sm">
+                    <div class="h-48 bg-gradient-to-br from-green-400 to-green-600">
+                        <!-- Placeholder for article image -->
+                    </div>
+                    <div class="p-6">
+                        <div class="text-sm text-gray-500 mb-2">Store Spotlight</div>
+                        <h3 class="text-xl font-bold mb-2">UK's Best Independent Record Stores</h3>
+                        <p class="text-gray-600 mb-4">A curated guide to the finest vinyl shops across the United Kingdom.</p>
+                        <a href="#" class="text-coral-600 font-medium hover:underline" style="color: #FF6B6B">Read more →</a>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- Guides Section -->
+        <section id="guides">
+            <h2 class="text-3xl font-bold mb-8">Vinyl Guides</h2>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Guide 1 -->
+                <article class="article-card bg-white rounded-lg p-6 shadow-sm">
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0">
+                            <div class="w-16 h-16 rounded-lg flex items-center justify-center text-3xl" style="background-color: #FFE5E5">
+                                🎵
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">How to Clean Your Vinyl Records</h3>
+                            <p class="text-gray-600 mb-3">Proper maintenance tips to keep your collection in pristine condition.</p>
+                            <a href="#" class="text-coral-600 font-medium hover:underline" style="color: #FF6B6B">Read guide →</a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Guide 2 -->
+                <article class="article-card bg-white rounded-lg p-6 shadow-sm">
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0">
+                            <div class="w-16 h-16 rounded-lg flex items-center justify-center text-3xl" style="background-color: #FFE5E5">
+                                💿
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">Understanding Vinyl Pressings</h3>
+                            <p class="text-gray-600 mb-3">Learn about first pressings, reissues, and what makes them valuable.</p>
+                            <a href="#" class="text-coral-600 font-medium hover:underline" style="color: #FF6B6B">Read guide →</a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Guide 3 -->
+                <article class="article-card bg-white rounded-lg p-6 shadow-sm">
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0">
+                            <div class="w-16 h-16 rounded-lg flex items-center justify-center text-3xl" style="background-color: #FFE5E5">
+                                🎧
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">Choosing Your First Turntable</h3>
+                            <p class="text-gray-600 mb-3">A beginner's guide to selecting the perfect record player.</p>
+                            <a href="#" class="text-coral-600 font-medium hover:underline" style="color: #FF6B6B">Read guide →</a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Guide 4 -->
+                <article class="article-card bg-white rounded-lg p-6 shadow-sm">
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0">
+                            <div class="w-16 h-16 rounded-lg flex items-center justify-center text-3xl" style="background-color: #FFE5E5">
+                                📦
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-2">Storing Your Vinyl Collection</h3>
+                            <p class="text-gray-600 mb-3">Best practices for organizing and protecting your records.</p>
+                            <a href="#" class="text-coral-600 font-medium hover:underline" style="color: #FF6B6B">Read guide →</a>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 py-8">
+            <div class="text-center text-gray-600">
+                <p class="mb-2">© 2026 findyl. Find vinyl records from UK retailers.</p>
+                <p class="text-sm">Compare prices across POPSTORE, Vinyl Castle, EMP UK, and more.</p>
+            </div>
+        </div>
+    </footer>
+
     <script>
-        // POPSTORE artist list for priority autocomplete
-        const popstoreArtists = ["*B-Stock* Madonna","*B-Stock* Troye Sivan","A-Ha","Adam + The Ants","Adam Ant","Alesha Dixon","Alex Warren","Alexandra Kay","All Saints","Anne-Marie","Annie Lennox","Arctic Monkeys","Ariana Grande","Ava Max","Avril Lavigne","BTS","Bananarama","Banks","Bat For Lashes","Bebe Rexha","Beabadoobee","Beth Orton","Beyoncé","Billie Eilish","Billy Joel","Birdy","Blondie","Bon Jovi","Boy George","Boygenius","Britney Spears","Bruno Mars","Carly Rae Jepsen","Carly Simon","Carole King","Charli XCX","Charlie Puth","Cher","Chic","Childish Gambino","Chris De Burgh","Ciara","Conan Gray","Culture Club","Cyndi Lauper","Demi Lovato","Diana Ross","Doja Cat","Dolly Parton","Duran Duran","Dua Lipa","Ed Sheeran","Ellie Goulding","Elton John","Erasure","Fifth Harmony","Fleetwood Mac","Florence + The Machine","Fontaines Dc","Frank Ocean","George Michael","George Strait","Gerry & The Pacemakers","Girls Aloud","Grace Jones","Gracie Abrams","Harry Styles","Hayley Williams","Hozier","Hurts","Iggy Pop","Jess Glynne","Jessie J","John Lennon","Jonas Brothers","Joni Mitchell","Justin Bieber","Justin Timberlake","KSI","Kate Bush","Katy Perry","Kelly Clarkson","Kesha","Kiana Ledé","Kylie Minogue","Lady Gaga","Lana Del Rey","Laura Marling","Liam Gallagher","Lisa","Little Boots","Lola Young","Lorde","MARINA","Madonna","Mariah Carey","Marina & The Diamonds","Mark Ronson","Marvin Gaye","Meghan Trainor","Metallica","Michael Bublé","Michael Jackson","Miley Cyrus","Missy Elliott","Muse","Nat King Cole","Nicki Minaj","Nirvana","Noah Kahan","Noel Gallagher","Oasis","Olivia Newton-John","Olivia Rodrigo","Olly Alexander","Orla Gartland","P!nk","POPSTORE","Pet Shop Boys","Phoebe Bridgers","Pixie Lott","Prince","Pulp","Pvris","Queen","Rae Sremmurd","Raye","Remi Wolf","Ren","Reneé Rapp","Rihanna","Robbie Williams","Rod Stewart","Sabrina Carpenter","Sam Fender","Sam Smith","Samantha Fox","Self Esteem","Shania Twain","Sia","Simon & Garfunkel","Simple Minds","Skepta","Snoop Dogg","Sofia Isella","Solange","Spice Girls","Stevie Nicks","Sting","Sugababes","Taylor Swift","Tate Mcrae","Teddy Swims","The 1975","The Beatles","The Charlatans","The Cure","The Doors","The Hollies","The Killers","The Last Dinner Party","The Libertines","The Ronettes","The Script","The Smiths","The Supremes","The Verve","The Weeknd","The Wombats","Tina Turner","Tom Jones","Tom Odell","Tones & I","Travis","Troye Sivan","Tyla","U2","Vampire Weekend","Wham!","Whitney Houston","Years & Years","Yungblud","Zara Larsson"];
-        
-        const searchInput = document.getElementById('searchInput');
-        const autocompleteDropdown = document.getElementById('autocompleteDropdown');
-        let currentFocus = -1;
-        let debounceTimer;
-        
-        // Show autocomplete suggestions with Discogs API
-        searchInput.addEventListener('input', function(e) {
-            const value = this.value.toLowerCase().trim();
-            
-            if (value.length < 2) {
-                hideAutocomplete();
-                return;
-            }
-            
-            // Debounce API calls (wait 300ms after typing stops)
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                fetchArtistSuggestions(value);
-            }, 300);
-        });
-        
-        // Fetch artist suggestions from API (POPSTORE + Discogs)
-        async function fetchArtistSuggestions(searchValue) {
-            try {
-                const response = await fetch(`/api/autocomplete?q=${encodeURIComponent(searchValue)}`);
-                
-                if (!response.ok) {
-                    // Fallback to local POPSTORE only
-                    const popstoreMatches = popstoreArtists.filter(artist => 
-                        artist.toLowerCase().includes(searchValue)
-                    ).slice(0, 8);
-                    displaySuggestions(popstoreMatches.map(name => ({ name })), searchValue);
-                    return;
-                }
-                
-                const data = await response.json();
-                const suggestions = data.suggestions || [];
-                
-                if (suggestions.length === 0) {
-                    hideAutocomplete();
-                    return;
-                }
-                
-                displaySuggestions(suggestions, searchValue);
-                
-            } catch (error) {
-                console.error('Autocomplete error:', error);
-                // Fallback to local POPSTORE only
-                const popstoreMatches = popstoreArtists.filter(artist => 
-                    artist.toLowerCase().includes(searchValue)
-                ).slice(0, 8);
-                displaySuggestions(popstoreMatches.map(name => ({ name })), searchValue);
-            }
-        }
-        
-        // Display suggestions
-        function displaySuggestions(matches, searchValue) {
-            let html = '';
-            matches.forEach((match) => {
-                // Highlight matching text
-                const regex = new RegExp('(' + searchValue + ')', 'gi');
-                
-                if (match.type === 'artist') {
-                    // Artist suggestion
-                    const artistName = match.name || match;
-                    const highlighted = artistName.replace(regex, '<strong>$1</strong>');
-                    
-                    html += '<div class="autocomplete-item" onclick="selectSuggestion(\'' + artistName.replace(/'/g, "\\'") + '\')">';
-                    html += highlighted;
-                    // Show badge for POPSTORE artists
-                    if (match.source === 'popstore') {
-                        html += ' <span style="font-size: 10px; color: #FF6B6B;">●</span>';
-                    }
-                    html += '</div>';
-                } else if (match.type === 'album') {
-                    // Album suggestion - show "Album · Artist"
-                    const albumName = match.album;
-                    const artistName = match.artist;
-                    const highlightedAlbum = albumName.replace(regex, '<strong>$1</strong>');
-                    const searchQuery = artistName + ' ' + albumName;
-                    
-                    html += '<div class="autocomplete-item" onclick="selectSuggestion(\'' + searchQuery.replace(/'/g, "\\'") + '\')">';
-                    html += '<div style="display: flex; align-items: center; gap: 6px;">';
-                    html += '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0; color: #FF6B6B;">';
-                    html += '<circle cx="12" cy="12" r="10"></circle>';
-                    html += '<circle cx="12" cy="12" r="3"></circle>';
-                    html += '</svg>';
-                    html += '<span>' + highlightedAlbum + ' <span style="color: #999;">· ' + artistName + '</span></span>';
-                    // Show badge for POPSTORE albums
-                    if (match.source === 'popstore') {
-                        html += ' <span style="font-size: 10px; color: #FF6B6B;">●</span>';
-                    }
-                    html += '</div>';
-                    html += '</div>';
-                } else {
-                    // Fallback for old format (artist name only)
-                    const artistName = match.name || match;
-                    const highlighted = artistName.replace(regex, '<strong>$1</strong>');
-                    
-                    html += '<div class="autocomplete-item" onclick="selectSuggestion(\'' + artistName.replace(/'/g, "\\'") + '\')">';
-                    html += highlighted;
-                    if (match.source === 'popstore') {
-                        html += ' <span style="font-size: 10px; color: #FF6B6B;">●</span>';
-                    }
-                    html += '</div>';
-                }
-            });
-            
-            autocompleteDropdown.innerHTML = html;
-            autocompleteDropdown.classList.add('show');
-        }
-        
-        // Select a suggestion (artist or album)
-        function selectSuggestion(searchQuery) {
-            searchInput.value = searchQuery;
-            hideAutocomplete();
-            document.querySelector('form').submit();
-        }
-        
-        // Select an artist (deprecated, kept for compatibility)
-        function selectArtist(artist) {
-            selectSuggestion(artist);
-        }
-        
-        // Hide autocomplete
-        function hideAutocomplete() {
-            autocompleteDropdown.classList.remove('show');
-        }
-        
-        // Close on click outside
-        document.addEventListener('click', function(e) {
-            if (!searchInput.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
-                hideAutocomplete();
+        // Handle main search form
+        document.getElementById('search-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const query = document.getElementById('search-input').value.trim();
+            if (query) {
+                window.location.href = `/results?q=${encodeURIComponent(query)}`;
             }
         });
-        
-        // Close on escape
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                hideAutocomplete();
+
+        // Handle sticky search form
+        document.getElementById('sticky-search-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const query = document.getElementById('sticky-search-input').value.trim();
+            if (query) {
+                window.location.href = `/results?q=${encodeURIComponent(query)}`;
             }
         });
+
+        // Sticky header on scroll
+        let lastScroll = 0;
+        const hero = document.getElementById('hero');
+        const stickyHeader = document.getElementById('sticky-header');
         
-        function trackSearch() {
-            var searchTerm = document.getElementById('searchInput').value;
-            if (window.gtag) {
-                gtag('event', 'search', {
-                    'search_term': searchTerm
-                });
-            }
-        }
-        
-        // Toggle dropdown menu
-        function toggleMenu() {
-            const menu = document.getElementById('dropdownMenu');
-            menu.classList.toggle('show');
-        }
-        
-        // Close menu when clicking outside
-        document.addEventListener('click', function(event) {
-            const menu = document.getElementById('dropdownMenu');
-            const button = document.getElementById('menuButton');
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            const heroBottom = hero.offsetHeight;
             
-            if (!button.contains(event.target) && !menu.contains(event.target)) {
-                menu.classList.remove('show');
+            if (currentScroll > heroBottom) {
+                // Show sticky header
+                stickyHeader.classList.remove('hidden');
+                stickyHeader.classList.add('scrolled');
+            } else {
+                // Hide sticky header
+                stickyHeader.classList.add('hidden');
+                stickyHeader.classList.remove('scrolled');
             }
+            
+            lastScroll = currentScroll;
+        });
+
+        // Sync search inputs
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            document.getElementById('sticky-search-input').value = e.target.value;
         });
         
-        // Close menu on escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                document.getElementById('dropdownMenu').classList.remove('show');
-            }
+        document.getElementById('sticky-search-input').addEventListener('input', (e) => {
+            document.getElementById('search-input').value = e.target.value;
         });
     </script>
 </body>
