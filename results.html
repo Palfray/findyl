@@ -167,7 +167,7 @@
         async function getArtistImage(artistName, musicBrainzId) {
             // Try Spotify first (better quality artist photos)
             try {
-                const response = await fetch(`/api/spotify-artist?name=${encodeURIComponent(artistName)}`);
+                const response = await fetch(`/api/spotify-artist?name=${encodeURIComponent(artistName)}&v=2`);
                 if (response.ok) {
                     const data = await response.json();
                     if (data.found && data.artist.images && data.artist.images.length > 0) {
