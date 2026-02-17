@@ -73,6 +73,38 @@ export default async function handler(req, res) {
       }
     }
 
+    // STEP 2.5: Search EMP
+    let empResults = [];
+    try {
+      const empUrl = `https://www.findyl.co.uk/api/emp-search?q=${encodeURIComponent(q)}`;
+      console.log('🔍 Calling EMP endpoint:', empUrl);
+      
+      const empController = new AbortController();
+      const empTimeoutId = setTimeout(() => empController.abort(), 10000); // 10 second timeout
+      
+      const empResponse = await fetch(empUrl, {
+        signal: empController.signal,
+        headers: {
+          'User-Agent': 'findyl/1.0 (https://findyl.co.uk)'
+        }
+      });
+      
+      clearTimeout(empTimeoutId);
+      
+      if (empResponse.ok) {
+        empResults = await empResponse.json();
+        console.log('✅ EMP found:', empResults.length, 'products');
+      } else {
+        console.error('❌ EMP endpoint returned:', empResponse.status);
+      }
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        console.error('❌ EMP request timed out after 10 seconds');
+      } else {
+        console.error('❌ EMP error:', error.message);
+      }
+    }
+
     // STEP 3: Search MusicBrainz
     let musicBrainzResults = [];
     try {
@@ -275,6 +307,90 @@ export default async function handler(req, res) {
           format: 'Vinyl',
           cover: vc.image || '', // Changed from image_url
           buyOptions: [vinylCastleOption]
+        });
+      }
+    });
+
+    // Add EMP results
+    console.log('🔄 Processing', empResults.length, 'EMP results');
+    
+    empResults.forEach((emp, idx) => {
+      // Filter by artist for multi-word searches
+      if (searchTerm.includes(' ')) {
+        const artistLower = emp.artist.toLowerCase();
+        const artistWithoutThe = artistLower.replace(/^the\s+/, '');
+        const searchWithoutThe = searchTerm.replace(/^the\s+/, '');
+        
+        const isTheSearch = searchTerm.startsWith('the ');
+        let artistMatch;
+        
+        if (isTheSearch) {
+          artistMatch = artistLower === searchTerm || artistWithoutThe === searchWithoutThe;
+        } else {
+          artistMatch = artistLower === searchTerm || artistLower.startsWith(searchTerm + ' ');
+        }
+        
+        if (!artistMatch) {
+          console.log(`  ❌ EMP: Filtered out "${emp.artist}" - doesn't match "${searchTerm}"`);
+          return;
+        }
+      }
+      
+      // Clean album name
+      const cleanAlbum = emp.album
+        .replace(/,.*$/, '')
+        .replace(/\(.*?\)/g, '')
+        .replace(/\b(vinyl|lp|2xlp|3xlp|double|triple|deluxe|limited|edition|gatefold|coloured|colored)\b/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      console.log(`EMP ${idx + 1}: "${emp.album}" → "${cleanAlbum}"`);
+      
+      const key = `${emp.artist.toLowerCase()}|||${cleanAlbum.toLowerCase()}`;
+      const price = parseFloat(emp.price);
+      
+      const empOption = {
+        storeName: 'EMP',
+        price: price,
+        link: emp.link,
+        source: 'emp',
+        availability: emp.availability || 'In Stock'
+      };
+      
+      // Try to match with existing albums
+      let matched = false;
+      for (let [existingKey, album] of albumMap) {
+        const [existingArtist, existingAlbum] = existingKey.split('|||');
+        
+        if (existingArtist === emp.artist.toLowerCase()) {
+          const cleanEmpAlbum = cleanAlbum.toLowerCase();
+          const cleanExistingAlbum = existingAlbum;
+          
+          const empWithoutThe = cleanEmpAlbum.replace(/^the\s+/i, '');
+          const existingWithoutThe = cleanExistingAlbum.replace(/^the\s+/i, '');
+          
+          const exactMatch = cleanExistingAlbum === cleanEmpAlbum;
+          const theMatch = empWithoutThe === existingWithoutThe;
+          const containsMatch = cleanExistingAlbum.includes(cleanEmpAlbum) || cleanEmpAlbum.includes(cleanExistingAlbum);
+          
+          if (exactMatch || theMatch || containsMatch) {
+            console.log(`  ✅ Matched with existing album:`, existingKey);
+            album.buyOptions.push(empOption);
+            matched = true;
+            break;
+          }
+        }
+      }
+      
+      if (!matched) {
+        console.log(`  ➕ Creating new album entry:`, key);
+        albumMap.set(key, {
+          artist: emp.artist,
+          album: cleanAlbum,
+          year: null,
+          format: 'Vinyl',
+          cover: emp.image || '',
+          buyOptions: [empOption]
         });
       }
     });
