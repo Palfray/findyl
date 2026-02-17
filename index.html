@@ -42,6 +42,37 @@
             transform: translateY(-4px);
             box-shadow: 0 8px 16px rgba(0,0,0,0.15);
         }
+        
+        /* Autocomplete dropdown */
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid white;
+            border-top: none;
+            border-radius: 0 0 1.5rem 1.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .autocomplete-item {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            transition: background-color 0.15s;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .autocomplete-item:hover {
+            background-color: #FFE5E5;
+        }
+        
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -349,6 +380,103 @@
         document.getElementById('sticky-search-input').addEventListener('input', (e) => {
             document.getElementById('search-input').value = e.target.value;
         });
+
+        // Autocomplete functionality
+        let autocompleteTimeout;
+        let currentDropdown = null;
+
+        function setupAutocomplete(inputId, formId) {
+            const input = document.getElementById(inputId);
+            const form = document.getElementById(formId);
+            
+            input.addEventListener('input', async (e) => {
+                const query = e.target.value.trim();
+                
+                // Clear existing dropdown
+                if (currentDropdown) {
+                    currentDropdown.remove();
+                    currentDropdown = null;
+                }
+                
+                if (query.length < 2) return;
+                
+                // Debounce API calls
+                clearTimeout(autocompleteTimeout);
+                autocompleteTimeout = setTimeout(async () => {
+                    try {
+                        const response = await fetch(`/api/autocomplete?q=${encodeURIComponent(query)}`);
+                        if (!response.ok) return;
+                        
+                        const data = await response.json();
+                        if (!data.suggestions || data.suggestions.length === 0) return;
+                        
+                        // Create dropdown
+                        const dropdown = document.createElement('div');
+                        dropdown.className = 'autocomplete-dropdown';
+                        
+                        data.suggestions.forEach(suggestion => {
+                            const item = document.createElement('div');
+                            item.className = 'autocomplete-item';
+                            
+                            if (suggestion.type === 'artist') {
+                                // Build subtitle with disambiguation and country
+                                let subtitle = 'Artist';
+                                if (suggestion.disambiguation && suggestion.country) {
+                                    subtitle = `${suggestion.country} • ${suggestion.disambiguation}`;
+                                } else if (suggestion.country) {
+                                    subtitle = suggestion.country;
+                                } else if (suggestion.disambiguation) {
+                                    subtitle = suggestion.disambiguation;
+                                }
+                                
+                                item.innerHTML = `
+                                    <div class="font-semibold text-gray-900">${suggestion.name}</div>
+                                    <div class="text-sm text-gray-500">${subtitle}</div>
+                                `;
+                                item.onclick = () => {
+                                    window.location.href = `/results?q=${encodeURIComponent(suggestion.name)}`;
+                                };
+                            } else {
+                                item.innerHTML = `
+                                    <div class="font-semibold text-gray-900">${suggestion.album}</div>
+                                    <div class="text-sm text-gray-500">${suggestion.artist}</div>
+                                `;
+                                item.onclick = () => {
+                                    window.location.href = `/results?q=${encodeURIComponent(suggestion.artist + ' ' + suggestion.album)}`;
+                                };
+                            }
+                            
+                            dropdown.appendChild(item);
+                        });
+                        
+                        // Position dropdown
+                        const inputRect = input.getBoundingClientRect();
+                        const formRect = form.getBoundingClientRect();
+                        dropdown.style.width = formRect.width + 'px';
+                        dropdown.style.left = '0';
+                        
+                        form.style.position = 'relative';
+                        form.appendChild(dropdown);
+                        currentDropdown = dropdown;
+                        
+                    } catch (error) {
+                        console.error('Autocomplete error:', error);
+                    }
+                }, 300);
+            });
+            
+            // Close dropdown on outside click
+            document.addEventListener('click', (e) => {
+                if (currentDropdown && !form.contains(e.target)) {
+                    currentDropdown.remove();
+                    currentDropdown = null;
+                }
+            });
+        }
+        
+        // Setup autocomplete for both search bars
+        setupAutocomplete('search-input', 'search-form');
+        setupAutocomplete('sticky-search-input', 'sticky-search-form');
     </script>
 </body>
 </html>
