@@ -217,25 +217,20 @@
                 if (country) meta.push(country);
                 if (disambiguation) meta.push(disambiguation);
 
+                // Build avatar HTML
+                const avatarHtml = artist.albumArt 
+                    ? `<img src="${artist.albumArt}" alt="${name}" class="w-16 h-16 rounded-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:64px;height:64px;border-radius:50%;background-color:#FFE5E5;align-items:center;justify-content:center"><span style="color:#FF6B6B;font-weight:bold;font-size:1.25rem">${initials}</span></div>`
+                    : `<div style="width:64px;height:64px;border-radius:50%;background-color:#FFE5E5;display:flex;align-items:center;justify-content:center"><span style="color:#FF6B6B;font-weight:bold;font-size:1.25rem">${initials}</span></div>`;
+
                 return `
-                    <a href="/artist?name=${encodeURIComponent(name)}" 
-                       class="artist-card block bg-white rounded-lg shadow-sm p-6 hover:shadow-md">
-                        <div class="flex items-start gap-4">
-                            ${artist.albumArt ? `
-                                <img src="${artist.albumArt}" 
-                                     alt="${name}" 
-                                     class="w-16 h-16 rounded-full object-cover flex-shrink-0"
-                                     onerror="this.outerHTML='<div class=\\"w-16 h-16 rounded-full flex-shrink-0 flex items-center justify-center\\" style=\\"background-color: #FFE5E5\\"><span class=\\"font-bold text-xl\\" style=\\"color: #FF6B6B\\">${initials}</span></div>'">
-                            ` : `
-                                <div class="w-16 h-16 rounded-full flex-shrink-0 flex items-center justify-center" style="background-color: #FFE5E5">
-                                    <span class="font-bold text-xl" style="color: #FF6B6B">${initials}</span>
-                                </div>
-                            `}
-                            <div class="flex-1 min-w-0">
+                    <a href="/artist?name=${encodeURIComponent(name)}" class="artist-card block bg-white rounded-lg shadow-sm p-6">
+                        <div style="display:flex;align-items:flex-start;gap:1rem">
+                            <div style="flex-shrink:0">${avatarHtml}</div>
+                            <div style="flex:1;min-width:0">
                                 <h3 class="text-xl font-bold text-gray-900 mb-1">${name}</h3>
                                 ${meta.length > 0 ? `<p class="text-gray-600 text-sm">${meta.join(' • ')}</p>` : ''}
                             </div>
-                            <svg class="w-6 h-6 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-6 h-6 text-gray-400" style="flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
                         </div>
