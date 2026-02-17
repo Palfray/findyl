@@ -37,30 +37,21 @@ export default async function handler(req, res) {
       console.error('❌ POPSTORE error:', error.message);
     }
 
-    // STEP 2: Load VinylCastle products from JSON
+    // STEP 2: Search VinylCastle via separate endpoint (file too large to bundle)
     let vinylCastleResults = [];
     try {
-      // Use fs to read JSON file - works better in Vercel
-      const fs = await import('fs');
-      const path = await import('path');
+      const vcResponse = await fetch(
+        `${process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000'}/api/vinylcastle-search?q=${encodeURIComponent(q)}`
+      );
       
-      const filePath = path.join(process.cwd(), 'api', 'vinylcastle-products.json');
-      const fileContent = fs.readFileSync(filePath, 'utf-8');
-      const allProducts = JSON.parse(fileContent);
-      
-      console.log('📦 VinylCastle total products loaded:', allProducts.length);
-      
-      // Search VinylCastle products
-      vinylCastleResults = allProducts.filter(product => {
-        const productText = `${product.artist} ${product.album}`.toLowerCase();
-        return productText.includes(searchTerm);
-      }).slice(0, 50); // Limit to 50 results
-      
-      console.log('✅ VinylCastle found:', vinylCastleResults.length, 'products for query:', q);
+      if (vcResponse.ok) {
+        vinylCastleResults = await vcResponse.json();
+        console.log('✅ VinylCastle found:', vinylCastleResults.length, 'products');
+      } else {
+        console.error('❌ VinylCastle endpoint error:', vcResponse.status);
+      }
     } catch (error) {
       console.error('❌ VinylCastle error:', error.message);
-      console.error('⚠️  Make sure vinylcastle-products.json is in the api/ directory');
-      console.error('⚠️  File path attempted:', error.path || 'unknown');
     }
 
     // STEP 3: Search MusicBrainz
