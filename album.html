@@ -280,23 +280,61 @@
         async function loadPrices() {
             try {
                 const searchQuery = `${artistName} ${albumData.title}`;
+                console.log('🔍 Searching for prices:', searchQuery);
+                
                 const response = await fetch(`/api/hybrid-search?q=${encodeURIComponent(searchQuery)}`);
                 
                 if (!response.ok) throw new Error('Failed to load prices');
 
                 const results = await response.json();
+                console.log('📦 Hybrid search returned:', results.length, 'results');
                 
-                // Find matching album
-                const matchingAlbum = results.find(r => {
+                if (results.length > 0) {
+                    console.log('First result:', results[0]);
+                }
+                
+                // Try multiple matching strategies
+                let matchingAlbum = null;
+                
+                // Strategy 1: Exact artist + album contains
+                matchingAlbum = results.find(r => {
                     const albumMatch = r.album.toLowerCase().includes(albumData.title.toLowerCase()) ||
                                       albumData.title.toLowerCase().includes(r.album.toLowerCase());
                     const artistMatch = r.artist.toLowerCase() === artistName.toLowerCase();
                     return albumMatch && artistMatch;
                 });
+                
+                // Strategy 2: If no match, try fuzzy artist matching (with/without "The")
+                if (!matchingAlbum) {
+                    console.log('⚠️ No exact match, trying fuzzy matching...');
+                    
+                    matchingAlbum = results.find(r => {
+                        const albumLower = r.album.toLowerCase();
+                        const titleLower = albumData.title.toLowerCase();
+                        const artistLower = r.artist.toLowerCase();
+                        const searchArtistLower = artistName.toLowerCase();
+                        
+                        // Remove "the" from both for comparison
+                        const albumNoThe = albumLower.replace(/^the\s+/, '');
+                        const titleNoThe = titleLower.replace(/^the\s+/, '');
+                        const artistNoThe = artistLower.replace(/^the\s+/, '');
+                        const searchArtistNoThe = searchArtistLower.replace(/^the\s+/, '');
+                        
+                        const albumMatch = albumNoThe.includes(titleNoThe) || titleNoThe.includes(albumNoThe);
+                        const artistMatch = artistNoThe === searchArtistNoThe;
+                        
+                        return albumMatch && artistMatch;
+                    });
+                }
+                
+                if (matchingAlbum) {
+                    console.log('✅ Found match:', matchingAlbum);
+                }
 
                 if (matchingAlbum && matchingAlbum.buyOptions && matchingAlbum.buyOptions.length > 0) {
                     displayBuyOptions(matchingAlbum.buyOptions);
                 } else {
+                    console.log('❌ No matching album with buy options found');
                     document.getElementById('no-prices').classList.remove('hidden');
                 }
 
