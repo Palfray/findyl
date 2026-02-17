@@ -19,26 +19,42 @@ export default async function handler(req, res) {
   try {
     const searchTerm = q.toLowerCase().trim();
     
-    // Load VinylCastle products
-    const fs = await import('fs');
-    const path = await import('path');
+    // ALWAYS fetch from GitHub - file is too large for Vercel deployment
+    const VC_DATA_URL = 'https://raw.githubusercontent.com/Palfray/findyl/refs/heads/main/api/vinylcastle-products.json';
     
-    const filePath = path.join(process.cwd(), 'api', 'vinylcastle-products.json');
-    const fileContent = fs.readFileSync(filePath, 'utf-8');
-    const allProducts = JSON.parse(fileContent);
+    console.log('[VC] Fetching data from GitHub:', VC_DATA_URL);
+    
+    // Add 30 second timeout for large file
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    
+    const response = await fetch(VC_DATA_URL, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      throw new Error(`GitHub returned ${response.status}`);
+    }
+    
+    const allProducts = await response.json();
+    console.log('[VC] Loaded:', allProducts.length, 'products');
     
     // Search products
     const results = allProducts.filter(product => {
       const productText = `${product.artist} ${product.album}`.toLowerCase();
       return productText.includes(searchTerm);
-    }).slice(0, 50); // Limit to 50 results
+    }).slice(0, 50);
     
-    console.log('VinylCastle search:', q, '→', results.length, 'results');
+    console.log('[VC] Search "' + q + '" found:', results.length, 'results');
     
     return res.status(200).json(results);
     
   } catch (error) {
-    console.error('VinylCastle search error:', error);
+    if (error.name === 'AbortError') {
+      console.error('[VC] Request timed out after 30 seconds');
+      return res.status(408).json({ error: 'Request timeout' });
+    }
+    console.error('[VC] Error:', error.message);
     return res.status(500).json({ error: 'Search failed', details: error.message });
   }
 }
+
