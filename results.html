@@ -163,42 +163,35 @@
             }
         }
 
-        async function getLatestAlbumArt(artistId) {
+        async function getArtistImage(artistName) {
             try {
-                // Get latest release group for this artist
                 const response = await fetch(
-                    `https://musicbrainz.org/ws/2/release-group?artist=${artistId}&type=album&limit=1&fmt=json`,
-                    { headers: { 'User-Agent': 'findyl/1.0 (https://findyl.co.uk)' } }
+                    `/api/lastfm-artist?artist=${encodeURIComponent(artistName)}`
                 );
                 
                 if (!response.ok) return null;
                 
                 const data = await response.json();
-                const releaseGroups = data['release-groups'] || [];
-                
-                if (releaseGroups.length > 0) {
-                    const rgId = releaseGroups[0].id;
-                    return `https://coverartarchive.org/release-group/${rgId}/front-250`;
-                }
+                return data.image || null;
             } catch (error) {
-                console.error('Error fetching album art:', error);
+                console.error('Error fetching artist image:', error);
+                return null;
             }
-            return null;
         }
 
         async function displayResults(artists) {
             const container = document.getElementById('results');
             container.classList.remove('hidden');
 
-            // Fetch album art for all artists in parallel
-            const artistsWithArt = await Promise.all(
+            // Fetch artist images for all artists in parallel
+            const artistsWithImages = await Promise.all(
                 artists.map(async artist => ({
                     ...artist,
-                    albumArt: await getLatestAlbumArt(artist.id)
+                    image: await getArtistImage(artist.name)
                 }))
             );
 
-            container.innerHTML = artistsWithArt.map(artist => {
+            container.innerHTML = artistsWithImages.map(artist => {
                 const name = artist.name;
                 const disambiguation = artist.disambiguation || '';
                 const type = artist.type || '';
@@ -218,8 +211,8 @@
                 if (disambiguation) meta.push(disambiguation);
 
                 // Build avatar HTML
-                const avatarHtml = artist.albumArt 
-                    ? `<img src="${artist.albumArt}" alt="${name}" class="w-16 h-16 rounded-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:64px;height:64px;border-radius:50%;background-color:#FFE5E5;align-items:center;justify-content:center"><span style="color:#FF6B6B;font-weight:bold;font-size:1.25rem">${initials}</span></div>`
+                const avatarHtml = artist.image 
+                    ? `<img src="${artist.image}" alt="${name}" class="w-16 h-16 rounded-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:64px;height:64px;border-radius:50%;background-color:#FFE5E5;align-items:center;justify-content:center"><span style="color:#FF6B6B;font-weight:bold;font-size:1.25rem">${initials}</span></div>`
                     : `<div style="width:64px;height:64px;border-radius:50%;background-color:#FFE5E5;display:flex;align-items:center;justify-content:center"><span style="color:#FF6B6B;font-weight:bold;font-size:1.25rem">${initials}</span></div>`;
 
                 return `
