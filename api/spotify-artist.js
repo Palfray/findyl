@@ -15,7 +15,7 @@ async function getAccessToken() {
   const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
-    throw new Error('Spotify credentials not configured');
+    throw new Error('CREDENTIALS_MISSING: Spotify credentials not configured');
   }
 
   const response = await fetch('https://accounts.spotify.com/api/token', {
@@ -28,7 +28,8 @@ async function getAccessToken() {
   });
 
   if (!response.ok) {
-    throw new Error('Failed to get Spotify access token');
+    const body = await response.text();
+    throw new Error(`TOKEN_FAILED (${response.status}): ${body}`);
   }
 
   const data = await response.json();
@@ -43,7 +44,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET');
   res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=43200'); // Cache 24h
 
-  const { name } = req.query;
+  const { name, debug } = req.query;
 
   if (!name) {
     return res.status(400).json({ error: 'Missing "name" query parameter' });
@@ -59,7 +60,9 @@ export default async function handler(req, res) {
     });
 
     if (!searchResponse.ok) {
-      throw new Error(`Spotify search failed: ${searchResponse.status}`);
+      const body = await searchResponse.text();
+      const retryAfter = searchResponse.headers.get('retry-after');
+      throw new Error(`SEARCH_FAILED (${searchResponse.status}): ${body}${retryAfter ? ' | Retry-After: ' + retryAfter + 's' : ''}`);
     }
 
     const searchData = await searchResponse.json();
@@ -92,7 +95,13 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Spotify artist error:', error);
+    console.error('Spotify artist error:', error.message);
+    
+    // In debug mode, return the actual error
+    if (debug === '1') {
+      return res.status(500).json({ error: error.message });
+    }
+    
     return res.status(500).json({ error: 'Failed to fetch artist data' });
   }
 }
