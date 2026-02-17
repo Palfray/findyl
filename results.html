@@ -163,24 +163,8 @@
             }
         }
 
-        // Try Spotify first for artist image, fallback to MusicBrainz album art
+        // Get artist image from MusicBrainz album art
         async function getArtistImage(artistName, musicBrainzId) {
-            // Try Spotify first (better quality artist photos)
-            try {
-                const response = await fetch(`/api/spotify-artist?name=${encodeURIComponent(artistName)}&v=2`);
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.found && data.artist.images && data.artist.images.length > 0) {
-                        // Use 320px image (good for cards), fallback to first available
-                        const image = data.artist.images.find(img => img.width === 320) || data.artist.images[0];
-                        return image.url;
-                    }
-                }
-            } catch (err) {
-                console.warn('Spotify image fetch failed, trying MusicBrainz', err);
-            }
-
-            // Fallback: MusicBrainz album art
             try {
                 const response = await fetch(
                     `https://musicbrainz.org/ws/2/release-group?artist=${musicBrainzId}&type=album&limit=1&fmt=json`,
