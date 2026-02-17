@@ -225,10 +225,10 @@
                                 <img src="${artist.albumArt}" 
                                      alt="${name}" 
                                      class="w-16 h-16 rounded-full object-cover flex-shrink-0"
-                                     onerror="this.outerHTML='<div class=\\"w-16 h-16 bg-coral-100 rounded-full flex-shrink-0 flex items-center justify-center\\"><span class=\\"text-coral-600 font-bold text-xl\\">${initials}</span></div>'">
+                                     onerror="this.outerHTML='<div class=\\"w-16 h-16 rounded-full flex-shrink-0 flex items-center justify-center\\" style=\\"background-color: #FFE5E5\\"><span class=\\"font-bold text-xl\\" style=\\"color: #FF6B6B\\">${initials}</span></div>'">
                             ` : `
-                                <div class="w-16 h-16 bg-coral-100 rounded-full flex-shrink-0 flex items-center justify-center">
-                                    <span class="text-coral-600 font-bold text-xl">${initials}</span>
+                                <div class="w-16 h-16 rounded-full flex-shrink-0 flex items-center justify-center" style="background-color: #FFE5E5">
+                                    <span class="font-bold text-xl" style="color: #FF6B6B">${initials}</span>
                                 </div>
                             `}
                             <div class="flex-1 min-w-0">
