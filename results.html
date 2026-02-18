@@ -182,16 +182,10 @@
 
         // Set search query in header and input
         document.getElementById('search-query').textContent = query;
-        document.getElementById('search-input').value = query;
+        document.getElementById('header-search-input').value = query;
 
         // Handle search form submission
-        document.getElementById('search-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const newQuery = document.getElementById('search-input').value.trim();
-            if (newQuery) {
-                window.location.href = `/results?q=${encodeURIComponent(newQuery)}`;
-            }
-        });
+        // Search form handled by header script
 
         // Search for artists
         async function searchArtists() {
