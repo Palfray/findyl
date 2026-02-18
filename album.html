@@ -309,22 +309,7 @@
                 }
             });
 
-            // Setup more stores dropdown
-            const moreStoresDiv = document.getElementById('more-stores');
-            moreStoresDiv.innerHTML = moreStores.map(store => `
-                <a href="${store.url}${encodeURIComponent(searchQuery)}" 
-                   target="_blank" 
-                   rel="noopener noreferrer"
-                   class="block py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors"
-                   style="background-color: white; border: 2px solid #FF6B6B; color: #1F2937;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <img src="https://www.google.com/s2/favicons?domain=${store.url.split('/')[2]}&sz=64" 
-                             alt="${store.name}" 
-                             style="width: 20px; height: 20px;">
-                        <span style="font-weight: 500;">${store.name}</span>
-                    </div>
-                </a>
-            `).join('');
+
 
 
             // Set Amazon affiliate link
