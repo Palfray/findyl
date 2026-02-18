@@ -133,6 +133,25 @@
                     </div>
 
                     <!-- Tracklist -->
+                    <!-- Discogs Rating -->
+                    <div id="discogs-section" class="hidden bg-white rounded-lg shadow-sm p-6 mb-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 class="text-xl font-bold mb-1">Community Rating</h2>
+                                <p class="text-sm text-gray-500">Based on Discogs collector ratings</p>
+                            </div>
+                            <div class="text-right">
+                                <div id="discogs-rating" class="text-4xl font-bold" style="color:#FF6B6B"></div>
+                                <div id="discogs-stars" class="text-yellow-400 text-lg mt-0.5"></div>
+                                <div id="discogs-count" class="text-sm text-gray-500 mt-0.5"></div>
+                            </div>
+                        </div>
+                        <div class="flex gap-6 mt-4 pt-4 border-t border-gray-100 text-sm text-gray-600">
+                            <div><span id="discogs-have" class="font-semibold text-gray-900"></span> own this</div>
+                            <div><span id="discogs-want" class="font-semibold text-gray-900"></span> want this</div>
+                        </div>
+                    </div>
+
                     <div id="tracklist-section" class="bg-white rounded-lg shadow-sm p-6">
                         <h2 class="text-xl font-bold mb-4">Tracklist</h2>
                         <div id="tracklist" class="space-y-2">
@@ -217,6 +236,9 @@
                 if (albumData.releases && albumData.releases.length > 0) {
                     await loadTracklist(albumData.releases[0].id);
                 }
+
+                // Load Discogs rating
+                await loadDiscogsRating(artist, albumData.title);
 
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('content').classList.remove('hidden');
@@ -384,6 +406,55 @@
                     </div>
                 </a>
             `).join('');
+        }
+
+        async function loadDiscogsRating(artist, album) {
+            try {
+                const query = encodeURIComponent(`${artist} ${album}`);
+                const url = `https://api.discogs.com/database/search?q=${query}&type=master&format=vinyl&per_page=1`;
+                const res = await fetch(url, {
+                    headers: {
+                        'Authorization': 'Discogs token=FxYsHceDMwTEZvpzsKuPdyJdfjoMwkPiDBEeTCSy',
+                        'User-Agent': 'findyl/1.0 (https://findyl.co.uk)'
+                    }
+                });
+                const data = await res.json();
+                if (!data.results || data.results.length === 0) return;
+
+                const masterId = data.results[0].master_id || data.results[0].id;
+                if (!masterId) return;
+
+                // Get master release for community stats
+                const masterRes = await fetch(`https://api.discogs.com/masters/${masterId}`, {
+                    headers: {
+                        'Authorization': 'Discogs token=FxYsHceDMwTEZvpzsKuPdyJdfjoMwkPiDBEeTCSy',
+                        'User-Agent': 'findyl/1.0 (https://findyl.co.uk)'
+                    }
+                });
+                const master = await masterRes.json();
+
+                const rating = master.community?.rating?.average;
+                const count = master.community?.rating?.count;
+                const have = master.community?.have;
+                const want = master.community?.want;
+
+                if (!rating || count < 5) return;
+
+                // Render stars
+                const fullStars = Math.floor(rating / 2);
+                const halfStar = (rating / 2) % 1 >= 0.5 ? '½' : '';
+                const stars = '★'.repeat(fullStars) + halfStar;
+
+                document.getElementById('discogs-rating').textContent = (rating / 2).toFixed(2) + ' / 5';
+                document.getElementById('discogs-stars').textContent = stars;
+                document.getElementById('discogs-count').textContent = count.toLocaleString() + ' ratings';
+                document.getElementById('discogs-have').textContent = have?.toLocaleString() || '—';
+                document.getElementById('discogs-want').textContent = want?.toLocaleString() || '—';
+                document.getElementById('discogs-section').classList.remove('hidden');
+
+            } catch(e) {
+                console.error('Discogs rating error:', e);
+            }
         }
 
         async function loadTracklist(releaseId) {
