@@ -323,13 +323,7 @@
             if (ebayLink) {
                 ebayLink.href = getEbayUrl(artistName || artist, albumData.title);
             }
-            // Toggle more stores
-            document.getElementById('more-stores-btn').addEventListener('click', () => {
-                const dropdown = document.getElementById('more-stores');
-                dropdown.classList.toggle('hidden');
-                const btn = document.getElementById('more-stores-btn');
-                btn.textContent = dropdown.classList.contains('hidden') ? 'More stores ▼' : 'More stores ▲';
-            });
+
         }
 
         async function loadPrices() {
