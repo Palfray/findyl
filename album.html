@@ -420,7 +420,7 @@
                 const halfStar = (data.rating % 1) >= 0.5 ? '½' : '';
                 const stars = '★'.repeat(fullStars) + halfStar;
 
-                document.getElementById('discogs-rating').textContent = data.rating.toFixed(2) + ' / 5';
+                document.getElementById('discogs-rating').textContent = data.rating.toFixed(1) + ' / 5';
                 document.getElementById('discogs-stars').textContent = stars;
                 document.getElementById('discogs-count').textContent = data.count.toLocaleString() + ' ratings';
                 document.getElementById('discogs-have').textContent = data.have?.toLocaleString() || '—';
