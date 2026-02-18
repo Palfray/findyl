@@ -52,7 +52,7 @@ export default async function handler(req, res) {
         }
 
         return res.status(200).json({
-            rating: parseFloat(rating.toFixed(2)),
+            rating: parseFloat(rating.toFixed(1)),
             count,
             have: totalHave,
             want: totalWant
