@@ -86,21 +86,17 @@
                 <!-- Right: Buy Options & Tracklist -->
                 <div>
                     <!-- Discogs Rating -->
-                    <div id="discogs-section" class="hidden bg-white rounded-lg shadow-sm p-6 mb-6">
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                            <div>
-                                <h2 class="text-xl font-bold mb-1">Community Rating</h2>
-                                <p class="text-sm text-gray-500">Based on Discogs collector ratings</p>
+                    <div id="discogs-section" class="hidden bg-white rounded-lg shadow-sm px-4 py-3 mb-6">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-semibold text-gray-700">Community Rating</span>
+                                <span id="discogs-stars" class="text-yellow-400 text-sm"></span>
                             </div>
-                            <div class="sm:text-right">
-                                <div id="discogs-rating" class="text-4xl font-bold" style="color:#FF6B6B"></div>
-                                <div id="discogs-stars" class="text-yellow-400 text-lg mt-0.5"></div>
-                                <div id="discogs-count" class="text-sm text-gray-500 mt-0.5"></div>
+                            <div class="flex items-center gap-3 text-sm text-gray-500">
+                                <span id="discogs-have" class="text-gray-600"></span>
+                                <span id="discogs-want" class="text-gray-600"></span>
+                                <span id="discogs-rating" class="font-bold text-lg" style="color:#FF6B6B"></span>
                             </div>
-                        </div>
-                        <div class="flex gap-6 mt-4 pt-4 border-t border-gray-100 text-sm text-gray-600">
-                            <div><span id="discogs-have" class="font-semibold text-gray-900"></span> own this</div>
-                            <div><span id="discogs-want" class="font-semibold text-gray-900"></span> want this</div>
                         </div>
                     </div>
 
@@ -429,9 +425,8 @@
 
                 document.getElementById('discogs-rating').textContent = data.rating.toFixed(1) + ' / 5';
                 document.getElementById('discogs-stars').textContent = stars;
-                document.getElementById('discogs-count').textContent = data.count.toLocaleString() + ' ratings';
-                document.getElementById('discogs-have').textContent = data.have?.toLocaleString() || '—';
-                document.getElementById('discogs-want').textContent = data.want?.toLocaleString() || '—';
+                document.getElementById('discogs-have').textContent = (data.have?.toLocaleString() || '—') + ' own';
+                document.getElementById('discogs-want').textContent = (data.want?.toLocaleString() || '—') + ' want';
                 document.getElementById('discogs-section').classList.remove('hidden');
 
             } catch(e) {
