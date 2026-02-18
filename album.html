@@ -68,6 +68,13 @@
                         <div id="album-meta" class="text-sm text-gray-500 space-y-1">
                             <!-- Release year, label, etc. -->
                         </div>
+                        <div id="discogs-section" class="hidden mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+                            <span class="text-sm text-gray-500">Community Rating</span>
+                            <div class="flex items-center gap-2">
+                                <span id="discogs-stars" class="text-yellow-400 text-sm"></span>
+                                <span id="discogs-rating" class="text-sm font-bold" style="color:#FF6B6B"></span>
+                            </div>
+                        </div>
                     </div>
 
                     <div id="tracklist-section" class="bg-white rounded-lg shadow-sm overflow-hidden mt-6">
@@ -85,20 +92,7 @@
 
                 <!-- Right: Buy Options & Tracklist -->
                 <div>
-                    <!-- Discogs Rating -->
-                    <div id="discogs-section" class="hidden bg-white rounded-lg shadow-sm px-4 py-3 mb-6">
-                        <div class="flex items-center justify-between gap-2">
-                            <div class="flex items-center gap-2">
-                                <span class="text-sm font-semibold text-gray-700">Community Rating</span>
-                                <span id="discogs-stars" class="text-yellow-400 text-sm"></span>
-                            </div>
-                            <div class="flex items-center gap-3 text-sm text-gray-500">
-                                <span id="discogs-have" class="text-gray-600"></span>
-                                <span id="discogs-want" class="text-gray-600"></span>
-                                <span id="discogs-rating" class="font-bold text-lg" style="color:#FF6B6B"></span>
-                            </div>
-                        </div>
-                    </div>
+
 
                     <!-- Buy Section -->
                     <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
@@ -425,8 +419,6 @@
 
                 document.getElementById('discogs-rating').textContent = data.rating.toFixed(1) + ' / 5';
                 document.getElementById('discogs-stars').textContent = stars;
-                document.getElementById('discogs-have').textContent = (data.have?.toLocaleString() || '—') + ' own';
-                document.getElementById('discogs-want').textContent = (data.want?.toLocaleString() || '—') + ' want';
                 document.getElementById('discogs-section').classList.remove('hidden');
 
             } catch(e) {
