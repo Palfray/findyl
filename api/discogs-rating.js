@@ -11,20 +11,25 @@ export default async function handler(req, res) {
     };
 
     try {
-        // Search for master release
-        const query = encodeURIComponent(`${artist} ${album}`);
-        const searchRes = await fetch(
-            `https://api.discogs.com/database/search?q=${query}&type=master&format=vinyl&per_page=1`,
-            { headers }
-        );
-        const searchData = await searchRes.json();
+        // Try multiple search strategies
+        const searches = [
+            `https://api.discogs.com/database/search?artist=${encodeURIComponent(artist)}&release_title=${encodeURIComponent(album)}&type=master&per_page=3`,
+            `https://api.discogs.com/database/search?q=${encodeURIComponent(artist + ' ' + album)}&type=master&per_page=3`,
+        ];
 
-        if (!searchData.results || searchData.results.length === 0) {
-            return res.status(404).json({ error: 'Not found' });
+        let masterId = null;
+
+        for (const url of searches) {
+            const searchRes = await fetch(url, { headers });
+            const searchData = await searchRes.json();
+            
+            if (searchData.results && searchData.results.length > 0) {
+                masterId = searchData.results[0].master_id || searchData.results[0].id;
+                if (masterId) break;
+            }
         }
 
-        const masterId = searchData.results[0].master_id || searchData.results[0].id;
-        if (!masterId) return res.status(404).json({ error: 'No master ID' });
+        if (!masterId) return res.status(404).json({ error: 'Not found' });
 
         // Get master details
         const masterRes = await fetch(`https://api.discogs.com/masters/${masterId}`, { headers });
@@ -37,7 +42,7 @@ export default async function handler(req, res) {
         if (!rating || count < 5) return res.status(404).json({ error: 'Insufficient ratings' });
 
         return res.status(200).json({
-            rating: parseFloat((rating / 2).toFixed(2)),
+            rating: parseFloat(rating.toFixed(2)),
             count,
             have: community.have || 0,
             want: community.want || 0
