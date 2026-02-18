@@ -137,6 +137,14 @@
                                 <span class="font-semibold text-gray-900 flex-1">Fopp</span>
                                 <span class="text-sm text-gray-500">Check store for price</span>
                             </a>
+                            <a id="amazon-link" href="#" target="_blank" rel="noopener noreferrer sponsored" class="store-link flex items-center gap-3 p-4 rounded-lg transition-all hover:shadow-lg bg-white shadow-sm border border-gray-100" data-store="amazon">
+                                <img src="https://www.google.com/s2/favicons?domain=amazon.co.uk&sz=64" alt="Amazon" class="w-8 h-8">
+                                <div class="flex-1">
+                                    <span class="font-semibold text-gray-900">Amazon</span>
+                                    <span class="ml-2 text-xs px-2 py-0.5 rounded-full" style="background:#FFE5E5;color:#FF6B6B;">New &amp; Used</span>
+                                </div>
+                                <span class="text-sm text-gray-500">Search listings →</span>
+                            </a>
                             <a id="ebay-link" href="#" target="_blank" rel="noopener noreferrer sponsored" class="store-link flex items-center gap-3 p-4 rounded-lg transition-all hover:shadow-lg bg-white shadow-sm border border-gray-100" data-store="ebay">
                                 <img src="https://www.google.com/s2/favicons?domain=ebay.co.uk&sz=64" alt="eBay" class="w-8 h-8">
                                 <div class="flex-1">
@@ -199,11 +207,17 @@
 
         // eBay Partner Network credentials
         const EPN_CAMPAIGN_ID = '5339142783';
+        const AMAZON_TAG = 'findyluk-21';
         const EPN_PUBLISHER_ID = '7001477';
 
         function getEbayUrl(artist, album) {
             const query = encodeURIComponent(artist + ' ' + album + ' vinyl');
             return 'https://www.ebay.co.uk/sch/i.html?_nkw=' + query + '&LH_BIN=1&LH_ItemCondition=1000|1500|2500|3000&mkevt=1&mkcid=1&mkrid=710-53481-19255-0&campid=' + EPN_CAMPAIGN_ID + '&toolid=10001&customid=findyl';
+        }
+
+        function getAmazonUrl(artist, album) {
+            const query = encodeURIComponent(artist + ' ' + album + ' vinyl');
+            return 'https://www.amazon.co.uk/s?k=' + query + '&i=music&tag=' + AMAZON_TAG;
         }
 
         // More stores
@@ -317,6 +331,12 @@
                 </a>
             `).join('');
 
+
+            // Set Amazon affiliate link
+            const amazonLink = document.getElementById('amazon-link');
+            if (amazonLink) {
+                amazonLink.href = getAmazonUrl(artistName || artist, albumData.title);
+            }
 
             // Set eBay affiliate link
             const ebayLink = document.getElementById('ebay-link');
