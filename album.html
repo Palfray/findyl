@@ -238,7 +238,8 @@
                 }
 
                 // Load Discogs rating (non-blocking)
-                loadDiscogsRating(artist, albumData.title).catch(() => {});
+                const artistForDiscogs = albumData["artist-credit"] ? albumData["artist-credit"][0].name : artistName;
+                loadDiscogsRating(artistForDiscogs, albumData.title).catch(() => {});
 
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('content').classList.remove('hidden');
