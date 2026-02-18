@@ -47,23 +47,28 @@
     <!-- Artist Header -->
     <div id="artist-header" class="bg-white border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 py-8">
-            <div class="flex items-start gap-6">
-                <div id="artist-image" class="w-32 h-32 bg-gray-200 rounded-full overflow-hidden flex-shrink-0">
+            <!-- Top: image + name/meta -->
+            <div class="flex flex-col sm:flex-row items-start gap-6 mb-4">
+                <div id="artist-image" class="w-24 h-24 sm:w-32 sm:h-32 bg-gray-200 rounded-full overflow-hidden flex-shrink-0">
                     <!-- Artist image will go here -->
                 </div>
-                <div class="flex-1">
-                    <h1 id="artist-name" class="text-4xl font-bold mb-2">Loading...</h1>
-                    <div id="artist-meta" class="flex gap-4 text-gray-600 mb-3">
+                <div class="flex-1 min-w-0">
+                    <h1 id="artist-name" class="text-3xl sm:text-4xl font-bold mb-2">Loading...</h1>
+                    <div id="artist-meta" class="flex flex-wrap gap-2 text-gray-600 mb-3">
                         <!-- Country, years active, etc. -->
                     </div>
-                    <div id="artist-bio" class="hidden text-gray-600 text-sm leading-relaxed mb-3 max-w-2xl"></div>
                     <div id="artist-genres" class="flex gap-2 flex-wrap">
                         <!-- Genre tags -->
                     </div>
-                    <div id="similar-artists" class="hidden mt-4">
-                        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Similar Artists</h3>
-                        <div id="similar-artists-list" class="flex gap-6"></div>
-                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom: bio + similar artists side by side on desktop -->
+            <div class="flex flex-col md:flex-row gap-6">
+                <div id="artist-bio" class="hidden text-gray-600 text-sm leading-relaxed md:flex-1"></div>
+                <div id="similar-artists" class="hidden md:w-72 flex-shrink-0">
+                    <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Similar Artists</h3>
+                    <div id="similar-artists-list" class="flex gap-4"></div>
                 </div>
             </div>
         </div>
