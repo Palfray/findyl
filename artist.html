@@ -56,6 +56,7 @@
                     <div id="artist-meta" class="flex gap-4 text-gray-600 mb-3">
                         <!-- Country, years active, etc. -->
                     </div>
+                    <div id="artist-bio" class="hidden text-gray-600 text-sm leading-relaxed mb-3 max-w-2xl"></div>
                     <div id="artist-genres" class="flex gap-2 flex-wrap">
                         <!-- Genre tags -->
                     </div>
@@ -120,6 +121,9 @@
 
                 // Display artist info
                 displayArtistInfo(artist);
+
+                // Load Last.fm bio (non-blocking)
+                loadArtistBio(artist.name).catch(() => {});
 
                 // Step 2: Get detailed artist data with genres/tags
                 const detailResponse = await fetch(
@@ -263,6 +267,16 @@
                     </a>
                 `;
             }).join('');
+        }
+
+        async function loadArtistBio(name) {
+            const res = await fetch(`/api/lastfm-bio?artist=${encodeURIComponent(name)}`);
+            if (!res.ok) return;
+            const data = await res.json();
+            if (!data.bio) return;
+            const bioEl = document.getElementById('artist-bio');
+            bioEl.textContent = data.bio;
+            bioEl.classList.remove('hidden');
         }
 
         // Initialize
