@@ -276,8 +276,33 @@
 
             document.getElementById('artist-meta').textContent = meta.join(' • ');
 
-            // Load artist initials image
-            showInitialsImage(artist.name);
+            // Load artist image - try album art first, fall back to initials
+            loadArtistImage(artist.id, artist.name);
+        }
+
+        async function loadArtistImage(artistId, name) {
+            try {
+                const res = await fetch(
+                    `https://musicbrainz.org/ws/2/release-group?artist=${artistId}&type=album&fmt=json&limit=10`,
+                    { headers: { 'User-Agent': 'findyl/1.0 (https://findyl.co.uk)' } }
+                );
+                const data = await res.json();
+                const rgs = (data['release-groups'] || []).filter(r => r['first-release-date']);
+                if (rgs.length === 0) { showInitialsImage(name); return; }
+
+                rgs.sort((a, b) => b['first-release-date'].localeCompare(a['first-release-date']));
+                const imgUrl = `https://coverartarchive.org/release-group/${rgs[0].id}/front-250`;
+
+                const container = document.getElementById('artist-image');
+                const img = new Image();
+                img.onload = () => {
+                    container.innerHTML = `<img src="${imgUrl}" alt="${name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+                };
+                img.onerror = () => showInitialsImage(name);
+                img.src = imgUrl;
+            } catch(e) {
+                showInitialsImage(name);
+            }
         }
 
         function showInitialsImage(name) {
