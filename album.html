@@ -239,7 +239,7 @@
 
                 // Load Discogs rating (non-blocking)
                 const artistForDiscogs = albumData["artist-credit"] ? albumData["artist-credit"][0].name : artistName;
-                loadDiscogsRating(artistForDiscogs, albumData.title).catch(() => {});
+                loadDiscogsRating(artistForDiscogs, albumData.title, albumId).catch(() => {});
 
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('content').classList.remove('hidden');
@@ -409,9 +409,9 @@
             `).join('');
         }
 
-        async function loadDiscogsRating(artist, album) {
+        async function loadDiscogsRating(artist, album, mbid) {
             try {
-                const res = await fetch(`/api/discogs-rating?artist=${encodeURIComponent(artist)}&album=${encodeURIComponent(album)}`);
+                const res = await fetch(`/api/discogs-rating?artist=${encodeURIComponent(artist)}&album=${encodeURIComponent(album)}&mbid=${encodeURIComponent(mbid || "")}`);
                 if (!res.ok) return;
                 const data = await res.json();
 
