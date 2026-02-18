@@ -22,9 +22,14 @@ export default async function handler(req, res) {
         bio = bio.replace(/<[^>]+>/g, '').trim(); // strip any remaining HTML tags
         bio = bio.replace(/\s+/g, ' ').trim();
 
-        if (!bio) return res.status(404).json({ error: 'No bio available' });
+        // Get top 3 similar artists
+        const similar = (data.artist?.similar?.artist || [])
+            .slice(0, 3)
+            .map(a => ({ name: a.name }));
 
-        return res.status(200).json({ bio });
+        if (!bio && similar.length === 0) return res.status(404).json({ error: 'No data available' });
+
+        return res.status(200).json({ bio: bio || null, similar });
 
     } catch (e) {
         return res.status(500).json({ error: e.message });
