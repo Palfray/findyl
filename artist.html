@@ -73,7 +73,10 @@
 
             <!-- Bottom: bio + similar artists side by side on desktop -->
             <div class="flex flex-col md:flex-row gap-6">
-                <div id="artist-bio" class="hidden text-gray-600 text-sm leading-relaxed md:flex-1"></div>
+                <div class="hidden md:flex-1" id="artist-bio-wrapper">
+                <div id="artist-bio" class="text-gray-600 text-sm leading-relaxed" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden"></div>
+                <button id="bio-toggle" onclick="toggleBio()" class="text-sm mt-1 font-medium" style="color:#FF6B6B">Read more</button>
+            </div>
                 <div id="similar-artists" class="hidden md:w-72 flex-shrink-0">
                     <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Similar Artists</h3>
                     <div id="similar-artists-list" class="flex gap-4"></div>
@@ -294,7 +297,7 @@
             if (data.bio) {
                 const bioEl = document.getElementById('artist-bio');
                 bioEl.textContent = data.bio;
-                bioEl.classList.remove('hidden');
+                document.getElementById('artist-bio-wrapper').classList.remove('hidden');
             }
 
             if (data.similar && data.similar.length > 0) {
@@ -348,6 +351,16 @@
                     } catch(e) {}
                 });
             }
+        }
+
+        function toggleBio() {
+            const bio = document.getElementById('artist-bio');
+            const btn = document.getElementById('bio-toggle');
+            const isCollapsed = bio.style.webkitLineClamp === '3';
+            bio.style.webkitLineClamp = isCollapsed ? 'unset' : '3';
+            bio.style.overflow = isCollapsed ? 'visible' : 'hidden';
+            bio.style.display = isCollapsed ? 'block' : '-webkit-box';
+            btn.textContent = isCollapsed ? 'Show less' : 'Read more';
         }
 
         // Initialize
