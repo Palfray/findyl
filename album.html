@@ -69,6 +69,18 @@
                             <!-- Release year, label, etc. -->
                         </div>
                     </div>
+
+                    <div id="tracklist-section" class="bg-white rounded-lg shadow-sm overflow-hidden mt-6">
+                        <button id="tracklist-toggle" onclick="toggleTracklist()" class="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors">
+                            <h2 class="text-xl font-bold">Tracklist</h2>
+                            <span id="tracklist-arrow" class="text-gray-400 text-xl transition-transform duration-200">▼</span>
+                        </button>
+                        <div id="tracklist-body" class="hidden px-6 pb-6">
+                            <div id="tracklist" class="space-y-2">
+                                <!-- Tracks will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Right: Buy Options & Tracklist -->
@@ -153,17 +165,7 @@
 
 
 
-                    <div id="tracklist-section" class="bg-white rounded-lg shadow-sm overflow-hidden">
-                        <button id="tracklist-toggle" onclick="toggleTracklist()" class="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors">
-                            <h2 class="text-xl font-bold">Tracklist</h2>
-                            <span id="tracklist-arrow" class="text-gray-400 text-xl transition-transform duration-200">▼</span>
-                        </button>
-                        <div id="tracklist-body" class="hidden px-6 pb-6">
-                            <div id="tracklist" class="space-y-2">
-                                <!-- Tracks will be inserted here -->
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </div>
         </div>
