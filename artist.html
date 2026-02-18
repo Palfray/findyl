@@ -60,6 +60,10 @@
                     <div id="artist-genres" class="flex gap-2 flex-wrap">
                         <!-- Genre tags -->
                     </div>
+                    <div id="similar-artists" class="hidden mt-3">
+                        <span class="text-sm text-gray-500 mr-2">Similar artists:</span>
+                        <span id="similar-artists-list" class="text-sm"></span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -273,10 +277,20 @@
             const res = await fetch(`/api/lastfm-bio?artist=${encodeURIComponent(name)}`);
             if (!res.ok) return;
             const data = await res.json();
-            if (!data.bio) return;
-            const bioEl = document.getElementById('artist-bio');
-            bioEl.textContent = data.bio;
-            bioEl.classList.remove('hidden');
+
+            if (data.bio) {
+                const bioEl = document.getElementById('artist-bio');
+                bioEl.textContent = data.bio;
+                bioEl.classList.remove('hidden');
+            }
+
+            if (data.similar && data.similar.length > 0) {
+                const listEl = document.getElementById('similar-artists-list');
+                listEl.innerHTML = data.similar.map(a =>
+                    `<a href="/results?q=${encodeURIComponent(a.name)}" class="text-gray-700 hover:text-coral underline mr-2" style="color:#FF6B6B">${a.name}</a>`
+                ).join('<span class="text-gray-400 mr-2">·</span>');
+                document.getElementById('similar-artists').classList.remove('hidden');
+            }
         }
 
         // Initialize
