@@ -410,46 +410,19 @@
 
         async function loadDiscogsRating(artist, album) {
             try {
-                const query = encodeURIComponent(`${artist} ${album}`);
-                const url = `https://api.discogs.com/database/search?q=${query}&type=master&format=vinyl&per_page=1`;
-                const res = await fetch(url, {
-                    headers: {
-                        'Authorization': 'Discogs token=FxYsHceDMwTEZvpzsKuPdyJdfjoMwkPiDBEeTCSy',
-                        'User-Agent': 'findyl/1.0 (https://findyl.co.uk)'
-                    }
-                });
+                const res = await fetch(`/api/discogs-rating?artist=${encodeURIComponent(artist)}&album=${encodeURIComponent(album)}`);
+                if (!res.ok) return;
                 const data = await res.json();
-                if (!data.results || data.results.length === 0) return;
 
-                const masterId = data.results[0].master_id || data.results[0].id;
-                if (!masterId) return;
-
-                // Get master release for community stats
-                const masterRes = await fetch(`https://api.discogs.com/masters/${masterId}`, {
-                    headers: {
-                        'Authorization': 'Discogs token=FxYsHceDMwTEZvpzsKuPdyJdfjoMwkPiDBEeTCSy',
-                        'User-Agent': 'findyl/1.0 (https://findyl.co.uk)'
-                    }
-                });
-                const master = await masterRes.json();
-
-                const rating = master.community?.rating?.average;
-                const count = master.community?.rating?.count;
-                const have = master.community?.have;
-                const want = master.community?.want;
-
-                if (!rating || count < 5) return;
-
-                // Render stars
-                const fullStars = Math.floor(rating / 2);
-                const halfStar = (rating / 2) % 1 >= 0.5 ? '½' : '';
+                const fullStars = Math.floor(data.rating);
+                const halfStar = (data.rating % 1) >= 0.5 ? '½' : '';
                 const stars = '★'.repeat(fullStars) + halfStar;
 
-                document.getElementById('discogs-rating').textContent = (rating / 2).toFixed(2) + ' / 5';
+                document.getElementById('discogs-rating').textContent = data.rating.toFixed(2) + ' / 5';
                 document.getElementById('discogs-stars').textContent = stars;
-                document.getElementById('discogs-count').textContent = count.toLocaleString() + ' ratings';
-                document.getElementById('discogs-have').textContent = have?.toLocaleString() || '—';
-                document.getElementById('discogs-want').textContent = want?.toLocaleString() || '—';
+                document.getElementById('discogs-count').textContent = data.count.toLocaleString() + ' ratings';
+                document.getElementById('discogs-have').textContent = data.have?.toLocaleString() || '—';
+                document.getElementById('discogs-want').textContent = data.want?.toLocaleString() || '—';
                 document.getElementById('discogs-section').classList.remove('hidden');
 
             } catch(e) {
