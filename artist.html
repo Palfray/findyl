@@ -270,12 +270,6 @@ displayAlbums(albums);
             grid.innerHTML = albums.map(album => {
                 const year = album['first-release-date'] ? album['first-release-date'].substring(0, 4) : '';
                 const coverUrl = `https://coverartarchive.org/release-group/${album.id}/front-250`;
-                
-                // Check if we have pricing for this album
-
-                const priceDot = hasPricing 
-                    ? `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#FF6B6B;margin-left:5px;vertical-align:middle;flex-shrink:0"></span>` 
-                    : '';
 
                 return `
                     <a href="/album?id=${album.id}&artist=${encodeURIComponent(artistName)}" 
