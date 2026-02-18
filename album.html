@@ -108,6 +108,14 @@
                                 <span class="font-semibold text-gray-900 flex-1">Fopp</span>
                                 <span class="text-sm text-gray-500">Check store for price</span>
                             </a>
+                            <a id="ebay-link" href="#" target="_blank" rel="noopener noreferrer sponsored" class="store-link flex items-center gap-3 p-4 rounded-lg transition-all hover:shadow-lg bg-white shadow-sm border border-gray-100" data-store="ebay">
+                                <img src="https://www.google.com/s2/favicons?domain=ebay.co.uk&sz=64" alt="eBay" class="w-8 h-8">
+                                <div class="flex-1">
+                                    <span class="font-semibold text-gray-900">eBay</span>
+                                    <span class="ml-2 text-xs px-2 py-0.5 rounded-full" style="background:#FFE5E5;color:#FF6B6B;">New &amp; Used</span>
+                                </div>
+                                <span class="text-sm text-gray-500">Search listings →</span>
+                            </a>
                             <a href="#" class="store-link flex items-center gap-3 p-4 rounded-lg transition-all hover:shadow-lg bg-white shadow-sm border border-gray-100" data-store="emp">
                                 <img src="https://www.google.com/s2/favicons?domain=emp.co.uk&sz=64" alt="EMP" class="w-8 h-8">
                                 <span class="font-semibold text-gray-900 flex-1">EMP</span>
@@ -162,6 +170,17 @@
             fopp: 'https://www.fopp.com/search?term=',
             emp: 'https://www.emp.co.uk/search?q='
         };
+
+
+        // eBay Partner Network credentials
+        const EPN_CAMPAIGN_ID = '5339142783';
+        const EPN_PUBLISHER_ID = '7001477';
+
+        function getEbayUrl(artist, album) {
+            const query = encodeURIComponent(artist + ' ' + album + ' vinyl');
+            const destUrl = encodeURIComponent('https://www.ebay.co.uk/sch/i.html?_nkw=' + query + '&LH_BIN=1&LH_ItemCondition=1000%7C1500%7C2500%7C3000');
+            return 'https://rover.ebay.com/rover/1/710-53481-19255-0/1?campid=' + EPN_CAMPAIGN_ID + '&pub=' + EPN_PUBLISHER_ID + '&toolid=10001&customid=findyl&mpre=' + destUrl;
+        }
 
         // More stores
         const moreStores = [
@@ -270,6 +289,12 @@
                 </a>
             `).join('');
 
+
+            // Set eBay affiliate link
+            const ebayLink = document.getElementById('ebay-link');
+            if (ebayLink) {
+                ebayLink.href = getEbayUrl(artistName || artist, albumData.title);
+            }
             // Toggle more stores
             document.getElementById('more-stores-btn').addEventListener('click', () => {
                 const dropdown = document.getElementById('more-stores');
