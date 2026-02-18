@@ -237,8 +237,8 @@
                     await loadTracklist(albumData.releases[0].id);
                 }
 
-                // Load Discogs rating
-                await loadDiscogsRating(artist, albumData.title);
+                // Load Discogs rating (non-blocking)
+                loadDiscogsRating(artist, albumData.title).catch(() => {});
 
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('content').classList.remove('hidden');
