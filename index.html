@@ -47,17 +47,21 @@
         /* Autocomplete dropdown */
         .autocomplete-dropdown {
             position: absolute;
-            top: 100%;
+            top: calc(100% - 2px);
             left: 0;
             right: 0;
             background: white;
             border: 2px solid white;
-            border-top: none;
+            border-top: 1px solid #f3f4f6;
             border-radius: 0 0 1.5rem 1.5rem;
             max-height: 400px;
             overflow-y: auto;
             z-index: 1000;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            padding-top: 4px;
+        }
+        .search-open input {
+            border-radius: 1.5rem 1.5rem 0 0 !important;
         }
         
         .autocomplete-item {
@@ -402,6 +406,7 @@
                 const query = e.target.value.trim();
                 
                 // Clear existing dropdown
+                input.classList.remove('rounded-b-none');
                 if (currentDropdown) {
                     currentDropdown.remove();
                     currentDropdown = null;
@@ -467,6 +472,7 @@
                         form.style.position = 'relative';
                         form.appendChild(dropdown);
                         currentDropdown = dropdown;
+                        input.classList.add('rounded-b-none');
                         
                     } catch (error) {
                         console.error('Autocomplete error:', error);
@@ -479,6 +485,7 @@
                 if (currentDropdown && !form.contains(e.target)) {
                     currentDropdown.remove();
                     currentDropdown = null;
+                    form.querySelectorAll('input').forEach(i => i.classList.remove('rounded-b-none'));
                 }
             });
         }
