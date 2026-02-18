@@ -302,11 +302,11 @@
                                  alt="${album.title}" 
                                  class="w-full h-full object-cover"
                                  onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22250%22 height=%22250%22%3E%3Crect fill=%22%23e5e7eb%22 width=%22250%22 height=%22250%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2218%22 fill=%22%239ca3af%22%3ENo Cover%3C/text%3E%3C/svg%3E'">
-                            ${hasPricing ? `<span style="position:absolute;bottom:8px;right:8px;width:10px;height:10px;border-radius:50%;background:#FF6B6B;border:2px solid white"></span>` : ''}
                         </div>
-                        <div class="p-4">
+                        <div class="p-4 relative">
                             <h3 class="font-semibold text-gray-900 mb-1 line-clamp-2">${album.title}</h3>
                             ${year ? `<p class="text-sm text-gray-500">${year}</p>` : ''}
+                            ${hasPricing ? `<span style="position:absolute;bottom:12px;right:12px;width:8px;height:8px;border-radius:50%;background:#FF6B6B"></span>` : ''}
                         </div>
                     </a>
                 `;
