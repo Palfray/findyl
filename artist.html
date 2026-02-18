@@ -60,9 +60,9 @@
                     <div id="artist-genres" class="flex gap-2 flex-wrap">
                         <!-- Genre tags -->
                     </div>
-                    <div id="similar-artists" class="hidden mt-3">
-                        <span class="text-sm text-gray-500 mr-2">Similar artists:</span>
-                        <span id="similar-artists-list" class="text-sm"></span>
+                    <div id="similar-artists" class="hidden mt-4">
+                        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Similar Artists</h3>
+                        <div id="similar-artists-list" class="flex gap-6"></div>
                     </div>
                 </div>
             </div>
@@ -286,10 +286,54 @@
 
             if (data.similar && data.similar.length > 0) {
                 const listEl = document.getElementById('similar-artists-list');
-                listEl.innerHTML = data.similar.map(a =>
-                    `<a href="/results?q=${encodeURIComponent(a.name)}" class="text-gray-700 hover:text-coral underline mr-2" style="color:#FF6B6B">${a.name}</a>`
-                ).join('<span class="text-gray-400 mr-2">·</span>');
+
+                listEl.innerHTML = data.similar.map(a => {
+                    const key = a.name.replace(/[^a-z0-9]/gi,'_');
+                    const initials = a.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+                    return `<a href="/results?q=${encodeURIComponent(a.name)}"
+                               class="flex flex-col items-center gap-2 group" style="min-width:80px;max-width:80px">
+                        <div id="sim-img-${key}"
+                             style="width:80px;height:80px;border-radius:50%;background:#FFE5E5;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
+                            <span style="color:#FF6B6B;font-weight:bold;font-size:1.2rem">${initials}</span>
+                        </div>
+                        <span class="text-sm text-center text-gray-700 group-hover:text-gray-900 font-medium leading-tight">${a.name}</span>
+                    </a>`;
+                }).join('');
+
                 document.getElementById('similar-artists').classList.remove('hidden');
+
+                data.similar.forEach(async a => {
+                    try {
+                        const mbRes = await fetch(
+                            `https://musicbrainz.org/ws/2/artist/?query=artist:"${encodeURIComponent(a.name)}"&fmt=json&limit=1`,
+                            { headers: { 'User-Agent': 'findyl/1.0 (https://findyl.co.uk)' } }
+                        );
+                        const mbData = await mbRes.json();
+                        const artistId = mbData.artists?.[0]?.id;
+                        if (!artistId) return;
+
+                        const rgRes = await fetch(
+                            `https://musicbrainz.org/ws/2/release-group?artist=${artistId}&type=album&fmt=json&limit=5`,
+                            { headers: { 'User-Agent': 'findyl/1.0 (https://findyl.co.uk)' } }
+                        );
+                        const rgData = await rgRes.json();
+                        const rgs = (rgData['release-groups'] || []).filter(r => r['first-release-date']);
+                        if (rgs.length === 0) return;
+
+                        rgs.sort((x,y) => y['first-release-date'].localeCompare(x['first-release-date']));
+                        const imgUrl = `https://coverartarchive.org/release-group/${rgs[0].id}/front-250`;
+
+                        const key = a.name.replace(/[^a-z0-9]/gi,'_');
+                        const container = document.getElementById(`sim-img-${key}`);
+                        if (!container) return;
+
+                        const img = new Image();
+                        img.onload = () => {
+                            container.innerHTML = `<img src="${imgUrl}" alt="${a.name}" style="width:80px;height:80px;object-fit:cover;border-radius:50%">`;
+                        };
+                        img.src = imgUrl;
+                    } catch(e) {}
+                });
             }
         }
 
