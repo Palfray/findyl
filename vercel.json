@@ -1,6 +1,5 @@
 {
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/artist", "destination": "/artist.html" },
     { "source": "/album", "destination": "/album.html" },
     { "source": "/results", "destination": "/results.html" },
