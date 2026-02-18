@@ -29,7 +29,7 @@ export default async function handler(req, res) {
         const masterId = best.master_id;
         if (!masterId) return res.status(404).json({ error: 'No master ID' });
 
-        const masterRes = await fetch(`https://api.discogs.com/masters/${masterId}`, { headers });
+        const masterRes = await fetch(`https://api.discogs.com/masters/${masterId}?inc=community`, { headers });
         const master = await masterRes.json();
 
         // Log for debugging
