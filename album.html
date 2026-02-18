@@ -178,8 +178,7 @@
 
         function getEbayUrl(artist, album) {
             const query = encodeURIComponent(artist + ' ' + album + ' vinyl');
-            const destUrl = 'https://www.ebay.co.uk/sch/i.html?_nkw=' + query + '&LH_BIN=1&LH_ItemCondition=1000|1500|2500|3000';
-            return 'https://rover.ebay.com/rover/1/710-53481-19255-0/1?campid=' + EPN_CAMPAIGN_ID + '&pub=' + EPN_PUBLISHER_ID + '&toolid=10001&customid=findyl&mpre=' + encodeURIComponent(destUrl);
+            return 'https://www.ebay.co.uk/sch/i.html?_nkw=' + query + '&LH_BIN=1&LH_ItemCondition=1000|1500|2500|3000&mkevt=1&mkcid=1&mkrid=710-53481-19255-0&campid=' + EPN_CAMPAIGN_ID + '&toolid=10001&customid=findyl';
         }
 
         // More stores
