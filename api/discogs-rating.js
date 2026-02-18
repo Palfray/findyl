@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     
-    const { artist, album, mbid } = req.query;
+    const { artist, album } = req.query;
     if (!artist || !album) return res.status(400).json({ error: 'Missing params' });
 
     const DISCOGS_TOKEN = 'FxYsHceDMwTEZvpzsKuPdyJdfjoMwkPiDBEeTCSy';
@@ -11,62 +11,44 @@ export default async function handler(req, res) {
     };
 
     try {
-        let masterId = null;
+        // Search for the release
+        const url = `https://api.discogs.com/database/search?artist=${encodeURIComponent(artist)}&release_title=${encodeURIComponent(album)}&per_page=5`;
+        const searchRes = await fetch(url, { headers });
+        const searchData = await searchRes.json();
 
-        // Strategy 1: Search by MBID if provided (most accurate)
-        if (mbid) {
-            const mbidRes = await fetch(
-                `https://api.discogs.com/database/search?q=${mbid}&type=master&per_page=1`,
-                { headers }
-            );
-            const mbidData = await mbidRes.json();
-            if (mbidData.results?.length > 0) {
-                masterId = mbidData.results[0].master_id || mbidData.results[0].id;
-            }
+        if (!searchData.results?.length) {
+            return res.status(404).json({ error: 'Not found' });
         }
 
-        // Strategy 2: Search by artist + title
-        if (!masterId) {
-            const url = `https://api.discogs.com/database/search?artist=${encodeURIComponent(artist)}&release_title=${encodeURIComponent(album)}&type=master&per_page=5`;
-            const searchRes = await fetch(url, { headers });
-            const searchData = await searchRes.json();
+        // Find best result - prefer master type, then highest community_want
+        const results = searchData.results;
+        const masters = results.filter(r => r.type === 'master');
+        const best = masters.length > 0 ? masters[0] : results[0];
 
-            if (searchData.results?.length > 0) {
-                // Pick result whose title most closely matches
-                const albumLower = album.toLowerCase();
-                const best = searchData.results.find(r => 
-                    r.title?.toLowerCase().includes(albumLower) || 
-                    albumLower.includes(r.title?.toLowerCase())
-                ) || searchData.results[0];
-                masterId = best.master_id || best.id;
-            }
-        }
+        // Use community_score from search results directly
+        const masterId = best.master_id;
+        if (!masterId) return res.status(404).json({ error: 'No master ID' });
 
-        if (!masterId) return res.status(404).json({ error: 'Not found' });
-
-        // Get master details
         const masterRes = await fetch(`https://api.discogs.com/masters/${masterId}`, { headers });
         const master = await masterRes.json();
 
-        // Verify this is the right artist
-        const masterArtist = master.artists?.[0]?.name?.toLowerCase() || '';
-        const queryArtist = artist.toLowerCase();
-        if (masterArtist && !masterArtist.includes(queryArtist) && !queryArtist.includes(masterArtist)) {
-            return res.status(404).json({ error: 'Artist mismatch', found: master.artists?.[0]?.name });
-        }
+        // Log for debugging
+        console.log('Master:', master.title, 'Artist:', master.artists?.[0]?.name, 'Community:', JSON.stringify(master.community));
 
         const community = master.community || {};
         const rating = community.rating?.average;
         const count = community.rating?.count || 0;
+        const have = community.have || 0;
+        const want = community.want || 0;
 
-        if (!rating || count < 3) return res.status(404).json({ error: 'Insufficient ratings', count });
+        if (!rating || count < 1) {
+            return res.status(404).json({ 
+                error: 'No ratings', 
+                debug: { title: master.title, artist: master.artists?.[0]?.name, count, rating }
+            });
+        }
 
-        return res.status(200).json({
-            rating: parseFloat(rating.toFixed(2)),
-            count,
-            have: community.have || 0,
-            want: community.want || 0
-        });
+        return res.status(200).json({ rating: parseFloat(rating.toFixed(2)), count, have, want });
 
     } catch (e) {
         return res.status(500).json({ error: e.message });
