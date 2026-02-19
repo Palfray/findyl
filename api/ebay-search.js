@@ -70,6 +70,8 @@ export default async function handler(req, res) {
 
     // Build search query
     let searchQuery = q;
+    const isAlbumSearch = !!album;
+
     if (!searchQuery) {
         if (!artist) {
             return res.status(400).json({ error: 'Missing artist or q parameter' });
@@ -83,14 +85,20 @@ export default async function handler(req, res) {
         const token = await getAccessToken();
 
         // Build Browse API URL
+        // Artist-only: Best Match sort + high limit for diverse album coverage (used by pricing dots)
+        // Artist+Album: price sort + lower limit for cheapest results (used by album page)
         const params = new URLSearchParams({
             q: searchQuery,
             category_ids: EBAY_VINYL_CATEGORY,
             filter: 'itemLocationCountry:GB,buyingOptions:{FIXED_PRICE}',
-            sort: 'price',
-            limit: '15',
+            limit: isAlbumSearch ? '20' : '200',
             auto_correct: 'KEYWORD'
         });
+
+        // Only sort by price for specific album searches
+        if (isAlbumSearch) {
+            params.set('sort', 'price');
+        }
 
         const apiUrl = `https://api.ebay.com/buy/browse/v1/item_summary/search?${params}`;
 
