@@ -633,7 +633,7 @@
 
             // ── Render standard retailer cards ──
             let html = retailerOptions.map(opt => {
-                const cb = opt.vinylColour ? `<span style="font-size:0.6rem;padding:2px 6px;border-radius:9999px;background:#F0EBFF;color:#6D28D9;white-space:nowrap;">🎨 ${opt.vinylColour}</span>` : '';
+                const cb = opt.vinylColour ? `<span style="font-size:0.6rem;padding:2px 7px;border-radius:9999px;background:#FFE5E5;color:#FF6B6B;white-space:nowrap;font-weight:500;">Colour variant</span>` : '';
                 return `
                 <a href="${opt.link}" 
                    target="_blank" rel="noopener noreferrer"
@@ -714,7 +714,7 @@
 
             function colourBadge(vc) {
                 if (!vc) return '';
-                return `<span style="font-size:0.6rem;padding:2px 6px;border-radius:9999px;background:#F0EBFF;color:#6D28D9;white-space:nowrap;">🎨 ${vc}</span>`;
+                return `<span style="font-size:0.6rem;padding:2px 7px;border-radius:9999px;background:#FFE5E5;color:#FF6B6B;white-space:nowrap;font-weight:500;">Colour variant</span>`;
             }
 
             let card = `
