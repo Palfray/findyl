@@ -248,12 +248,22 @@
             if (inEmp) return true;
             const inVc = vcProducts.some(p => artistMatches(p.artist) && albumMatches(p.album, mbTitle));
             if (inVc) return true;
-            // eBay: match listing titles against album name
+            // eBay: match listing titles against album name using word overlap
             const nm = normalise(mbTitle);
-            if (nm && ebayProducts.length > 0) {
+            if (nm && nm.length >= 3 && ebayProducts.length > 0) {
+                const albumWords = nm.split(' ').filter(w => w.length >= 2);
+                if (albumWords.length === 0) return false;
                 return ebayProducts.some(p => {
                     const nt = normalise(p.title || '');
-                    return nt && nm.length >= 3 && nt.includes(nm);
+                    if (!nt) return false;
+                    // Exact substring match
+                    if (nt.includes(nm)) return true;
+                    // Word overlap: require all significant album words to appear in listing title
+                    if (albumWords.length >= 2) {
+                        return albumWords.every(w => nt.includes(w));
+                    }
+                    // Single-word album titles: require exact word boundary match
+                    return nt.split(' ').includes(nm);
                 });
             }
             return false;
@@ -278,6 +288,9 @@
                 if (ebayRes.status === 'fulfilled' && ebayRes.value.ok) {
                     const ebayData = await ebayRes.value.json();
                     ebayProducts = ebayData.results || [];
+                    console.log('🛒 eBay pricing feed:', ebayProducts.length, 'listings loaded');
+                } else {
+                    console.warn('⚠️ eBay pricing feed failed:', ebayRes.status === 'rejected' ? ebayRes.reason : 'HTTP error');
                 }
 
                 pricingReady = true;
