@@ -32,6 +32,20 @@
             letter-spacing: -0.01em;
         }
     </style>
+    <script>
+      // Preload album cover as early as possible
+      (function() {
+        var params = new URLSearchParams(window.location.search);
+        var id = params.get('id');
+        if (id) {
+          var link = document.createElement('link');
+          link.rel = 'preload';
+          link.as = 'image';
+          link.href = 'https://coverartarchive.org/release-group/' + id + '/front-500';
+          document.head.appendChild(link);
+        }
+      })();
+    </script>
 </head>
 <body class="bg-gray-50">
     <!-- Header -->
@@ -97,7 +111,7 @@
                 <div>
                     <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
                         <div class="aspect-square bg-gray-200">
-                            <img id="album-cover" src="" alt="" class="w-full h-full object-cover">
+                            <img id="album-cover" src="" alt="" class="w-full h-full object-cover" fetchpriority="high" decoding="async">
                         </div>
                     </div>
                     

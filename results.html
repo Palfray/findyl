@@ -312,7 +312,7 @@
                     // Pre-load image before swapping in
                     const img = new Image();
                     img.onload = () => {
-                        container.innerHTML = `<img src="${imgUrl}" alt="${artist.name}" class="avatar-img" style="width:64px;height:64px;border-radius:50%;object-fit:cover">`;
+                        container.innerHTML = `<img src="${imgUrl}" alt="${artist.name}" class="avatar-img" style="width:64px;height:64px;border-radius:50%;object-fit:cover" decoding="async">`;
                     };
                     // On error, keep initials — do nothing
                     img.src = imgUrl;
