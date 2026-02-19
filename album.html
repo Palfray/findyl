@@ -487,33 +487,30 @@
 
                         const filteredEbay = ebayData.results.filter(item => {
                             const title = (item.title || '').toLowerCase();
-                            // Remove artist name and common suffixes to isolate album name in listing
-                            const titleClean = title
-                                .replace(/\b(vinyl|lp|2xlp|record|sealed|new|pre-owned|mint)\b/g, '')
-                                .replace(/\([^)]*\)/g, '')
-                                .replace(/\[[^\]]*\]/g, '')
-                                .trim();
+                            
+                            // Common non-album words to ignore
+                            const noiseWords = new Set(['vinyl','lp','2xlp','3xlp','record','records','sealed','new',
+                                'pre-owned','used','mint','near','very','good','12','7','10','inch','180g','180',
+                                'gram','gatefold','reissue','remastered','edition','limited','deluxe','pressing',
+                                'coloured','colored','colour','color','import','uk','eu','us','black','double',
+                                'single','triple','heavyweight','audiophile','original','brand','factory']);
 
                             if (isSelfTitled) {
-                                // Self-titled: accept listings that DON'T clearly name a different album
-                                // Check if the listing title, after removing artist name, has very little left
-                                // (meaning it's probably just "Zach Bryan Vinyl LP" not "Zach Bryan Summertime Blues")
-                                const withoutArtist = titleClean.replace(new RegExp(artistLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '').trim();
-                                const remainingWords = withoutArtist.split(/\s+/).filter(w => w.length > 2);
-                                // If there are significant words left, it's likely a different album — 
-                                // but only reject if the album title words DON'T appear
-                                const albumWords = albumTitleLower.split(/\s+/).filter(w => w.length > 2);
-                                if (albumWords.length === 0) {
-                                    // Pure self-titled (single name = artist name), only keep if no other album name detected
-                                    return remainingWords.length <= 3;
-                                }
-                                return true;
+                                // Self-titled: strip artist name words + noise, check what's left
+                                const artistWords = new Set(artist.toLowerCase().split(/\s+/));
+                                const titleWords = title.split(/[\s\-–—:,./]+/).filter(w => w.length > 1);
+                                const significantRemaining = titleWords.filter(w => 
+                                    !artistWords.has(w) && !noiseWords.has(w)
+                                );
+                                // If there are meaningful words left, it's probably a different album
+                                // e.g. "zach bryan summertime blues vinyl" → remaining: ["summertime", "blues"]
+                                return significantRemaining.length <= 1;
                             } else {
                                 // Normal album: require album title words to appear in listing
-                                const albumWords = albumTitleLower.split(/\s+/).filter(w => w.length > 2);
-                                if (albumWords.length === 0) return true; // Very short album name — can't filter reliably
+                                const albumWords = albumTitleLower.split(/\s+/).filter(w => w.length > 2 && !noiseWords.has(w));
+                                if (albumWords.length === 0) return true;
                                 const matchCount = albumWords.filter(w => title.includes(w)).length;
-                                return matchCount >= Math.ceil(albumWords.length * 0.6); // At least 60% of words must match
+                                return matchCount >= Math.ceil(albumWords.length * 0.6);
                             }
                         });
 
