@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>findyl — Loading article...</title>
+  <meta name="description" content="">
+  <meta property="og:title" content="">
+  <meta property="og:description" content="">
+  <meta property="og:image" content="">
+  <meta property="og:type" content="article">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4VKXNETWR4"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-4VKXNETWR4');</script>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Raleway:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Marked.js for Markdown rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@15/marked.min.js"></script>
+  <style>
+    * { font-family: 'DM Serif Display', serif; font-weight: 400; color: #374151; }
+    h1, h2, h3, h4, h5, h6 { font-family: 'DM Serif Display', serif; font-weight: 700; color: #111827; letter-spacing: -0.01em; }
+
+    /* Article prose styles */
+    .article-prose h1 { font-size: 2.25rem; line-height: 1.2; margin-bottom: 1.5rem; }
+    .article-prose h2 { font-size: 1.5rem; line-height: 1.3; margin-top: 2.5rem; margin-bottom: 1rem; }
+    .article-prose h3 { font-size: 1.25rem; line-height: 1.4; margin-top: 2rem; margin-bottom: 0.75rem; }
+    .article-prose p { font-size: 1.05rem; line-height: 1.75; margin-bottom: 1.25rem; }
+    .article-prose em { font-style: italic; }
+    .article-prose strong { font-weight: 700; color: #111827; }
+    .article-prose a { color: #FF6B6B; text-decoration: underline; text-underline-offset: 2px; }
+    .article-prose a:hover { color: #e55a5a; }
+    .article-prose blockquote { border-left: 3px solid #FF6B6B; padding-left: 1.25rem; margin: 1.5rem 0; color: #6B7280; font-style: italic; }
+    .article-prose ul, .article-prose ol { margin: 1rem 0 1.25rem 1.5rem; }
+    .article-prose li { font-size: 1.05rem; line-height: 1.75; margin-bottom: 0.5rem; }
+    .article-prose ul li { list-style-type: disc; }
+    .article-prose ol li { list-style-type: decimal; }
+    .article-prose hr { border: none; border-top: 1px solid #E5E7EB; margin: 2rem 0; }
+    .article-prose img { max-width: 100%; border-radius: 8px; margin: 1.5rem 0; }
+
+    /* Table styles */
+    .article-prose table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.95rem; }
+    .article-prose thead th { text-align: left; padding: 0.75rem 1rem; border-bottom: 2px solid #E5E7EB; font-weight: 700; color: #111827; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .article-prose tbody td { padding: 0.65rem 1rem; border-bottom: 1px solid #F3F4F6; }
+    .article-prose tbody tr:hover { background: #F9FAFB; }
+    .article-prose tbody td:first-child { color: #9CA3AF; font-weight: 700; width: 2rem; }
+
+    /* Responsive table */
+    @media (max-width: 640px) {
+      .article-prose table { font-size: 0.85rem; }
+      .article-prose thead th, .article-prose tbody td { padding: 0.5rem 0.5rem; }
+      .article-prose h1 { font-size: 1.75rem; }
+    }
+
+    /* Hero image */
+    .hero-image { width: 100%; max-height: 520px; object-fit: contain; background: #000; border-radius: 8px; }
+
+    /* Category badge */
+    .category-badge { display: inline-block; background: #FFE5E5; color: #FF6B6B; font-size: 0.75rem; font-weight: 500; padding: 4px 12px; border-radius: 9999px; letter-spacing: 0.03em; }
+
+    /* Loading state */
+    .loading-pulse { animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+  <!-- HEADER -->
+  <header id="site-header" style="position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #E5E7EB;">
+    <div style="max-width:1100px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px;">
+      <a href="/" style="flex-shrink:0;text-decoration:none;">
+        <svg width="128" height="40" viewBox="0 0 320 100" fill="none">
+          <text x="0" y="72" font-family="'DM Serif Display', serif" font-size="80" fill="#1F2937" font-weight="400">findyl</text>
+          <g transform="translate(245, 50)">
+            <circle cx="0" cy="0" r="28" fill="#FF6B6B"/>
+            <circle cx="0" cy="0" r="22" fill="none" stroke="white" stroke-width="1"/>
+            <circle cx="0" cy="0" r="16" fill="none" stroke="white" stroke-width="1"/>
+            <circle cx="0" cy="0" r="10" fill="none" stroke="white" stroke-width="1"/>
+            <circle cx="0" cy="0" r="8" fill="white"/>
+            <circle cx="0" cy="0" r="3" fill="#FF6B6B"/>
+          </g>
+        </svg>
+      </a>
+      <form id="header-search-form" action="/results" method="GET" style="flex:1;max-width:480px;position:relative;">
+        <input type="text" name="q" id="header-search-input" placeholder="Search for vinyl..."
+          style="width:100%;padding:10px 44px 10px 16px;border:1.5px solid #111827;border-radius:9999px;font-family:'Raleway',sans-serif;font-size:0.95rem;font-weight:400;outline:none;background:#fff;"
+        >
+        <button type="submit" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;">
+          <svg width="20" height="20" fill="none" stroke="#FF6B6B" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <div id="header-autocomplete" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #E5E7EB;border-radius:12px;margin-top:4px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:50;max-height:400px;overflow-y:auto;"></div>
+      </form>
+    </div>
+  </header>
+
+  <!-- ARTICLE CONTENT -->
+  <main style="max-width:740px;margin:0 auto;padding:32px 20px 80px;">
+
+    <!-- Loading state -->
+    <div id="article-loading" style="text-align:center;padding:80px 0;">
+      <p class="loading-pulse" style="color:#9CA3AF;font-size:1.1rem;">Loading article...</p>
+    </div>
+
+    <!-- Error state -->
+    <div id="article-error" style="display:none;text-align:center;padding:80px 0;">
+      <p style="font-size:1.5rem;color:#111827;margin-bottom:8px;">Article not found</p>
+      <p style="color:#6B7280;margin-bottom:24px;">Sorry, we couldn't find that article.</p>
+      <a href="/articles" style="color:#FF6B6B;text-decoration:underline;">Browse all articles</a>
+    </div>
+
+    <!-- Article container (hidden until loaded) -->
+    <article id="article-container" style="display:none;">
+      <!-- Meta -->
+      <div style="margin-bottom:20px;">
+        <span id="article-category" class="category-badge"></span>
+        <span id="article-date" style="color:#9CA3AF;font-size:0.85rem;margin-left:12px;"></span>
+      </div>
+
+      <!-- Hero image -->
+      <div id="article-hero-wrap" style="margin-bottom:32px;display:none;">
+        <img id="article-hero" class="hero-image" src="" alt="" loading="eager" fetchpriority="high" decoding="async">
+      </div>
+
+      <!-- Rendered markdown -->
+      <div id="article-body" class="article-prose"></div>
+
+      <!-- Back link -->
+      <div style="margin-top:48px;padding-top:24px;border-top:1px solid #E5E7EB;">
+        <a href="/articles" style="color:#FF6B6B;text-decoration:none;font-size:0.95rem;">← All articles</a>
+      </div>
+    </article>
+  </main>
+
+  <!-- FOOTER -->
+  <footer style="background:#1F2937;color:#9CA3AF;padding:40px 20px;text-align:center;font-size:0.85rem;">
+    <p>© 2026 findyl. Helping you find vinyl records from UK retailers.</p>
+    <p style="margin-top:8px;">
+      <a href="/about" style="color:#9CA3AF;text-decoration:underline;margin:0 8px;">About</a>
+      <a href="/articles" style="color:#9CA3AF;text-decoration:underline;margin:0 8px;">Articles</a>
+      <a href="/local-stores" style="color:#9CA3AF;text-decoration:underline;margin:0 8px;">Find a store</a>
+    </p>
+  </footer>
+
+  <script>
+  (function() {
+    // Get slug from URL path: /articles/best-selling-vinyl-2025 → best-selling-vinyl-2025
+    const path = window.location.pathname.replace(/\/$/, '');
+    const slug = path.split('/').pop();
+
+    if (!slug || slug === 'articles') {
+      window.location.href = '/articles';
+      return;
+    }
+
+    // Load article index and markdown in parallel
+    Promise.all([
+      fetch('/articles-index.json').then(r => r.json()),
+      fetch('/content/' + slug + '.md').then(r => {
+        if (!r.ok) throw new Error('Not found');
+        return r.text();
+      })
+    ])
+    .then(([index, markdown]) => {
+      const meta = index.find(a => a.slug === slug);
+      if (!meta) throw new Error('Not in index');
+
+      // Update page title and meta tags
+      document.title = meta.title + ' — findyl';
+      document.querySelector('meta[name="description"]').setAttribute('content', meta.description);
+      document.querySelector('meta[property="og:title"]').setAttribute('content', meta.title);
+      document.querySelector('meta[property="og:description"]').setAttribute('content', meta.description);
+      if (meta.ogImage) {
+        document.querySelector('meta[property="og:image"]').setAttribute('content', meta.ogImage);
+      }
+
+      // Category and date
+      document.getElementById('article-category').textContent = meta.category || '';
+      const dateObj = new Date(meta.date + 'T00:00:00');
+      document.getElementById('article-date').textContent = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+      // Hero image
+      if (meta.heroImage) {
+        const heroImg = document.getElementById('article-hero');
+        heroImg.src = meta.heroImage;
+        heroImg.alt = meta.heroAlt || meta.title;
+        document.getElementById('article-hero-wrap').style.display = 'block';
+      }
+
+      // Render markdown — strip the H1 since we show the title from meta
+      let md = markdown.trim();
+      // Remove leading H1 (first line starting with #)
+      md = md.replace(/^#\s+.+\n+/, '');
+
+      // Configure marked
+      marked.setOptions({
+        breaks: false,
+        gfm: true
+      });
+
+      document.getElementById('article-body').innerHTML = marked.parse(md);
+
+      // Inject findyl links — wrap artist names in album table rows with search links
+      // (This is a lightweight enhancement, not essential)
+
+      // Show article, hide loading
+      document.getElementById('article-loading').style.display = 'none';
+      document.getElementById('article-container').style.display = 'block';
+    })
+    .catch(err => {
+      console.error('Article load error:', err);
+      document.getElementById('article-loading').style.display = 'none';
+      document.getElementById('article-error').style.display = 'block';
+    });
+  })();
+
+  // Header autocomplete (same IIFE as other pages)
+  (function() {
+    const input = document.getElementById('header-search-input');
+    const dropdown = document.getElementById('header-autocomplete');
+    const form = document.getElementById('header-search-form');
+    let debounceTimer;
+
+    if (!input || !dropdown || !form) return;
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const q = input.value.trim();
+      if (q) window.location.href = '/results?q=' + encodeURIComponent(q);
+    });
+
+    input.addEventListener('input', function() {
+      clearTimeout(debounceTimer);
+      const q = input.value.trim();
+      if (q.length < 2) { dropdown.style.display = 'none'; return; }
+      debounceTimer = setTimeout(() => {
+        fetch('/api/autocomplete?q=' + encodeURIComponent(q))
+          .then(r => r.json())
+          .then(data => {
+            if (!data.artists?.length && !data.albums?.length) { dropdown.style.display = 'none'; return; }
+            let html = '';
+            if (data.artists?.length) {
+              html += '<div style="padding:8px 16px;font-size:0.7rem;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.05em;">Artists</div>';
+              data.artists.forEach(a => {
+                const meta = [a.type, a.country, a.disambiguation].filter(Boolean).join(' · ');
+                html += '<a href="/results?q=' + encodeURIComponent(a.name) + '" style="display:block;padding:10px 16px;text-decoration:none;color:#1F2937;font-size:0.95rem;border-bottom:1px solid #F3F4F6;">' + a.name + (meta ? '<span style="color:#9CA3AF;font-size:0.8rem;margin-left:8px;">' + meta + '</span>' : '') + '</a>';
+              });
+            }
+            if (data.albums?.length) {
+              html += '<div style="padding:8px 16px;font-size:0.7rem;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.05em;">Albums</div>';
+              data.albums.forEach(a => {
+                html += '<a href="/album?artist=' + encodeURIComponent(a.artist || '') + '&album=' + encodeURIComponent(a.name) + '" style="display:block;padding:10px 16px;text-decoration:none;color:#1F2937;font-size:0.95rem;border-bottom:1px solid #F3F4F6;">' + a.name + (a.artist ? '<span style="color:#9CA3AF;font-size:0.8rem;margin-left:8px;">' + a.artist + '</span>' : '') + '</a>';
+              });
+            }
+            dropdown.innerHTML = html;
+            dropdown.style.display = 'block';
+          })
+          .catch(() => { dropdown.style.display = 'none'; });
+      }, 300);
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!dropdown.contains(e.target) && e.target !== input) dropdown.style.display = 'none';
+    });
+  })();
+  </script>
+
+</body>
+</html>
