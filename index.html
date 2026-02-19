@@ -16,7 +16,7 @@
             color: #374151;
             font-weight: 400;
         }
-        #search-input, #sticky-search-input {
+        #hero-search-input, #header-search-input {
             font-family: 'Raleway', sans-serif;
             font-weight: 400;
         }
@@ -55,41 +55,6 @@
             transform: translateY(-4px);
             box-shadow: 0 8px 16px rgba(0,0,0,0.15);
         }
-        
-        /* Autocomplete dropdown */
-        .autocomplete-dropdown {
-            position: absolute;
-            top: calc(100% - 2px);
-            left: 0;
-            right: 0;
-            background: white;
-            border: 2px solid white;
-            border-top: 1px solid #f3f4f6;
-            border-radius: 0 0 1.5rem 1.5rem;
-            max-height: 400px;
-            overflow-y: auto;
-            z-index: 1000;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            padding-top: 4px;
-        }
-        .search-open input {
-            border-radius: 1.5rem 1.5rem 0 0 !important;
-        }
-        
-        .autocomplete-item {
-            padding: 0.75rem 1.5rem;
-            cursor: pointer;
-            transition: background-color 0.15s;
-            border-bottom: 1px solid #f3f4f6;
-        }
-        
-        .autocomplete-item:hover {
-            background-color: #FFE5E5;
-        }
-        
-        .autocomplete-item:last-child {
-            border-bottom: none;
-        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -122,12 +87,12 @@
                 </svg>
             </div>
             
-            <!-- Search Bar -->
-            <form id="search-form" class="max-w-2xl mx-auto">
+            <!-- Hero Search Bar -->
+            <form id="hero-search-form" class="max-w-2xl mx-auto relative">
                 <div class="relative">
                     <input 
                         type="text" 
-                        id="search-input"
+                        id="hero-search-input"
                         placeholder="Search for vinyl..."
                         class="w-full px-6 py-4 pr-14 text-lg border-2 border-white rounded-full focus:outline-none text-gray-900 placeholder-gray-400"
                         autocomplete="off"
@@ -139,6 +104,7 @@
                         </svg>
                     </button>
                 </div>
+                <div id="hero-autocomplete" class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-2xl shadow-lg z-50 hidden mt-1 overflow-hidden" style="max-height:420px;overflow-y:auto;"></div>
             </form>
         </div>
     </div>
@@ -171,11 +137,11 @@
                         </svg>
                     </a>
                     
-                    <form id="sticky-search-form" class="flex-1 max-w-2xl">
+                    <form id="header-search-form" class="flex-1 max-w-2xl relative">
                         <div class="relative">
                             <input 
                                 type="text" 
-                                id="sticky-search-input"
+                                id="header-search-input"
                                 placeholder="Search for vinyl..."
                                 class="w-full px-4 py-2 pr-12 border-2 border-white rounded-full focus:outline-none text-gray-900 placeholder-gray-400"
                                 autocomplete="off"
@@ -187,6 +153,7 @@
                                 </svg>
                             </button>
                         </div>
+                        <div id="header-autocomplete" class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-2xl shadow-lg z-50 hidden mt-1 overflow-hidden" style="max-height:420px;overflow-y:auto;"></div>
                     </form>
                 </div>
             </div>
@@ -358,27 +325,8 @@
         </div>
     </footer>
 
+    <!-- Sticky header scroll behaviour -->
     <script>
-        // Handle main search form
-        document.getElementById('search-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const query = document.getElementById('search-input').value.trim();
-            if (query) {
-                window.location.href = `/results?q=${encodeURIComponent(query)}`;
-            }
-        });
-
-        // Handle sticky search form
-        document.getElementById('sticky-search-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const query = document.getElementById('sticky-search-input').value.trim();
-            if (query) {
-                window.location.href = `/results?q=${encodeURIComponent(query)}`;
-            }
-        });
-
-        // Sticky header on scroll
-        let lastScroll = 0;
         const hero = document.getElementById('hero');
         const stickyHeader = document.getElementById('sticky-header');
         
@@ -387,126 +335,16 @@
             const heroBottom = hero.offsetHeight;
             
             if (currentScroll > heroBottom) {
-                // Show sticky header
                 stickyHeader.classList.remove('hidden');
                 stickyHeader.classList.add('scrolled');
             } else {
-                // Hide sticky header
                 stickyHeader.classList.add('hidden');
                 stickyHeader.classList.remove('scrolled');
             }
-            
-            lastScroll = currentScroll;
         });
-
-        // Sync search inputs
-        document.getElementById('search-input').addEventListener('input', (e) => {
-            document.getElementById('sticky-search-input').value = e.target.value;
-        });
-        
-        document.getElementById('sticky-search-input').addEventListener('input', (e) => {
-            document.getElementById('search-input').value = e.target.value;
-        });
-
-        // Autocomplete functionality
-        let autocompleteTimeout;
-        let currentDropdown = null;
-
-        function setupAutocomplete(inputId, formId) {
-            const input = document.getElementById(inputId);
-            const form = document.getElementById(formId);
-            
-            input.addEventListener('input', async (e) => {
-                const query = e.target.value.trim();
-                
-                // Clear existing dropdown
-                input.classList.remove('rounded-b-none');
-                if (currentDropdown) {
-                    currentDropdown.remove();
-                    currentDropdown = null;
-                }
-                
-                if (query.length < 2) return;
-                
-                // Debounce API calls
-                clearTimeout(autocompleteTimeout);
-                autocompleteTimeout = setTimeout(async () => {
-                    try {
-                        const response = await fetch(`/api/autocomplete?q=${encodeURIComponent(query)}`);
-                        if (!response.ok) return;
-                        
-                        const data = await response.json();
-                        if (!data.suggestions || data.suggestions.length === 0) return;
-                        
-                        // Create dropdown
-                        const dropdown = document.createElement('div');
-                        dropdown.className = 'autocomplete-dropdown';
-                        
-                        data.suggestions.forEach(suggestion => {
-                            const item = document.createElement('div');
-                            item.className = 'autocomplete-item';
-                            
-                            if (suggestion.type === 'artist') {
-                                // Build subtitle with disambiguation and country
-                                let subtitle = 'Artist';
-                                if (suggestion.disambiguation && suggestion.country) {
-                                    subtitle = `${suggestion.country} • ${suggestion.disambiguation}`;
-                                } else if (suggestion.country) {
-                                    subtitle = suggestion.country;
-                                } else if (suggestion.disambiguation) {
-                                    subtitle = suggestion.disambiguation;
-                                }
-                                
-                                item.innerHTML = `
-                                    <div class="font-semibold text-gray-900">${suggestion.name}</div>
-                                    <div class="text-sm text-gray-500">${subtitle}</div>
-                                `;
-                                item.onclick = () => {
-                                    window.location.href = `/results?q=${encodeURIComponent(suggestion.name)}`;
-                                };
-                            } else {
-                                item.innerHTML = `
-                                    <div class="font-semibold text-gray-900">${suggestion.album}</div>
-                                    <div class="text-sm text-gray-500">${suggestion.artist}</div>
-                                `;
-                                item.onclick = () => {
-                                    window.location.href = `/results?q=${encodeURIComponent(suggestion.artist + ' ' + suggestion.album)}`;
-                                };
-                            }
-                            
-                            dropdown.appendChild(item);
-                        });
-                        
-                        // Position dropdown
-                        const inputRect = input.getBoundingClientRect();
-                        const formRect = form.getBoundingClientRect();
-                        dropdown.style.width = formRect.width + 'px';
-                        dropdown.style.left = '0';
-                        
-                        form.style.position = 'relative';
-                        form.appendChild(dropdown);
-                        currentDropdown = dropdown;
-                        input.classList.add('rounded-b-none');
-                        
-                    } catch (error) {
-                        console.error('Autocomplete error:', error);
-                    }
-                }, 300);
-            });
-            
-            // Close dropdown on outside click
-            document.addEventListener('click', (e) => {
-                if (currentDropdown && !form.contains(e.target)) {
-                    currentDropdown.remove();
-                    currentDropdown = null;
-                    form.querySelectorAll('input').forEach(i => i.classList.remove('rounded-b-none'));
-                }
-            });
-        }
-        
-        // Setup autocomplete for both search bars
-        setupAutocomplete('search-input', 'search-form');
-        setupAutocomplete('sticky-search-input', 'sticky-search-form');
     </script>
+
+    <!-- Shared search: autocomplete, syncing, keyboard nav -->
+    <script src="/findyl-search.js"></script>
 </body>
 </html>
