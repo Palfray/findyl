@@ -461,9 +461,11 @@
                     matchingAlbums.forEach(album => {
                         if (album.buyOptions) {
                             album.buyOptions.forEach(opt => {
-                                // rawProductName is the original product title before cleaning (e.g. "Red LP [Red Vinyl]")
+                                // rawProductName is the original product title before cleaning
                                 const textToCheck = opt.rawProductName || opt.productName || album.album || '';
+                                console.log(`🎨 [${opt.source}] Colour check: "${textToCheck}"`);
                                 opt.vinylColour = detectVinylColour(textToCheck);
+                                if (opt.vinylColour) console.log(`  ✅ Detected: ${opt.vinylColour.label}`);
                             });
                             allBuyOptions.push(...album.buyOptions);
                         }
@@ -476,7 +478,11 @@
                     console.log('🛒 eBay returned:', ebayData.count, 'results');
 
                     if (ebayData.results && ebayData.results.length > 0) {
-                        // Take up to 5 best eBay results
+                        // Hide the static eBay link since we have live pricing
+                        const staticEbayLink = document.getElementById('ebay-link');
+                        if (staticEbayLink) staticEbayLink.style.display = 'none';
+
+                        // Take up to 10 best eBay results
                         const ebayOptions = ebayData.results.slice(0, 10).map(item => {
                             // Server returns vinylColour as string, convert to {label,hex} or use client detection
                             let vc = null;
