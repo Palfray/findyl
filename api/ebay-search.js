@@ -92,7 +92,8 @@ export default async function handler(req, res) {
             category_ids: EBAY_VINYL_CATEGORY,
             filter: 'itemLocationCountry:GB,buyingOptions:{FIXED_PRICE}',
             limit: isAlbumSearch ? '20' : '200',
-            auto_correct: 'KEYWORD'
+            auto_correct: 'KEYWORD',
+            fieldgroups: 'EXTENDED,MATCHING_ITEMS'
         });
 
         // Only sort by price for specific album searches
@@ -162,6 +163,12 @@ function formatResults(data) {
             ? parseFloat(item.shippingOptions[0].shippingCost.value)
             : null;
 
+        // Detect vinyl colour from title + shortDescription
+        const vinylColour = detectVinylColour(
+            item.title || '',
+            item.shortDescription || ''
+        );
+
         return {
             title: item.title,
             price: price,
@@ -169,13 +176,13 @@ function formatResults(data) {
             shipping: shipping,
             condition: item.condition || 'Unknown',
             image: item.image?.imageUrl || null,
-            // Use the affiliate URL — this earns EPN commission
             link: item.itemAffiliateWebUrl || item.itemWebUrl,
             itemId: item.itemId,
             seller: item.seller?.username || null,
             sellerRating: item.seller?.feedbackPercentage
                 ? parseFloat(item.seller.feedbackPercentage)
-                : null
+                : null,
+            vinylColour: vinylColour
         };
     });
 
@@ -184,4 +191,67 @@ function formatResults(data) {
         count: results.length,
         results: results
     };
+}
+
+/**
+ * Detect vinyl colour variant from listing text.
+ * Returns a colour string (e.g. "Red Vinyl") or null for standard black.
+ */
+function detectVinylColour(title, description) {
+    const text = `${title} ${description}`.toLowerCase();
+
+    // Don't flag standard black vinyl
+    // But DO flag if it says something like "black & white splatter"
+    const isJustBlack = /\bblack\s+vinyl\b/.test(text)
+        && !/splatter|marble|swirl|split|mix|stripe|smoke/i.test(text);
+
+    if (isJustBlack) return null;
+
+    // Colour patterns — ordered by specificity (multi-word first)
+    const colourPatterns = [
+        // Multi-colour effects
+        { pattern: /\b(splatter(?:ed)?)\s*(vinyl|lp|disc)?\b/i, label: 'Splatter' },
+        { pattern: /\b(marble(?:d)?)\s*(vinyl|lp|disc)?\b/i, label: 'Marble' },
+        { pattern: /\b(swirl(?:ed)?)\s*(vinyl|lp|disc)?\b/i, label: 'Swirl' },
+        { pattern: /\b(tie[- ]?dye(?:d)?)\s*(vinyl|lp|disc)?\b/i, label: 'Tie-Dye' },
+        { pattern: /\b(galaxy)\s*(vinyl|lp|disc)?\b/i, label: 'Galaxy' },
+        { pattern: /\b(haze)\s*(vinyl|lp|disc)?\b/i, label: 'Haze' },
+        { pattern: /\b(smoke(?:d|y)?)\s*(vinyl|lp|disc)?\b/i, label: 'Smoke' },
+        { pattern: /\b(translucent|transparent)\s*(vinyl|lp|disc)?\b/i, label: 'Translucent' },
+        { pattern: /\b(picture\s*disc)\b/i, label: 'Picture Disc' },
+        { pattern: /\b(glow.in.the.dark)\b/i, label: 'Glow in the Dark' },
+
+        // Specific colours — require "vinyl", "lp", "pressing", "edition", or "coloured"
+        { pattern: /\b(red)\s+(vinyl|lp|pressing|colou?red)\b/i, label: 'Red' },
+        { pattern: /\b(blue)\s+(vinyl|lp|pressing|colou?red)\b/i, label: 'Blue' },
+        { pattern: /\b(green)\s+(vinyl|lp|pressing|colou?red)\b/i, label: 'Green' },
+        { pattern: /\b(yellow)\s+(vinyl|lp|pressing|colou?red)\b/i, label: 'Yellow' },
+        { pattern: /\b(orange)\s+(vinyl|lp|pressing|colou?red)\b/i, label: 'Orange' },
+        { pattern: /\b(pink)\s+(vinyl|lp|pressing|colou?red)\b/i, label: 'Pink' },
+        { pattern: /\b(purple)\s+(vinyl|lp|pressing|colou?red)\b/i, label: 'Purple' },
+        { pattern: /\b(white)\s+(vinyl|lp|pressing|colou?red)\b/i, label: 'White' },
+        { pattern: /\b(clear)\s+(vinyl|lp|pressing|colou?red)\b/i, label: 'Clear' },
+        { pattern: /\b(gold)\s+(vinyl|lp|pressing|colou?red)\b/i, label: 'Gold' },
+        { pattern: /\b(silver)\s+(vinyl|lp|pressing|colou?red)\b/i, label: 'Silver' },
+        { pattern: /\b(grey|gray)\s+(vinyl|lp|pressing|colou?red)\b/i, label: 'Grey' },
+        { pattern: /\b(cream)\s+(vinyl|lp|pressing|colou?red)\b/i, label: 'Cream' },
+        { pattern: /\b(turquoise|teal)\s+(vinyl|lp|pressing|colou?red)\b/i, label: 'Turquoise' },
+        { pattern: /\b(magenta)\s+(vinyl|lp|pressing|colou?red)\b/i, label: 'Magenta' },
+        { pattern: /\b(burgundy|maroon)\s+(vinyl|lp|pressing|colou?red)\b/i, label: 'Burgundy' },
+        { pattern: /\b(cobalt)\s+(vinyl|lp|pressing|colou?red)\b/i, label: 'Cobalt' },
+        { pattern: /\b(coral)\s+(vinyl|lp|pressing|colou?red)\b/i, label: 'Coral' },
+        { pattern: /\b(mint)\s+(vinyl|lp|pressing|colou?red)\b/i, label: 'Mint' },
+
+        // Generic "coloured vinyl" catch-all
+        { pattern: /\b(colou?red)\s+(vinyl|lp|pressing)\b/i, label: 'Coloured' },
+        { pattern: /\b(limited)\s+(colou?r|edition)\b.*\bvinyl\b/i, label: 'Limited Colour' },
+    ];
+
+    for (const { pattern, label } of colourPatterns) {
+        if (pattern.test(text)) {
+            return label;
+        }
+    }
+
+    return null;
 }
