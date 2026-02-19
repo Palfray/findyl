@@ -239,6 +239,16 @@
                 const type = artist.type || '';
                 const country = artist.country || '';
                 
+                const typeLabels = {
+                    'Person': 'Solo Artist',
+                    'Group': 'Band',
+                    'Orchestra': 'Orchestra',
+                    'Choir': 'Choir',
+                    'Character': 'Character',
+                    'Other': ''
+                };
+                const friendlyType = typeLabels[type] || type;
+
                 const initials = name.split(' ')
                     .filter(word => word.length > 0)
                     .map(word => word[0].toUpperCase())
@@ -246,7 +256,7 @@
                     .join('');
                 
                 const meta = [];
-                if (type) meta.push(type);
+                if (friendlyType) meta.push(friendlyType);
                 if (country) meta.push(country);
                 if (disambiguation) meta.push(disambiguation);
 
@@ -274,13 +284,16 @@
             for (const artist of artists) {
                 try {
                     const res = await mbQueue.fetch(
-                        `https://musicbrainz.org/ws/2/release-group?artist=${artist.id}&type=album&limit=1&fmt=json`
+                        `https://musicbrainz.org/ws/2/release-group?artist=${artist.id}&type=album&fmt=json&limit=10`
                     );
                     if (!res.ok) continue;
 
                     const data = await res.json();
-                    const rgs = data['release-groups'] || [];
+                    const rgs = (data['release-groups'] || []).filter(r => r['first-release-date']);
                     if (rgs.length === 0) continue;
+
+                    // Sort by date descending — use latest album (matches artist page)
+                    rgs.sort((a, b) => b['first-release-date'].localeCompare(a['first-release-date']));
 
                     const imgUrl = `https://coverartarchive.org/release-group/${rgs[0].id}/front-250`;
                     const container = document.getElementById(`avatar-${artist.id}`);
