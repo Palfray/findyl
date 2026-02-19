@@ -39,6 +39,25 @@
             flex-shrink: 0;
             opacity: 0.85;
         }
+        .category-pill {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 9999px;
+            font-size: 14px;
+            font-family: 'DM Serif Display', serif;
+            cursor: pointer;
+            border: none;
+            outline: none;
+            transition: all 0.2s ease;
+            background: #F3F4F6;
+            color: #6B7280;
+            font-weight: 400;
+        }
+        .category-pill.active {
+            background: #FF6B6B;
+            color: #FFFFFF;
+            font-weight: 600;
+        }
         .sim-img-fade {
             animation: fadeIn 0.3s ease-in;
         }
@@ -127,7 +146,9 @@
     <!-- Albums Grid -->
     <main class="max-w-7xl mx-auto px-4 py-8">
         <div class="mb-6">
-            <h2 class="text-2xl font-bold mb-2">Studio Albums</h2>
+            <div class="flex items-center flex-wrap gap-3 mb-2" id="category-pills">
+                <!-- Pills will be inserted by JS -->
+            </div>
             <p class="text-gray-600" id="album-count">Loading albums...</p>
         </div>
 
@@ -219,6 +240,10 @@
         let vcProducts = [];
         let ebayProducts = [];
         let pricingReady = false;
+
+        // Release categories
+        const categories = {};
+        let activeCategory = 'Studio Albums';
 
         // Normalise a string for matching
         function normalise(str) {
@@ -426,43 +451,114 @@
             `;
         }
 
+        function classifyReleaseGroup(rg) {
+            const primary = (rg['primary-type'] || '').toLowerCase();
+            const secondary = (rg['secondary-types'] || []).map(s => s.toLowerCase());
+
+            // Check secondary types first (they override primary)
+            if (secondary.includes('compilation')) return 'Compilations';
+            if (secondary.includes('live')) return 'Live';
+            if (secondary.includes('soundtrack')) return 'Soundtracks';
+            if (secondary.includes('remix')) return 'Remixes';
+            if (secondary.includes('dj-mix')) return 'DJ Mixes';
+            if (secondary.includes('mixtape/street')) return 'Mixtapes';
+            if (secondary.includes('demo')) return 'Demos';
+            if (secondary.includes('interview')) return null; // hide
+            if (secondary.includes('spokenword') || secondary.includes('audiobook') || secondary.includes('audio drama')) return null;
+
+            // Primary types
+            if (primary === 'album' && secondary.length === 0) return 'Studio Albums';
+            if (primary === 'album') return 'Studio Albums'; // album with unknown secondary
+            if (primary === 'ep') return 'EPs';
+            if (primary === 'single') return 'Singles';
+            if (primary === 'broadcast') return null;
+            if (primary === 'other') return null;
+
+            return null; // unknown — hide
+        }
+
+        function renderPills() {
+            const container = document.getElementById('category-pills');
+            // Define display order
+            const order = ['Studio Albums', 'EPs', 'Singles', 'Live', 'Compilations', 'Soundtracks', 'Remixes', 'DJ Mixes', 'Mixtapes', 'Demos'];
+
+            const availableCategories = order.filter(cat => categories[cat] && categories[cat].length > 0);
+
+            if (availableCategories.length <= 1) {
+                // Only studio albums (or nothing) — show as heading, no pills
+                container.innerHTML = '<h2 class="text-2xl font-bold">Studio Albums</h2>';
+                return;
+            }
+
+            container.innerHTML = availableCategories.map(cat => {
+                const isActive = cat === activeCategory;
+                return `<button class="category-pill ${isActive ? 'active' : ''}" data-category="${cat}">${cat}</button>`;
+            }).join('');
+
+            // Attach click handlers
+            container.querySelectorAll('.category-pill').forEach(pill => {
+                pill.addEventListener('click', () => {
+                    activeCategory = pill.dataset.category;
+                    // Update pill states
+                    container.querySelectorAll('.category-pill').forEach(p => p.classList.remove('active'));
+                    pill.classList.add('active');
+                    // Show the selected category
+                    const releases = categories[activeCategory] || [];
+                    const label = activeCategory === 'Studio Albums' ? 'album' : 'release';
+                    document.getElementById('album-count').textContent = 
+                        `${releases.length} ${releases.length === 1 ? label : label + 's'} found`;
+                    displayAlbums(releases);
+                });
+            });
+        }
+
         async function loadAlbums() {
             try {
-                const response = await mbQueue.fetch(
-                    `https://musicbrainz.org/ws/2/release-group?artist=${artistMBID}&type=album&fmt=json&limit=100`
-                );
+                // Fetch ALL release groups (no type filter) to get EPs, Singles, etc.
+                let allReleaseGroups = [];
+                let offset = 0;
+                let totalCount = 0;
 
-                if (!response.ok) throw new Error('Failed to load albums');
-
-                const data = await response.json();
-                let albums = data['release-groups'] || [];
-
-                // Filter to studio albums only
-                albums = albums.filter(rg => {
-                    const primaryType = rg['primary-type'];
-                    const secondaryTypes = rg['secondary-types'] || [];
-                    
-                    if (primaryType !== 'Album') return false;
-                    
-                    const excludedTypes = ['compilation', 'live', 'soundtrack', 'remix', 'dj-mix', 'mixtape/street'];
-                    const hasExcludedType = secondaryTypes.some(type => 
-                        excludedTypes.includes(type.toLowerCase())
+                do {
+                    const response = await mbQueue.fetch(
+                        `https://musicbrainz.org/ws/2/release-group?artist=${artistMBID}&fmt=json&limit=100&offset=${offset}`
                     );
-                    
-                    return !hasExcludedType;
+                    if (!response.ok) throw new Error('Failed to load albums');
+                    const data = await response.json();
+                    const batch = data['release-groups'] || [];
+                    allReleaseGroups = allReleaseGroups.concat(batch);
+                    totalCount = data['release-group-count'] || 0;
+                    offset += 100;
+                } while (offset < totalCount && offset < 500); // Cap at 500 to be safe
+
+                // Categorise all release groups
+                for (const cat of Object.keys(categories)) delete categories[cat];
+
+                allReleaseGroups.forEach(rg => {
+                    const cat = classifyReleaseGroup(rg);
+                    if (!cat) return;
+                    if (!categories[cat]) categories[cat] = [];
+                    categories[cat].push(rg);
                 });
 
-                // Sort by release date (newest first)
-                albums.sort((a, b) => {
-                    const dateA = a['first-release-date'] || '';
-                    const dateB = b['first-release-date'] || '';
-                    return dateB.localeCompare(dateA);
+                // Sort each category by release date (newest first)
+                Object.values(categories).forEach(list => {
+                    list.sort((a, b) => {
+                        const dateA = a['first-release-date'] || '';
+                        const dateB = b['first-release-date'] || '';
+                        return dateB.localeCompare(dateA);
+                    });
                 });
 
+                // Render pills
+                renderPills();
+
+                // Default to studio albums
+                const studioAlbums = categories['Studio Albums'] || [];
                 document.getElementById('album-count').textContent = 
-                    `${albums.length} ${albums.length === 1 ? 'album' : 'albums'} found`;
+                    `${studioAlbums.length} ${studioAlbums.length === 1 ? 'album' : 'albums'} found`;
 
-                displayAlbums(albums);
+                displayAlbums(studioAlbums);
 
             } catch (error) {
                 console.error('Error loading albums:', error);
@@ -477,7 +573,7 @@
             const grid = document.getElementById('albums-grid');
             
             if (albums.length === 0) {
-                grid.innerHTML = '<p class="col-span-full text-center text-gray-600">No studio albums found</p>';
+                grid.innerHTML = `<p class="col-span-full text-center text-gray-600">No ${activeCategory.toLowerCase()} found</p>`;
                 return;
             }
 
