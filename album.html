@@ -402,7 +402,6 @@
             // Meta info
             const meta = [];
             if (year) meta.push(`Released: ${year}`);
-            if (albumData['primary-type']) meta.push(`Format: ${albumData['primary-type']}`);
 
             document.getElementById('album-meta').innerHTML = meta.map(m => `<p>${m}</p>`).join('');
         }
@@ -896,6 +895,8 @@
 
                 // Display producer credits from artist relationships
                 if (release.relations && release.relations.length > 0) {
+                    console.log('MB relations:', release.relations.map(r => ({ type: r.type, 'target-type': r['target-type'], artist: r.artist?.name })));
+                    
                     const creditTypes = ['producer', 'co-producer', 'executive producer'];
                     const creditLabels = {
                         'producer': 'Producer',
@@ -905,8 +906,9 @@
                     
                     const credits = {};
                     release.relations.forEach(rel => {
-                        if (rel.type && creditTypes.includes(rel.type) && rel.artist?.name) {
-                            const label = creditLabels[rel.type] || rel.type;
+                        const relType = (rel.type || '').toLowerCase();
+                        if (creditTypes.includes(relType) && rel.artist?.name) {
+                            const label = creditLabels[relType] || rel.type;
                             if (!credits[label]) credits[label] = [];
                             if (!credits[label].includes(rel.artist.name)) {
                                 credits[label].push(rel.artist.name);
