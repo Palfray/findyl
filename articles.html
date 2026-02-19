@@ -1,360 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vinyl Articles & Guides - findyl</title>
-    <meta name="description" content="Vinyl guides, genre spotlights, monthly best sellers, pre-order roundups and more. Everything a UK vinyl collector needs to know.">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <meta name="theme-color" content="#FF6B6B">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Articles — findyl</title>
+  <meta name="description" content="Vinyl guides, new release roundups, album features and more from findyl.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4VKXNETWR4"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-4VKXNETWR4');</script>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Raleway:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { font-family: 'DM Serif Display', serif; font-weight: 400; color: #374151; }
+    h1, h2, h3, h4, h5, h6 { font-family: 'DM Serif Display', serif; font-weight: 700; color: #111827; letter-spacing: -0.01em; }
 
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4VKXNETWR4"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-4VKXNETWR4');
-    </script>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Raleway:wght@400;500&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <style>
-        :root {
-            --coral: #FF6B6B;
-            --coral-light: #FFE5E5;
-            --dark: #1F2937;
-            --gray: #6B7280;
-        }
-        body { font-family: 'DM Serif Display', serif; background: #F9FAFB; color: var(--dark); }
-        .serif { font-family: 'DM Serif Display', serif; font-weight: 400; }
-        .article-card { transition: transform 0.2s, box-shadow 0.2s; }
-        .article-card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(0,0,0,0.1); }
-        .category-pill { transition: all 0.15s; cursor: pointer; }
-        .category-pill.active, .category-pill:hover { background: var(--coral); color: white; }
-        .featured-card { position: relative; overflow: hidden; }
-        .featured-card img { transition: transform 0.4s ease; }
-        .featured-card:hover img { transform: scale(1.03); }
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-up { animation: fadeUp 0.4s ease forwards; opacity: 0; }
-    </style>
+    .article-card {
+      transition: transform 0.2s, box-shadow 0.2s;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .article-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    .article-card img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+    }
+    .category-badge {
+      display: inline-block;
+      background: #FFE5E5;
+      color: #FF6B6B;
+      font-size: 0.7rem;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      letter-spacing: 0.03em;
+    }
+  </style>
 </head>
-<body>
+<body class="bg-gray-50">
 
-    <!-- Header -->
-    <!-- Standard findyl header -->
-    <header class="bg-white border-b border-gray-200 sticky top-0 z-20">
-        <div class="max-w-7xl mx-auto px-4 py-3">
-            <div class="flex items-center gap-4">
-                <!-- Logo -->
-                <a href="/" class="flex-shrink-0 hover:opacity-80 transition-opacity">
-                    <svg width="128" height="40" viewBox="0 0 320 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <text x="0" y="72" font-family="'DM Serif Display', serif" font-size="80" fill="#1F2937" font-weight="400">findyl</text>
-                        <g transform="translate(245, 50)">
-                            <circle cx="0" cy="0" r="28" fill="#FF6B6B"/>
-                            <circle cx="0" cy="0" r="22" fill="none" stroke="white" stroke-width="1"/>
-                            <circle cx="0" cy="0" r="16" fill="none" stroke="white" stroke-width="1"/>
-                            <circle cx="0" cy="0" r="10" fill="none" stroke="white" stroke-width="1"/>
-                            <circle cx="0" cy="0" r="8" fill="white"/>
-                            <circle cx="0" cy="0" r="3" fill="#FF6B6B"/>
-                        </g>
-                    </svg>
-                </a>
+  <!-- HEADER -->
+  <header id="site-header" style="position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #E5E7EB;">
+    <div style="max-width:1100px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px;">
+      <a href="/" style="flex-shrink:0;text-decoration:none;">
+        <svg width="128" height="40" viewBox="0 0 320 100" fill="none">
+          <text x="0" y="72" font-family="'DM Serif Display', serif" font-size="80" fill="#1F2937" font-weight="400">findyl</text>
+          <g transform="translate(245, 50)">
+            <circle cx="0" cy="0" r="28" fill="#FF6B6B"/>
+            <circle cx="0" cy="0" r="22" fill="none" stroke="white" stroke-width="1"/>
+            <circle cx="0" cy="0" r="16" fill="none" stroke="white" stroke-width="1"/>
+            <circle cx="0" cy="0" r="10" fill="none" stroke="white" stroke-width="1"/>
+            <circle cx="0" cy="0" r="8" fill="white"/>
+            <circle cx="0" cy="0" r="3" fill="#FF6B6B"/>
+          </g>
+        </svg>
+      </a>
+      <form id="header-search-form" action="/results" method="GET" style="flex:1;max-width:480px;position:relative;">
+        <input type="text" name="q" id="header-search-input" placeholder="Search for vinyl..."
+          style="width:100%;padding:10px 44px 10px 16px;border:1.5px solid #111827;border-radius:9999px;font-family:'Raleway',sans-serif;font-size:0.95rem;font-weight:400;outline:none;background:#fff;"
+        >
+        <button type="submit" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;">
+          <svg width="20" height="20" fill="none" stroke="#FF6B6B" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <div id="header-autocomplete" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #E5E7EB;border-radius:12px;margin-top:4px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:50;max-height:400px;overflow-y:auto;"></div>
+      </form>
+    </div>
+  </header>
 
-                <!-- Search bar -->
-                <div class="flex-1 max-w-2xl relative">
-                    <form id="header-search-form" class="relative">
-                        <input
-                            type="text"
-                            id="header-search-input" style="font-family:'Raleway', sans-serif;"
-                            placeholder="Search for vinyl..."
-                            class="w-full px-4 py-2 pr-10 border-[1.5px] border-gray-900 rounded-full focus:border-gray-900 focus:outline-none text-gray-900 placeholder-gray-400"
-                            autocomplete="off"
-                        />
-                        <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2" style="color:#FF6B6B">
-                            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="9" cy="9" r="6"/><path d="M14 14l4 4"/>
-                            </svg>
-                        </button>
-                    </form>
-                    <div id="header-autocomplete" class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-2xl shadow-lg z-50 hidden mt-1 overflow-hidden"></div>
-                </div>
+  <!-- PAGE CONTENT -->
+  <main style="max-width:1100px;margin:0 auto;padding:48px 20px 80px;">
+    <h1 style="font-size:2rem;margin-bottom:8px;">Articles</h1>
+    <p style="color:#6B7280;font-size:1.05rem;margin-bottom:40px;">Guides, features and roundups for UK vinyl collectors.</p>
 
+    <div id="articles-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px;">
+      <!-- Articles loaded dynamically -->
+    </div>
 
-            </div>
-        </div>
-    </header>
+    <div id="articles-empty" style="display:none;text-align:center;padding:60px 0;color:#9CA3AF;">
+      <p style="font-size:1.1rem;">No articles yet. Check back soon.</p>
+    </div>
+  </main>
 
-    <script>
-        (function() {
-            const form = document.getElementById('header-search-form');
-            const input = document.getElementById('header-search-input');
-            const dropdown = document.getElementById('header-autocomplete');
-            let debounceTimer;
+  <!-- FOOTER -->
+  <footer style="background:#1F2937;color:#9CA3AF;padding:40px 20px;text-align:center;font-size:0.85rem;">
+    <p>© 2026 findyl. Helping you find vinyl records from UK retailers.</p>
+    <p style="margin-top:8px;">
+      <a href="/about" style="color:#9CA3AF;text-decoration:underline;margin:0 8px;">About</a>
+      <a href="/articles" style="color:#9CA3AF;text-decoration:underline;margin:0 8px;">Articles</a>
+      <a href="/local-stores" style="color:#9CA3AF;text-decoration:underline;margin:0 8px;">Find a store</a>
+    </p>
+  </footer>
 
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const q = input.value.trim();
-                if (q) window.location.href = `/results?q=${encodeURIComponent(q)}`;
-            });
+  <script>
+  (function() {
+    const grid = document.getElementById('articles-grid');
+    const empty = document.getElementById('articles-empty');
 
-            input.addEventListener('input', () => {
-                clearTimeout(debounceTimer);
-                const q = input.value.trim();
-                if (q.length < 2) { dropdown.classList.add('hidden'); return; }
-                debounceTimer = setTimeout(() => fetchSuggestions(q), 300);
-            });
+    fetch('/articles-index.json')
+      .then(r => r.json())
+      .then(articles => {
+        if (!articles.length) { empty.style.display = 'block'; return; }
 
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('#header-search-form') && !e.target.closest('#header-autocomplete')) {
-                    dropdown.classList.add('hidden');
-                }
-            });
+        // Sort by date descending (newest first)
+        articles.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-            async function fetchSuggestions(q) {
-                try {
-                    const res = await fetch(`/api/autocomplete?q=${encodeURIComponent(q)}`);
-                    if (!res.ok) return;
-                    const data = await res.json();
-                    renderSuggestions(data);
-                } catch(e) {}
+        grid.innerHTML = articles.map(article => {
+          const dateObj = new Date(article.date + 'T00:00:00');
+          const dateStr = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+          const imgHtml = article.heroImage
+            ? '<img src="' + article.heroImage + '" alt="' + (article.heroAlt || article.title) + '" loading="lazy" decoding="async">'
+            : '<div style="width:100%;height:220px;background:#FFE5E5;display:flex;align-items:center;justify-content:center;"><svg width="48" height="48" fill="none" stroke="#FF6B6B" stroke-width="1.5" viewBox="0 0 24 24"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg></div>';
+
+          return '<a href="/articles/' + article.slug + '" class="article-card" style="text-decoration:none;">'
+            + imgHtml
+            + '<div style="padding:20px;">'
+            + '<div style="margin-bottom:10px;">'
+            + (article.category ? '<span class="category-badge">' + article.category + '</span>' : '')
+            + '<span style="color:#9CA3AF;font-size:0.8rem;margin-left:8px;">' + dateStr + '</span>'
+            + '</div>'
+            + '<h3 style="font-size:1.15rem;line-height:1.35;margin-bottom:8px;color:#111827;">' + article.title + '</h3>'
+            + '<p style="color:#6B7280;font-size:0.9rem;line-height:1.5;margin:0;">' + article.description + '</p>'
+            + '</div>'
+            + '</a>';
+        }).join('');
+      })
+      .catch(err => {
+        console.error('Failed to load articles index:', err);
+        empty.style.display = 'block';
+      });
+  })();
+
+  // Header autocomplete
+  (function() {
+    const input = document.getElementById('header-search-input');
+    const dropdown = document.getElementById('header-autocomplete');
+    const form = document.getElementById('header-search-form');
+    let debounceTimer;
+
+    if (!input || !dropdown || !form) return;
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const q = input.value.trim();
+      if (q) window.location.href = '/results?q=' + encodeURIComponent(q);
+    });
+
+    input.addEventListener('input', function() {
+      clearTimeout(debounceTimer);
+      const q = input.value.trim();
+      if (q.length < 2) { dropdown.style.display = 'none'; return; }
+      debounceTimer = setTimeout(() => {
+        fetch('/api/autocomplete?q=' + encodeURIComponent(q))
+          .then(r => r.json())
+          .then(data => {
+            if (!data.artists?.length && !data.albums?.length) { dropdown.style.display = 'none'; return; }
+            let html = '';
+            if (data.artists?.length) {
+              html += '<div style="padding:8px 16px;font-size:0.7rem;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.05em;">Artists</div>';
+              data.artists.forEach(a => {
+                const meta = [a.type, a.country, a.disambiguation].filter(Boolean).join(' · ');
+                html += '<a href="/results?q=' + encodeURIComponent(a.name) + '" style="display:block;padding:10px 16px;text-decoration:none;color:#1F2937;font-size:0.95rem;border-bottom:1px solid #F3F4F6;">' + a.name + (meta ? '<span style="color:#9CA3AF;font-size:0.8rem;margin-left:8px;">' + meta + '</span>' : '') + '</a>';
+              });
             }
-
-            function renderSuggestions(data) {
-                const artists = data.artists || [];
-                const albums = data.albums || [];
-                if (artists.length === 0 && albums.length === 0) { dropdown.classList.add('hidden'); return; }
-                let html = artists.map(a => `
-                    <a href="/results?q=${encodeURIComponent(a.name)}" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-0">
-                        <svg width="16" height="16" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        <div>
-                            <div class="text-sm font-medium text-gray-900">${a.name}</div>
-                            ${a.country || a.disambiguation ? `<div class="text-xs text-gray-500">${[a.country, a.disambiguation].filter(Boolean).join(' · ')}</div>` : ''}
-                        </div>
-                    </a>`).join('');
-                html += albums.map(a => `
-                    <a href="/results?q=${encodeURIComponent(a.artist)}" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-0">
-                        <svg width="16" height="16" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
-                        <div>
-                            <div class="text-sm font-medium text-gray-900">${a.album}</div>
-                            <div class="text-xs text-gray-500">${a.artist}</div>
-                        </div>
-                    </a>`).join('');
-                dropdown.innerHTML = html;
-                dropdown.classList.remove('hidden');
+            if (data.albums?.length) {
+              html += '<div style="padding:8px 16px;font-size:0.7rem;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.05em;">Albums</div>';
+              data.albums.forEach(a => {
+                html += '<a href="/album?artist=' + encodeURIComponent(a.artist || '') + '&album=' + encodeURIComponent(a.name) + '" style="display:block;padding:10px 16px;text-decoration:none;color:#1F2937;font-size:0.95rem;border-bottom:1px solid #F3F4F6;">' + a.name + (a.artist ? '<span style="color:#9CA3AF;font-size:0.8rem;margin-left:8px;">' + a.artist + '</span>' : '') + '</a>';
+              });
             }
-        })();
-    </script>
+            dropdown.innerHTML = html;
+            dropdown.style.display = 'block';
+          })
+          .catch(() => { dropdown.style.display = 'none'; });
+      }, 300);
+    });
 
-    <main class="max-w-6xl mx-auto px-4 py-12">
+    document.addEventListener('click', function(e) {
+      if (!dropdown.contains(e.target) && e.target !== input) dropdown.style.display = 'none';
+    });
+  })();
+  </script>
 
-        <!-- Page Title -->
-        <div class="mb-10 fade-up" style="animation-delay:0ms">
-            <h1 class="serif text-5xl mb-3">Vinyl Reading</h1>
-            <p class="text-gray-900 text-lg">Guides, spotlights, pre-orders and charts for UK vinyl collectors</p>
-        </div>
-
-        <!-- Category Filter -->
-        <div class="flex flex-wrap gap-2 mb-10 fade-up" style="animation-delay:80ms" id="categoryFilters">
-            <button class="category-pill active rounded-full px-4 py-1.5 text-sm font-normal bg-gray-900 text-white border border-transparent" data-cat="all">All</button>
-            <button class="category-pill rounded-full px-4 py-1.5 text-sm font-normal bg-white border border-gray-200 text-gray-900" data-cat="charts">Charts</button>
-            <button class="category-pill rounded-full px-4 py-1.5 text-sm font-normal bg-white border border-gray-200 text-gray-900" data-cat="pre-orders">Pre-orders</button>
-            <button class="category-pill rounded-full px-4 py-1.5 text-sm font-normal bg-white border border-gray-200 text-gray-900" data-cat="genre">Genre</button>
-            <button class="category-pill rounded-full px-4 py-1.5 text-sm font-normal bg-white border border-gray-200 text-gray-900" data-cat="guides">Guides</button>
-            <button class="category-pill rounded-full px-4 py-1.5 text-sm font-normal bg-white border border-gray-200 text-gray-900" data-cat="news">News</button>
-        </div>
-
-        <!-- Featured Article -->
-        <div class="mb-12 fade-up" style="animation-delay:120ms" id="featuredArticle">
-            <a href="/articles/best-selling-vinyl-2025" class="featured-card block bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 md:flex">
-                <div class="md:w-1/2 h-64 md:h-auto overflow-hidden bg-gray-100">
-                    <img src="https://images.unsplash.com/photo-1603048588665-791ca8aea617?w=800&auto=format&fit=crop"
-                         alt="Vinyl records" class="w-full h-full object-cover"/>
-                </div>
-                <div class="md:w-1/2 p-8 md:p-10 flex flex-col justify-center">
-                    <div class="flex items-center gap-2 mb-4">
-                        <span class="text-xs font-normal px-3 py-1 rounded-full text-white" style="background:var(--coral)">Charts</span>
-                        <span class="text-xs text-gray-800">2025 Year End</span>
-                    </div>
-                    <h2 class="serif text-3xl mb-3 text-gray-900">The 20 Best Selling Vinyl Records of 2025</h2>
-                    <p class="text-gray-900 leading-relaxed mb-6">The records flying off shelves at UK independent stores this month, from surprise chart hits to long-awaited reissues.</p>
-                    <span class="text-sm font-normal" style="color:var(--coral)">Read article →</span>
-                </div>
-            </a>
-        </div>
-
-        <!-- Article Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="articlesGrid">
-
-            <!-- Article cards are defined here — add new ones at the top -->
-
-            <article class="article-card bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 fade-up" data-cat="pre-orders" style="animation-delay:160ms">
-                <a href="/articles/vinyl-pre-orders-march-2026">
-                    <div class="h-44 overflow-hidden bg-gray-100">
-                        <img src="https://images.unsplash.com/photo-1619983081563-430f63602796?w=600&auto=format&fit=crop"
-                             class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" alt="New vinyl releases"/>
-                    </div>
-                    <div class="p-5">
-                        <div class="flex items-center gap-2 mb-3">
-                            <span class="text-xs font-normal px-2.5 py-1 rounded-full bg-blue-50 text-blue-600">Pre-orders</span>
-                            <span class="text-xs text-gray-800">March 2026</span>
-                        </div>
-                        <h3 class="serif text-xl mb-2 text-gray-900 leading-snug">Vinyl Pre-orders to Watch — March 2026</h3>
-                        <p class="text-gray-900 text-sm leading-relaxed">The most anticipated vinyl releases coming next month, with links to pre-order from UK stores.</p>
-                    </div>
-                </a>
-            </article>
-
-            <article class="article-card bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 fade-up" data-cat="genre" style="animation-delay:200ms">
-                <a href="/articles/genre-shoegaze">
-                    <div class="h-44 overflow-hidden bg-gray-100">
-                        <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&auto=format&fit=crop"
-                             class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" alt="Shoegaze vinyl"/>
-                    </div>
-                    <div class="p-5">
-                        <div class="flex items-center gap-2 mb-3">
-                            <span class="text-xs font-normal px-2.5 py-1 rounded-full bg-purple-50 text-purple-600">Genre</span>
-                            <span class="text-xs text-gray-800">Evergreen</span>
-                        </div>
-                        <h3 class="serif text-xl mb-2 text-gray-900 leading-snug">Genre: Shoegaze on Vinyl</h3>
-                        <p class="text-gray-900 text-sm leading-relaxed">From My Bloody Valentine to Slowdive — the essential shoegaze pressings every collector needs.</p>
-                    </div>
-                </a>
-            </article>
-
-            <article class="article-card bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 fade-up" data-cat="guides" style="animation-delay:240ms">
-                <a href="/articles/how-to-clean-vinyl-records">
-                    <div class="h-44 overflow-hidden bg-gray-100">
-                        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop"
-                             class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" alt="Cleaning vinyl records"/>
-                    </div>
-                    <div class="p-5">
-                        <div class="flex items-center gap-2 mb-3">
-                            <span class="text-xs font-normal px-2.5 py-1 rounded-full bg-green-50 text-green-600">Guide</span>
-                            <span class="text-xs text-gray-800">Evergreen</span>
-                        </div>
-                        <h3 class="serif text-xl mb-2 text-gray-900 leading-snug">How to Clean Your Vinyl Records Properly</h3>
-                        <p class="text-gray-900 text-sm leading-relaxed">A practical guide to keeping your records sounding their best, from basic cleaning to deep restoration.</p>
-                    </div>
-                </a>
-            </article>
-
-            <article class="article-card bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 fade-up" data-cat="charts" style="animation-delay:280ms">
-                <a href="/articles/best-selling-vinyl-january-2026">
-                    <div class="h-44 overflow-hidden bg-gray-100">
-                        <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop"
-                             class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" alt="Record store chart"/>
-                    </div>
-                    <div class="p-5">
-                        <div class="flex items-center gap-2 mb-3">
-                            <span class="text-xs font-normal px-2.5 py-1 rounded-full bg-orange-50 text-orange-600">Charts</span>
-                            <span class="text-xs text-gray-800">January 2026</span>
-                        </div>
-                        <h3 class="serif text-xl mb-2 text-gray-900 leading-snug">Best Selling Vinyl Records — January 2026</h3>
-                        <p class="text-gray-900 text-sm leading-relaxed">The year kicks off strong — see which albums dominated UK independent record shops last month.</p>
-                    </div>
-                </a>
-            </article>
-
-            <article class="article-card bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 fade-up" data-cat="genre" style="animation-delay:320ms">
-                <a href="/articles/genre-jazz">
-                    <div class="h-44 overflow-hidden bg-gray-100">
-                        <img src="https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=600&auto=format&fit=crop"
-                             class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" alt="Jazz vinyl"/>
-                    </div>
-                    <div class="p-5">
-                        <div class="flex items-center gap-2 mb-3">
-                            <span class="text-xs font-normal px-2.5 py-1 rounded-full bg-purple-50 text-purple-600">Genre</span>
-                            <span class="text-xs text-gray-800">Evergreen</span>
-                        </div>
-                        <h3 class="serif text-xl mb-2 text-gray-900 leading-snug">Genre: Jazz Vinyl for Beginners</h3>
-                        <p class="text-gray-900 text-sm leading-relaxed">Where to start with jazz on vinyl — the classic Blue Note pressings, modern reissues, and hidden gems.</p>
-                    </div>
-                </a>
-            </article>
-
-            <article class="article-card bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 fade-up" data-cat="guides" style="animation-delay:360ms">
-                <a href="/articles/understanding-vinyl-pressings">
-                    <div class="h-44 overflow-hidden bg-gray-100">
-                        <img src="https://images.unsplash.com/photo-1594623930572-300a3011d9ae?w=600&auto=format&fit=crop"
-                             class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" alt="Vinyl pressing"/>
-                    </div>
-                    <div class="p-5">
-                        <div class="flex items-center gap-2 mb-3">
-                            <span class="text-xs font-normal px-2.5 py-1 rounded-full bg-green-50 text-green-600">Guide</span>
-                            <span class="text-xs text-gray-800">Evergreen</span>
-                        </div>
-                        <h3 class="serif text-xl mb-2 text-gray-900 leading-snug">Understanding Vinyl Pressings: First, Original & Reissue</h3>
-                        <p class="text-gray-900 text-sm leading-relaxed">What actually makes one pressing better than another, and whether it's worth paying more for originals.</p>
-                    </div>
-                </a>
-            </article>
-
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200 mt-20">
-        <div class="max-w-6xl mx-auto px-4 py-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-900">
-            <div class="flex items-center gap-2">
-                <svg width="80" height="27" viewBox="0 0 300 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs><clipPath id="bH"><rect x="141" y="58" width="56" height="42"/></clipPath></defs>
-                    <g clip-path="url(#bH)">
-                        <g transform="translate(169, 58)">
-                            <circle cx="0" cy="0" r="28" fill="none" stroke="#FF6B6B" stroke-width="1"/>
-                            <circle cx="0" cy="0" r="9" fill="#FF6B6B"/>
-                            <circle cx="0" cy="0" r="3" fill="white"/>
-                        </g>
-                    </g>
-                    <text x="150" y="50" font-family="'DM Serif Display', serif" font-size="48" fill="#1F2937" text-anchor="middle" font-weight="400">findyl</text>
-                </svg>
-            </div>
-            <nav class="flex gap-6">
-                <a href="/" class="hover:text-gray-900">Search</a>
-                <a href="/local-stores" class="hover:text-gray-900">Stores</a>
-                <a href="/articles" class="hover:text-gray-900">Articles</a>
-                <a href="/about" class="hover:text-gray-900">About</a>
-            </nav>
-            <p>© 2026 findyl. UK vinyl discovery.</p>
-        </div>
-    </footer>
-
-    <script>
-        // Category filter
-        const pills = document.querySelectorAll('.category-pill');
-        const cards = document.querySelectorAll('#articlesGrid article');
-        const featured = document.getElementById('featuredArticle');
-
-        pills.forEach(pill => {
-            pill.addEventListener('click', () => {
-                pills.forEach(p => {
-                    p.classList.remove('active');
-                    p.style.background = '';
-                    p.style.color = '';
-                    p.classList.add('bg-white', 'border-gray-200', 'text-gray-900');
-                });
-                pill.classList.add('active');
-                pill.classList.remove('bg-white', 'border-gray-200', 'text-gray-900');
-                pill.style.background = pill.dataset.cat === 'all' ? '#111827' : 'var(--coral)';
-                pill.style.color = 'white';
-
-                const cat = pill.dataset.cat;
-
-                // Show/hide featured
-                featured.style.display = (cat === 'all' || cat === 'charts') ? '' : 'none';
-
-                // Show/hide cards
-                cards.forEach(card => {
-                    card.style.display = (cat === 'all' || card.dataset.cat === cat) ? '' : 'none';
-                });
-            });
-        });
-    </script>
 </body>
 </html>
