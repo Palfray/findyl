@@ -39,11 +39,17 @@
             flex-shrink: 0;
             opacity: 0.85;
         }
+        .sim-img-fade {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
     <!-- Header -->
-    <!-- Standard findyl header -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-20">
         <div class="max-w-7xl mx-auto px-4 py-3">
             <div class="flex items-center gap-4">
@@ -80,8 +86,6 @@
                     </form>
                     <div id="header-autocomplete" class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-2xl shadow-lg z-50 hidden mt-1 overflow-hidden"></div>
                 </div>
-
-
             </div>
         </div>
     </header>
@@ -203,7 +207,64 @@
     </main>
 
     <script>
-        // Get artist name from URL
+        // ── MusicBrainz rate-limited fetch with retry ──
+        const mbQueue = {
+            queue: [],
+            processing: false,
+            lastRequest: 0,
+
+            fetch(url) {
+                return new Promise((resolve, reject) => {
+                    this.queue.push({ url, resolve, reject });
+                    if (!this.processing) this.process();
+                });
+            },
+
+            async process() {
+                this.processing = true;
+                while (this.queue.length > 0) {
+                    const { url, resolve, reject } = this.queue.shift();
+                    const now = Date.now();
+                    const elapsed = now - this.lastRequest;
+                    if (elapsed < 1100) {
+                        await new Promise(r => setTimeout(r, 1100 - elapsed));
+                    }
+                    try {
+                        const res = await fetchWithRetry(url, {
+                            headers: { 'User-Agent': 'findyl/1.0 (https://findyl.co.uk)' }
+                        });
+                        this.lastRequest = Date.now();
+                        resolve(res);
+                    } catch (err) {
+                        this.lastRequest = Date.now();
+                        reject(err);
+                    }
+                }
+                this.processing = false;
+            }
+        };
+
+        async function fetchWithRetry(url, options = {}, retries = 2) {
+            for (let attempt = 0; attempt <= retries; attempt++) {
+                try {
+                    const res = await fetch(url, options);
+                    if (res.ok) return res;
+                    if ((res.status === 503 || res.status === 429) && attempt < retries) {
+                        await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
+                        continue;
+                    }
+                    return res;
+                } catch (err) {
+                    if (attempt < retries) {
+                        await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
+                        continue;
+                    }
+                    throw err;
+                }
+            }
+        }
+
+        // ── Page init ──
         const urlParams = new URLSearchParams(window.location.search);
         const artistName = urlParams.get('name');
 
@@ -218,7 +279,7 @@
         let vcProducts = [];
         let pricingReady = false;
 
-        // Normalise a string for matching: lowercase, strip punctuation, remove common words
+        // Normalise a string for matching
         function normalise(str) {
             return (str || '').toLowerCase()
                 .replace(/['''\-–]/g, ' ')
@@ -238,7 +299,6 @@
             const nf = normalise(feedAlbum);
             const nm = normalise(mbTitle);
             if (!nf || !nm) return false;
-            // Exact or one contains the other (handles subtitle variants)
             return nf === nm || nf.includes(nm) || nm.includes(nf);
         }
 
@@ -249,7 +309,7 @@
             return inVc;
         }
 
-        // Load both feeds in background
+        // Load both feeds in background (non-blocking, no MB dependency)
         async function loadPricingFeeds() {
             try {
                 const [empRes, vcRes] = await Promise.allSettled([
@@ -266,9 +326,10 @@
                 }
 
                 pricingReady = true;
-                // Update any already-rendered album cards
                 updatePricingDots();
-            } catch(e) {}
+            } catch(e) {
+                console.warn('Pricing feeds failed:', e);
+            }
         }
 
         function updatePricingDots() {
@@ -283,13 +344,12 @@
             });
         }
 
-        // Fetch artist data from MusicBrainz
+        // ── Fetch artist data from MusicBrainz ──
         async function loadArtistData() {
             try {
                 // Step 1: Search for artist to get MBID
-                const searchResponse = await fetch(
-                    `https://musicbrainz.org/ws/2/artist/?query=artist:"${encodeURIComponent(artistName)}"&fmt=json`,
-                    { headers: { 'User-Agent': 'findyl/1.0 (https://findyl.co.uk)' } }
+                const searchResponse = await mbQueue.fetch(
+                    `https://musicbrainz.org/ws/2/artist/?query=artist:"${encodeURIComponent(artistName)}"&fmt=json`
                 );
 
                 if (!searchResponse.ok) throw new Error('Artist search failed');
@@ -300,25 +360,22 @@
                     throw new Error('Artist not found');
                 }
 
-                // Get the first matching artist
                 const artist = searchData.artists[0];
                 artistMBID = artist.id;
 
-                // Display artist info
+                // Display artist info immediately
                 displayArtistInfo(artist);
 
-                // Load Last.fm bio (non-blocking)
+                // Load Last.fm bio (non-blocking, no MB dependency)
                 loadArtistBio(artist.name).catch(() => {});
 
                 // Step 2: Get detailed artist data with genres/tags
-                const detailResponse = await fetch(
-                    `https://musicbrainz.org/ws/2/artist/${artistMBID}?inc=genres+tags&fmt=json`,
-                    { headers: { 'User-Agent': 'findyl/1.0 (https://findyl.co.uk)' } }
+                const detailResponse = await mbQueue.fetch(
+                    `https://musicbrainz.org/ws/2/artist/${artistMBID}?inc=genres+tags&fmt=json`
                 );
 
                 if (detailResponse.ok) {
                     const detailData = await detailResponse.json();
-                    // Apply MusicBrainz genres
                     const genres = detailData.genres || [];
                     if (genres.length > 0) {
                         const genresContainer = document.getElementById('artist-genres');
@@ -339,11 +396,9 @@
         }
 
         function displayArtistInfo(artist) {
-            // Artist name
             document.getElementById('artist-name').textContent = artist.name;
             document.title = `${artist.name} - findyl`;
 
-            // Meta info
             const meta = [];
             if (artist.country) meta.push(artist.country);
             if (artist['life-span']) {
@@ -357,15 +412,14 @@
 
             document.getElementById('artist-meta').textContent = meta.join(' • ');
 
-            // Load artist image - try album art first, fall back to initials
+            // Load artist image via the queue (non-blocking)
             loadArtistImage(artist.id, artist.name);
         }
 
         async function loadArtistImage(artistId, name) {
             try {
-                const res = await fetch(
-                    `https://musicbrainz.org/ws/2/release-group?artist=${artistId}&type=album&fmt=json&limit=10`,
-                    { headers: { 'User-Agent': 'findyl/1.0 (https://findyl.co.uk)' } }
+                const res = await mbQueue.fetch(
+                    `https://musicbrainz.org/ws/2/release-group?artist=${artistId}&type=album&fmt=json&limit=10`
                 );
                 const data = await res.json();
                 const rgs = (data['release-groups'] || []).filter(r => r['first-release-date']);
@@ -402,10 +456,8 @@
 
         async function loadAlbums() {
             try {
-                // Browse release groups for this artist
-                const response = await fetch(
-                    `https://musicbrainz.org/ws/2/release-group?artist=${artistMBID}&type=album&fmt=json&limit=100`,
-                    { headers: { 'User-Agent': 'findyl/1.0 (https://findyl.co.uk)' } }
+                const response = await mbQueue.fetch(
+                    `https://musicbrainz.org/ws/2/release-group?artist=${artistMBID}&type=album&fmt=json&limit=100`
                 );
 
                 if (!response.ok) throw new Error('Failed to load albums');
@@ -413,7 +465,7 @@
                 const data = await response.json();
                 let albums = data['release-groups'] || [];
 
-                // Filter to studio albums only (no compilations, live, soundtracks)
+                // Filter to studio albums only
                 albums = albums.filter(rg => {
                     const primaryType = rg['primary-type'];
                     const secondaryTypes = rg['secondary-types'] || [];
@@ -438,7 +490,7 @@
                 document.getElementById('album-count').textContent = 
                     `${albums.length} ${albums.length === 1 ? 'album' : 'albums'} found`;
 
-displayAlbums(albums);
+                displayAlbums(albums);
 
             } catch (error) {
                 console.error('Error loading albums:', error);
@@ -470,6 +522,7 @@ displayAlbums(albums);
                             <img src="${coverUrl}" 
                                  alt="${album.title}" 
                                  class="w-full h-full object-cover"
+                                 loading="lazy"
                                  onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22250%22 height=%22250%22%3E%3Crect fill=%22%23e5e7eb%22 width=%22250%22 height=%22250%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2218%22 fill=%22%239ca3af%22%3ENo Cover%3C/text%3E%3C/svg%3E'">
                         </div>
                         <div class="p-4">
@@ -484,66 +537,78 @@ displayAlbums(albums);
         }
 
         async function loadArtistBio(name) {
-            const res = await fetch(`/api/lastfm-bio?artist=${encodeURIComponent(name)}`);
-            if (!res.ok) return;
-            const data = await res.json();
+            try {
+                const res = await fetch(`/api/lastfm-bio?artist=${encodeURIComponent(name)}`);
+                if (!res.ok) return;
+                const data = await res.json();
 
-            if (data.bio) {
-                const bioEl = document.getElementById('artist-bio');
-                bioEl.textContent = data.bio;
-                document.getElementById('artist-bio-wrapper').classList.remove('hidden');
-            }
+                if (data.bio) {
+                    const bioEl = document.getElementById('artist-bio');
+                    bioEl.textContent = data.bio;
+                    document.getElementById('artist-bio-wrapper').classList.remove('hidden');
+                }
 
-            if (data.similar && data.similar.length > 0) {
-                const listEl = document.getElementById('similar-artists-list');
+                if (data.similar && data.similar.length > 0) {
+                    const listEl = document.getElementById('similar-artists-list');
 
-                listEl.innerHTML = data.similar.map(a => {
-                    const key = a.name.replace(/[^a-z0-9]/gi,'_');
-                    const initials = a.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
-                    return `<a href="/results?q=${encodeURIComponent(a.name)}"
-                               class="flex flex-col items-center gap-2 group" style="min-width:80px;max-width:80px">
-                        <div id="sim-img-${key}"
-                             style="width:80px;height:80px;border-radius:50%;background:#FFE5E5;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
-                            <span style="color:#FF6B6B;font-weight:bold;font-size:1.2rem">${initials}</span>
-                        </div>
-                        <span class="text-sm text-center text-gray-700 group-hover:text-gray-900 font-medium leading-tight">${a.name}</span>
-                    </a>`;
-                }).join('');
-
-                document.getElementById('similar-artists').classList.remove('hidden');
-
-                data.similar.forEach(async a => {
-                    try {
-                        const mbRes = await fetch(
-                            `https://musicbrainz.org/ws/2/artist/?query=artist:"${encodeURIComponent(a.name)}"&fmt=json&limit=1`,
-                            { headers: { 'User-Agent': 'findyl/1.0 (https://findyl.co.uk)' } }
-                        );
-                        const mbData = await mbRes.json();
-                        const artistId = mbData.artists?.[0]?.id;
-                        if (!artistId) return;
-
-                        const rgRes = await fetch(
-                            `https://musicbrainz.org/ws/2/release-group?artist=${artistId}&type=album&fmt=json&limit=5`,
-                            { headers: { 'User-Agent': 'findyl/1.0 (https://findyl.co.uk)' } }
-                        );
-                        const rgData = await rgRes.json();
-                        const rgs = (rgData['release-groups'] || []).filter(r => r['first-release-date']);
-                        if (rgs.length === 0) return;
-
-                        rgs.sort((x,y) => y['first-release-date'].localeCompare(x['first-release-date']));
-                        const imgUrl = `https://coverartarchive.org/release-group/${rgs[0].id}/front-250`;
-
+                    listEl.innerHTML = data.similar.map(a => {
                         const key = a.name.replace(/[^a-z0-9]/gi,'_');
-                        const container = document.getElementById(`sim-img-${key}`);
-                        if (!container) return;
+                        const initials = a.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+                        return `<a href="/results?q=${encodeURIComponent(a.name)}"
+                                   class="flex flex-col items-center gap-2 group" style="min-width:80px;max-width:80px">
+                            <div id="sim-img-${key}"
+                                 style="width:80px;height:80px;border-radius:50%;background:#FFE5E5;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
+                                <span style="color:#FF6B6B;font-weight:bold;font-size:1.2rem">${initials}</span>
+                            </div>
+                            <span class="text-sm text-center text-gray-700 group-hover:text-gray-900 font-medium leading-tight">${a.name}</span>
+                        </a>`;
+                    }).join('');
 
-                        const img = new Image();
-                        img.onload = () => {
-                            container.innerHTML = `<img src="${imgUrl}" alt="${a.name}" style="width:80px;height:80px;object-fit:cover;border-radius:50%">`;
-                        };
-                        img.src = imgUrl;
-                    } catch(e) {}
-                });
+                    document.getElementById('similar-artists').classList.remove('hidden');
+
+                    // Load similar artist images SEQUENTIALLY via the queue
+                    loadSimilarArtistImages(data.similar);
+                }
+            } catch(e) {
+                console.warn('Bio load failed:', e);
+            }
+        }
+
+        // Sequential similar artist image loading (respects MB rate limit)
+        async function loadSimilarArtistImages(similarArtists) {
+            for (const a of similarArtists) {
+                try {
+                    const mbRes = await mbQueue.fetch(
+                        `https://musicbrainz.org/ws/2/artist/?query=artist:"${encodeURIComponent(a.name)}"&fmt=json&limit=1`
+                    );
+                    if (!mbRes.ok) continue;
+                    const mbData = await mbRes.json();
+                    const artistId = mbData.artists?.[0]?.id;
+                    if (!artistId) continue;
+
+                    const rgRes = await mbQueue.fetch(
+                        `https://musicbrainz.org/ws/2/release-group?artist=${artistId}&type=album&fmt=json&limit=5`
+                    );
+                    if (!rgRes.ok) continue;
+                    const rgData = await rgRes.json();
+                    const rgs = (rgData['release-groups'] || []).filter(r => r['first-release-date']);
+                    if (rgs.length === 0) continue;
+
+                    rgs.sort((x,y) => y['first-release-date'].localeCompare(x['first-release-date']));
+                    const imgUrl = `https://coverartarchive.org/release-group/${rgs[0].id}/front-250`;
+
+                    const key = a.name.replace(/[^a-z0-9]/gi,'_');
+                    const container = document.getElementById(`sim-img-${key}`);
+                    if (!container) continue;
+
+                    const img = new Image();
+                    img.onload = () => {
+                        container.innerHTML = `<img src="${imgUrl}" alt="${a.name}" class="sim-img-fade" style="width:80px;height:80px;object-fit:cover;border-radius:50%">`;
+                    };
+                    img.src = imgUrl;
+                } catch(e) {
+                    // Keep initials on failure
+                }
             }
         }
 
@@ -557,7 +622,7 @@ displayAlbums(albums);
             btn.textContent = isCollapsed ? 'Show less' : 'Read more';
         }
 
-        // Initialize
+        // Initialize — pricing feeds load independently (no MB calls)
         loadArtistData();
         loadPricingFeeds();
     </script>
