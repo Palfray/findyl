@@ -376,7 +376,18 @@
                     meta.push(end ? `${begin} - ${end}` : `${begin} - present`);
                 }
             }
-            if (artist.type) meta.push(artist.type);
+            if (artist.type) {
+                const typeLabels = {
+                    'Person': 'Solo Artist',
+                    'Group': 'Band',
+                    'Orchestra': 'Orchestra',
+                    'Choir': 'Choir',
+                    'Character': 'Character',
+                    'Other': ''
+                };
+                const label = typeLabels[artist.type] || artist.type;
+                if (label) meta.push(label);
+            }
 
             document.getElementById('artist-meta').textContent = meta.join(' • ');
 
