@@ -461,8 +461,9 @@
                     matchingAlbums.forEach(album => {
                         if (album.buyOptions) {
                             album.buyOptions.forEach(opt => {
-                                // Detect vinyl colour from product name if available
-                                opt.vinylColour = detectVinylColour(opt.productName || album.album || '');
+                                // Try every possible field that might contain colour info
+                                const textToCheck = opt.productName || opt.name || opt.title || album.rawName || album.album || '';
+                                opt.vinylColour = detectVinylColour(textToCheck);
                             });
                             allBuyOptions.push(...album.buyOptions);
                         }
@@ -476,16 +477,24 @@
 
                     if (ebayData.results && ebayData.results.length > 0) {
                         // Take up to 5 best eBay results
-                        const ebayOptions = ebayData.results.slice(0, 10).map(item => ({
-                            storeName: 'eBay',
-                            source: 'ebay',
-                            price: item.price,
-                            link: item.link,
-                            availability: 'In Stock',
-                            condition: item.condition || '',
-                            seller: item.seller || '',
-                            vinylColour: detectVinylColour(item.title || '')
-                        }));
+                        const ebayOptions = ebayData.results.slice(0, 10).map(item => {
+                            // Server returns vinylColour as string, convert to {label,hex} or use client detection
+                            let vc = null;
+                            if (item.vinylColour) {
+                                // Server detected a colour — run client detection on title to get hex
+                                vc = detectVinylColour(item.title || '') || { label: item.vinylColour, hex: '#FF6B6B' };
+                            }
+                            return {
+                                storeName: 'eBay',
+                                source: 'ebay',
+                                price: item.price,
+                                link: item.link,
+                                availability: 'In Stock',
+                                condition: item.condition || '',
+                                seller: item.seller || '',
+                                vinylColour: vc
+                            };
+                        });
                         allBuyOptions.push(...ebayOptions);
                     }
                 }
@@ -503,7 +512,7 @@
         }
 
         // Vinyl colour detection (works on any product title)
-        // Returns { label, hex } or null
+        // Returns { label, hex } or null — hex uses pastel palette
         function detectVinylColour(text) {
             text = (text || '').toLowerCase();
 
@@ -512,50 +521,50 @@
             if (isJustBlack) return null;
 
             const colourPatterns = [
-                { pattern: /\b(splatter(?:ed)?)\s*(vinyl|lp|disc)?\b/, label: 'Splatter', hex: '#8B5CF6' },
-                { pattern: /\b(marble(?:d)?)\s*(vinyl|lp|disc)?\b/, label: 'Marble', hex: '#6366F1' },
-                { pattern: /\b(swirl(?:ed)?)\s*(vinyl|lp|disc)?\b/, label: 'Swirl', hex: '#A855F7' },
-                { pattern: /\b(tie[- ]?dye(?:d)?)\s*(vinyl|lp|disc)?\b/, label: 'Tie-Dye', hex: '#EC4899' },
-                { pattern: /\b(galaxy)\s*(vinyl|lp|disc)?\b/, label: 'Galaxy', hex: '#312E81' },
-                { pattern: /\b(haze)\s*(vinyl|lp|disc)?\b/, label: 'Haze', hex: '#94A3B8' },
-                { pattern: /\b(smoke(?:d|y)?)\s*(vinyl|lp|disc)?\b/, label: 'Smoke', hex: '#64748B' },
-                { pattern: /\b(translucent|transparent)\s*(vinyl|lp|disc)?\b/, label: 'Translucent', hex: '#94A3B8' },
-                { pattern: /\b(picture\s*disc)\b/, label: 'Picture Disc', hex: '#F59E0B' },
-                { pattern: /\b(glow.in.the.dark)\b/, label: 'Glow in the Dark', hex: '#84CC16' },
-                { pattern: /\b(red)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Red', hex: '#DC2626' },
-                { pattern: /\b(blue)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Blue', hex: '#2563EB' },
-                { pattern: /\b(green)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Green', hex: '#16A34A' },
-                { pattern: /\b(yellow)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Yellow', hex: '#CA8A04' },
-                { pattern: /\b(orange)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Orange', hex: '#EA580C' },
-                { pattern: /\b(pink)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Pink', hex: '#EC4899' },
-                { pattern: /\b(purple)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Purple', hex: '#9333EA' },
-                { pattern: /\b(white)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'White', hex: '#9CA3AF' },
-                { pattern: /\b(clear)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Clear', hex: '#94A3B8' },
-                { pattern: /\b(gold)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Gold', hex: '#B45309' },
-                { pattern: /\b(silver)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Silver', hex: '#6B7280' },
-                { pattern: /\b(grey|gray)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Grey', hex: '#6B7280' },
-                { pattern: /\b(cream)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Cream', hex: '#B45309' },
-                { pattern: /\b(turquoise|teal)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Turquoise', hex: '#0D9488' },
-                { pattern: /\b(magenta)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Magenta', hex: '#C026D3' },
-                { pattern: /\b(burgundy|maroon)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Burgundy', hex: '#881337' },
-                { pattern: /\b(cobalt)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Cobalt', hex: '#1D4ED8' },
-                { pattern: /\b(coral)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Coral', hex: '#FF6B6B' },
-                { pattern: /\b(mint)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Mint', hex: '#34D399' },
-                { pattern: /\b(colou?red)\s+(vinyl|lp|pressing)\b/, label: 'Coloured', hex: '#FF6B6B' },
-                { pattern: /\b(limited)\s+(colou?r|edition)\b.*\bvinyl\b/, label: 'Limited Colour', hex: '#FF6B6B' },
-                { pattern: /lp\s*\[([^\]]*red[^\]]*)\]/i, label: null, extract: true, hex: '#DC2626' },
-                { pattern: /lp\s*\[([^\]]*blue[^\]]*)\]/i, label: null, extract: true, hex: '#2563EB' },
-                { pattern: /lp\s*\[([^\]]*green[^\]]*)\]/i, label: null, extract: true, hex: '#16A34A' },
-                { pattern: /lp\s*\[([^\]]*orange[^\]]*)\]/i, label: null, extract: true, hex: '#EA580C' },
-                { pattern: /lp\s*\[([^\]]*pink[^\]]*)\]/i, label: null, extract: true, hex: '#EC4899' },
-                { pattern: /lp\s*\[([^\]]*purple[^\]]*)\]/i, label: null, extract: true, hex: '#9333EA' },
-                { pattern: /lp\s*\[([^\]]*white[^\]]*)\]/i, label: null, extract: true, hex: '#9CA3AF' },
-                { pattern: /lp\s*\[([^\]]*clear[^\]]*)\]/i, label: null, extract: true, hex: '#94A3B8' },
-                { pattern: /lp\s*\[([^\]]*gold[^\]]*)\]/i, label: null, extract: true, hex: '#B45309' },
-                { pattern: /lp\s*\[([^\]]*splatter[^\]]*)\]/i, label: null, extract: true, hex: '#8B5CF6' },
-                { pattern: /lp\s*\[([^\]]*marble[^\]]*)\]/i, label: null, extract: true, hex: '#6366F1' },
-                { pattern: /lp\s*\[([^\]]*swirl[^\]]*)\]/i, label: null, extract: true, hex: '#A855F7' },
-                { pattern: /lp\s*\[([^\]]+)\]/i, label: null, extract: true, hex: '#FF6B6B' },
+                { pattern: /\b(splatter(?:ed)?)\s*(vinyl|lp|disc)?\b/, label: 'Splatter', hex: '#C4B5FD' },
+                { pattern: /\b(marble(?:d)?)\s*(vinyl|lp|disc)?\b/, label: 'Marble', hex: '#A5B4FC' },
+                { pattern: /\b(swirl(?:ed)?)\s*(vinyl|lp|disc)?\b/, label: 'Swirl', hex: '#D8B4FE' },
+                { pattern: /\b(tie[- ]?dye(?:d)?)\s*(vinyl|lp|disc)?\b/, label: 'Tie-Dye', hex: '#F9A8D4' },
+                { pattern: /\b(galaxy)\s*(vinyl|lp|disc)?\b/, label: 'Galaxy', hex: '#818CF8' },
+                { pattern: /\b(haze)\s*(vinyl|lp|disc)?\b/, label: 'Haze', hex: '#CBD5E1' },
+                { pattern: /\b(smoke(?:d|y)?)\s*(vinyl|lp|disc)?\b/, label: 'Smoke', hex: '#94A3B8' },
+                { pattern: /\b(translucent|transparent)\s*(vinyl|lp|disc)?\b/, label: 'Translucent', hex: '#BAE6FD' },
+                { pattern: /\b(picture\s*disc)\b/, label: 'Picture Disc', hex: '#FDE68A' },
+                { pattern: /\b(glow.in.the.dark)\b/, label: 'Glow in the Dark', hex: '#BEF264' },
+                { pattern: /\b(red)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Red', hex: '#FCA5A5' },
+                { pattern: /\b(blue)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Blue', hex: '#93C5FD' },
+                { pattern: /\b(green)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Green', hex: '#86EFAC' },
+                { pattern: /\b(yellow)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Yellow', hex: '#FDE68A' },
+                { pattern: /\b(orange)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Orange', hex: '#FDBA74' },
+                { pattern: /\b(pink)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Pink', hex: '#F9A8D4' },
+                { pattern: /\b(purple)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Purple', hex: '#D8B4FE' },
+                { pattern: /\b(white)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'White', hex: '#E2E8F0' },
+                { pattern: /\b(clear)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Clear', hex: '#BAE6FD' },
+                { pattern: /\b(gold)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Gold', hex: '#FDE68A' },
+                { pattern: /\b(silver)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Silver', hex: '#CBD5E1' },
+                { pattern: /\b(grey|gray)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Grey', hex: '#CBD5E1' },
+                { pattern: /\b(cream)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Cream', hex: '#FEF3C7' },
+                { pattern: /\b(turquoise|teal)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Turquoise', hex: '#99F6E4' },
+                { pattern: /\b(magenta)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Magenta', hex: '#F0ABFC' },
+                { pattern: /\b(burgundy|maroon)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Burgundy', hex: '#FECACA' },
+                { pattern: /\b(cobalt)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Cobalt', hex: '#A5B4FC' },
+                { pattern: /\b(coral)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Coral', hex: '#FFB4B4' },
+                { pattern: /\b(mint)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Mint', hex: '#A7F3D0' },
+                { pattern: /\b(colou?red)\s+(vinyl|lp|pressing)\b/, label: 'Coloured', hex: '#FFB4B4' },
+                { pattern: /\b(limited)\s+(colou?r|edition)\b.*\bvinyl\b/, label: 'Limited Colour', hex: '#FFB4B4' },
+                { pattern: /lp\s*\[([^\]]*red[^\]]*)\]/i, label: null, extract: true, hex: '#FCA5A5' },
+                { pattern: /lp\s*\[([^\]]*blue[^\]]*)\]/i, label: null, extract: true, hex: '#93C5FD' },
+                { pattern: /lp\s*\[([^\]]*green[^\]]*)\]/i, label: null, extract: true, hex: '#86EFAC' },
+                { pattern: /lp\s*\[([^\]]*orange[^\]]*)\]/i, label: null, extract: true, hex: '#FDBA74' },
+                { pattern: /lp\s*\[([^\]]*pink[^\]]*)\]/i, label: null, extract: true, hex: '#F9A8D4' },
+                { pattern: /lp\s*\[([^\]]*purple[^\]]*)\]/i, label: null, extract: true, hex: '#D8B4FE' },
+                { pattern: /lp\s*\[([^\]]*white[^\]]*)\]/i, label: null, extract: true, hex: '#E2E8F0' },
+                { pattern: /lp\s*\[([^\]]*clear[^\]]*)\]/i, label: null, extract: true, hex: '#BAE6FD' },
+                { pattern: /lp\s*\[([^\]]*gold[^\]]*)\]/i, label: null, extract: true, hex: '#FDE68A' },
+                { pattern: /lp\s*\[([^\]]*splatter[^\]]*)\]/i, label: null, extract: true, hex: '#C4B5FD' },
+                { pattern: /lp\s*\[([^\]]*marble[^\]]*)\]/i, label: null, extract: true, hex: '#A5B4FC' },
+                { pattern: /lp\s*\[([^\]]*swirl[^\]]*)\]/i, label: null, extract: true, hex: '#D8B4FE' },
+                { pattern: /lp\s*\[([^\]]+)\]/i, label: null, extract: true, hex: '#FFB4B4' },
             ];
 
             for (const { pattern, label, extract, hex } of colourPatterns) {
@@ -570,7 +579,6 @@
             }
             return null;
         }
-
 
         // Known eBay retailer sellers → display name + favicon domain
         const knownEbaySellers = {
@@ -642,7 +650,7 @@
             // ── Render standard retailer cards ──
             let html = retailerOptions.map(opt => {
                 const vcHex = (opt.vinylColour && typeof opt.vinylColour === 'object') ? opt.vinylColour.hex : '#FF6B6B';
-                const cb = opt.vinylColour ? `<span style="font-size:0.6rem;padding:2px 7px;border-radius:9999px;background:${vcHex};color:#FFFFFF;white-space:nowrap;font-weight:500;">Colour variant</span>` : '';
+                const cb = opt.vinylColour ? `<span style="font-size:0.6rem;padding:2px 7px;border-radius:9999px;background:${vcHex};color:#374151;white-space:nowrap;font-weight:600;">Colour variant</span>` : '';
                 return `
                 <a href="${opt.link}" 
                    target="_blank" rel="noopener noreferrer"
@@ -724,7 +732,7 @@
             function colourBadge(vc) {
                 if (!vc) return '';
                 const hex = (typeof vc === 'object' && vc.hex) ? vc.hex : '#FF6B6B';
-                return `<span style="font-size:0.6rem;padding:2px 7px;border-radius:9999px;background:${hex};color:#FFFFFF;white-space:nowrap;font-weight:500;">Colour variant</span>`;
+                return `<span style="font-size:0.6rem;padding:2px 7px;border-radius:9999px;background:${hex};color:#374151;white-space:nowrap;font-weight:600;">Colour variant</span>`;
             }
 
             let card = `
