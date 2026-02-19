@@ -507,15 +507,22 @@
             // Sort retailers by price
             retailerOptions.sort((a, b) => a.price - b.price);
 
-            // Favicon domain lookup
-            function getFaviconDomain(source) {
+            // Store logo: returns HTML for the logo image/SVG
+            function getStoreLogo(source, storeName) {
+                if (source === 'ebay') {
+                    return `<svg width="32" height="32" viewBox="0 0 120 48" style="flex-shrink:0;">
+                        <text x="0" y="38" font-family="Helvetica,Arial,sans-serif" font-weight="700" font-size="40">
+                            <tspan fill="#E53238">e</tspan><tspan fill="#0064D2">b</tspan><tspan fill="#F5AF02">a</tspan><tspan fill="#86B817">y</tspan>
+                        </text>
+                    </svg>`;
+                }
                 const domains = {
                     popstore: 'wearepopstore.com',
                     vinylcastle: 'vinylcastle.co.uk',
-                    emp: 'emp.co.uk',
-                    ebay: 'ebay.co.uk'
+                    emp: 'emp.co.uk'
                 };
-                return domains[source] || 'example.com';
+                const domain = domains[source] || 'example.com';
+                return `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" alt="${storeName}" style="width:32px;height:32px;flex-shrink:0;">`;
             }
 
             // ── Render standard retailer cards ──
@@ -525,8 +532,7 @@
                    class="block py-4 px-6 rounded-lg transition-all hover:shadow-lg bg-white shadow-sm border border-gray-100">
                     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
                         <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">
-                            <img src="https://www.google.com/s2/favicons?domain=${getFaviconDomain(opt.source)}&sz=64" 
-                                 alt="${opt.storeName}" style="width:32px;height:32px;flex-shrink:0;">
+                            ${getStoreLogo(opt.source, opt.storeName)}
                             <span style="font-weight:600;color:#1F2937;">${opt.storeName}</span>
                         </div>
                         <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
@@ -562,10 +568,10 @@
                 const allNew = [...ebayNew, ...ebayOther].sort((a, b) => a.price - b.price);
 
                 if (allNew.length > 0) {
-                    html += renderEbayGroup(allNew, 'New', getFaviconDomain);
+                    html += renderEbayGroup(allNew, 'New', getStoreLogo);
                 }
                 if (ebayUsed.length > 0) {
-                    html += renderEbayGroup(ebayUsed, 'Used', getFaviconDomain);
+                    html += renderEbayGroup(ebayUsed, 'Used', getStoreLogo);
                 }
             }
 
@@ -590,7 +596,7 @@
             });
         }
 
-        function renderEbayGroup(items, label, getFaviconDomain) {
+        function renderEbayGroup(items, label, getStoreLogo) {
             const cheapest = items[0];
             const others = items.slice(1);
             const groupId = `ebay-${label.toLowerCase()}-dropdown`;
@@ -602,8 +608,7 @@
                    class="block py-4 px-6 transition-all hover:bg-gray-50">
                     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
                         <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">
-                            <img src="https://www.google.com/s2/favicons?domain=${getFaviconDomain('ebay')}&sz=64" 
-                                 alt="eBay" style="width:32px;height:32px;flex-shrink:0;">
+                            ${getStoreLogo('ebay', 'eBay')}
                             <div style="min-width:0;">
                                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                                     <span style="font-weight:600;color:#1F2937;">eBay</span>
