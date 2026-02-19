@@ -121,6 +121,14 @@
                         <div id="album-meta" class="text-sm text-gray-500 space-y-1">
                             <!-- Release year, label, etc. -->
                         </div>
+                        <div id="album-label" class="hidden mt-3 pt-3 border-t border-gray-100">
+                            <span class="text-sm text-gray-500">Label</span>
+                            <p id="label-name" class="text-sm font-semibold text-gray-900 mt-0.5"></p>
+                        </div>
+                        <div id="album-credits" class="hidden mt-3 pt-3 border-t border-gray-100">
+                            <span class="text-sm text-gray-500">Credits</span>
+                            <div id="credits-list" class="mt-1 space-y-0.5"></div>
+                        </div>
                         <div id="discogs-section" class="hidden mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
                             <span class="text-sm text-gray-500">Discogs Rating</span>
                             <div class="flex items-center gap-2">
@@ -867,12 +875,55 @@
         async function loadTracklist(releaseId) {
             try {
                 const response = await mbQueue.fetch(
-                    `https://musicbrainz.org/ws/2/release/${releaseId}?inc=recordings&fmt=json`
+                    `https://musicbrainz.org/ws/2/release/${releaseId}?inc=recordings+labels+artist-rels&fmt=json`
                 );
 
                 if (!response.ok) return;
 
                 const release = await response.json();
+
+                // Display label
+                if (release['label-info'] && release['label-info'].length > 0) {
+                    const labels = release['label-info']
+                        .map(li => li.label?.name)
+                        .filter(Boolean)
+                        .filter((v, i, a) => a.indexOf(v) === i); // dedupe
+                    if (labels.length > 0) {
+                        document.getElementById('label-name').textContent = labels.join(' / ');
+                        document.getElementById('album-label').classList.remove('hidden');
+                    }
+                }
+
+                // Display producer credits from artist relationships
+                if (release.relations && release.relations.length > 0) {
+                    const creditTypes = ['producer', 'co-producer', 'executive producer'];
+                    const creditLabels = {
+                        'producer': 'Producer',
+                        'co-producer': 'Co-Producer',
+                        'executive producer': 'Executive Producer'
+                    };
+                    
+                    const credits = {};
+                    release.relations.forEach(rel => {
+                        if (rel.type && creditTypes.includes(rel.type) && rel.artist?.name) {
+                            const label = creditLabels[rel.type] || rel.type;
+                            if (!credits[label]) credits[label] = [];
+                            if (!credits[label].includes(rel.artist.name)) {
+                                credits[label].push(rel.artist.name);
+                            }
+                        }
+                    });
+
+                    if (Object.keys(credits).length > 0) {
+                        const container = document.getElementById('credits-list');
+                        container.innerHTML = Object.entries(credits).map(([role, names]) => 
+                            `<p class="text-sm"><span class="text-gray-500">${role}:</span> <span class="font-semibold text-gray-900">${names.join(', ')}</span></p>`
+                        ).join('');
+                        document.getElementById('album-credits').classList.remove('hidden');
+                    }
+                }
+
+                // Tracklist
                 const tracks = [];
 
                 if (release.media) {
