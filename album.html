@@ -479,7 +479,8 @@
                             link: item.link,
                             availability: 'In Stock',
                             condition: item.condition || '',
-                            seller: item.seller || ''
+                            seller: item.seller || '',
+                            vinylColour: item.vinylColour || null
                         }));
                         allBuyOptions.push(...ebayOptions);
                     }
@@ -642,6 +643,11 @@
             const conditionLabel = label === 'New' ? 'New' : 'Pre-Owned';
             const cheapestSeller = getSellerInfo(cheapest.seller);
 
+            function colourBadge(vc) {
+                if (!vc) return '';
+                return `<span style="font-size:0.6rem;padding:2px 6px;border-radius:9999px;background:#F0EBFF;color:#6D28D9;white-space:nowrap;">🎨 ${vc}</span>`;
+            }
+
             let card = `
             <div class="rounded-lg bg-white shadow-sm border border-gray-100 overflow-hidden">
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 24px;">
@@ -650,6 +656,7 @@
                         ${getStoreLogo('ebay', 'eBay')}
                         <span style="font-weight:600;color:#1F2937;">eBay</span>
                         <span style="font-size:0.65rem;padding:2px 7px;border-radius:9999px;background:${label === 'New' ? '#ECFDF5' : '#FEF3C7'};color:${label === 'New' ? '#059669' : '#92400E'};white-space:nowrap;">${conditionLabel}</span>
+                        ${colourBadge(cheapest.vinylColour)}
                         ${cheapestSeller.logo ? `<span style="margin-left:4px;display:flex;align-items:center;">${cheapestSeller.logo}</span>` : ''}
                     </a>
                     <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
@@ -672,9 +679,10 @@
                         <a href="${opt.link}" target="_blank" rel="noopener noreferrer sponsored"
                            style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 24px 8px 44px;text-decoration:none;transition:background 0.15s;border-top:1px solid #F7F7F7;"
                            onmouseenter="this.style.background='#F9FAFB'" onmouseleave="this.style.background='transparent'">
-                            <div style="display:flex;align-items:center;gap:6px;min-width:0;">
+                            <div style="display:flex;align-items:center;gap:6px;min-width:0;flex-wrap:wrap;">
                                 ${si.logo || '<span style="width:20px;"></span>'}
                                 <span style="font-size:0.8rem;color:#374151;font-weight:500;">${si.displayName}</span>
+                                ${colourBadge(opt.vinylColour)}
                             </div>
                             <span style="font-weight:600;color:#FF6B6B;font-size:0.95rem;flex-shrink:0;">£${opt.price.toFixed(2)}</span>
                         </a>`;
