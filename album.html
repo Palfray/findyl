@@ -461,11 +461,8 @@
                     matchingAlbums.forEach(album => {
                         if (album.buyOptions) {
                             album.buyOptions.forEach(opt => {
-                                // rawProductName is the original product title before cleaning
-                                const textToCheck = opt.rawProductName || opt.productName || album.album || '';
-                                console.log(`🎨 [${opt.source}] Colour check: "${textToCheck}"`);
+                                const textToCheck = opt.rawProductName || album.album || '';
                                 opt.vinylColour = detectVinylColour(textToCheck);
-                                if (opt.vinylColour) console.log(`  ✅ Detected: ${opt.vinylColour.label}`);
                             });
                             allBuyOptions.push(...album.buyOptions);
                         }
