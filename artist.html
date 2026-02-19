@@ -369,13 +369,6 @@
 
             const meta = [];
             if (artist.country) meta.push(artist.country);
-            if (artist['life-span']) {
-                const begin = artist['life-span'].begin;
-                const end = artist['life-span'].end;
-                if (begin) {
-                    meta.push(end ? `${begin} - ${end}` : `${begin} - present`);
-                }
-            }
             if (artist.type) {
                 const typeLabels = {
                     'Person': 'Solo Artist',
