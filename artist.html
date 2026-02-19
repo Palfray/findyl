@@ -28,6 +28,17 @@
             transform: translateY(-4px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
+        .pricing-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #FF6B6B;
+            margin-left: 6px;
+            vertical-align: middle;
+            flex-shrink: 0;
+            opacity: 0.85;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -201,6 +212,76 @@
         }
 
         let artistMBID = null;
+
+        // Pricing feed data (loaded in background)
+        let empProducts = [];
+        let vcProducts = [];
+        let pricingReady = false;
+
+        // Normalise a string for matching: lowercase, strip punctuation, remove common words
+        function normalise(str) {
+            return (str || '').toLowerCase()
+                .replace(/['''\-–]/g, ' ')
+                .replace(/[^a-z0-9 ]/g, '')
+                .replace(/\b(the|a|an|and|of|in|on|at|to|for|with|vol|volume|pt|part)\b/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function artistMatches(feedArtist) {
+            const na = normalise(artistName);
+            const nf = normalise(feedArtist);
+            return na === nf || na.includes(nf) || nf.includes(na);
+        }
+
+        function albumMatches(feedAlbum, mbTitle) {
+            const nf = normalise(feedAlbum);
+            const nm = normalise(mbTitle);
+            if (!nf || !nm) return false;
+            // Exact or one contains the other (handles subtitle variants)
+            return nf === nm || nf.includes(nm) || nm.includes(nf);
+        }
+
+        function hasPricing(mbTitle) {
+            const inEmp = empProducts.some(p => artistMatches(p.artist) && albumMatches(p.album, mbTitle));
+            if (inEmp) return true;
+            const inVc = vcProducts.some(p => artistMatches(p.artist) && albumMatches(p.album, mbTitle));
+            return inVc;
+        }
+
+        // Load both feeds in background
+        async function loadPricingFeeds() {
+            try {
+                const [empRes, vcRes] = await Promise.allSettled([
+                    fetch('https://raw.githubusercontent.com/Palfray/findyl/main/api/emp-vinyl.json'),
+                    fetch('/api/vinylcastle-search?q=' + encodeURIComponent(artistName))
+                ]);
+
+                if (empRes.status === 'fulfilled' && empRes.value.ok) {
+                    empProducts = await empRes.value.json();
+                }
+                if (vcRes.status === 'fulfilled' && vcRes.value.ok) {
+                    const vcData = await vcRes.value.json();
+                    vcProducts = vcData.results || vcData || [];
+                }
+
+                pricingReady = true;
+                // Update any already-rendered album cards
+                updatePricingDots();
+            } catch(e) {}
+        }
+
+        function updatePricingDots() {
+            document.querySelectorAll('.album-card[data-title]').forEach(card => {
+                const title = card.getAttribute('data-title');
+                if (hasPricing(title)) {
+                    const titleEl = card.querySelector('.album-title');
+                    if (titleEl && !titleEl.querySelector('.pricing-dot')) {
+                        titleEl.insertAdjacentHTML('beforeend', '<span class="pricing-dot" title="Available from UK retailers"></span>');
+                    }
+                }
+            });
+        }
 
         // Fetch artist data from MusicBrainz
         async function loadArtistData() {
@@ -379,10 +460,12 @@ displayAlbums(albums);
             grid.innerHTML = albums.map(album => {
                 const year = album['first-release-date'] ? album['first-release-date'].substring(0, 4) : '';
                 const coverUrl = `https://coverartarchive.org/release-group/${album.id}/front-250`;
+                const hasDot = pricingReady && hasPricing(album.title);
 
                 return `
                     <a href="/album?id=${album.id}&artist=${encodeURIComponent(artistName)}" 
-                       class="album-card block bg-white rounded-lg overflow-hidden shadow-sm">
+                       class="album-card block bg-white rounded-lg overflow-hidden shadow-sm"
+                       data-title="${album.title.replace(/"/g, '&quot;')}">
                         <div class="aspect-square bg-gray-200 relative">
                             <img src="${coverUrl}" 
                                  alt="${album.title}" 
@@ -390,9 +473,10 @@ displayAlbums(albums);
                                  onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22250%22 height=%22250%22%3E%3Crect fill=%22%23e5e7eb%22 width=%22250%22 height=%22250%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2218%22 fill=%22%239ca3af%22%3ENo Cover%3C/text%3E%3C/svg%3E'">
                         </div>
                         <div class="p-4">
-                            <h3 class="font-semibold text-gray-900 mb-1 line-clamp-2">${album.title}</h3>
+                            <h3 class="album-title font-semibold text-gray-900 mb-1 line-clamp-2 flex items-center flex-wrap gap-1">
+                                <span>${album.title}</span>${hasDot ? '<span class="pricing-dot" title="Available from UK retailers"></span>' : ''}
+                            </h3>
                             ${year ? `<p class="text-sm text-gray-500">${year}</p>` : ''}
-
                         </div>
                     </a>
                 `;
@@ -475,6 +559,7 @@ displayAlbums(albums);
 
         // Initialize
         loadArtistData();
+        loadPricingFeeds();
     </script>
 </body>
 </html>
