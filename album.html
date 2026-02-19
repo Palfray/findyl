@@ -409,11 +409,14 @@
             if (albumData.relations && albumData.relations.length > 0) {
                 console.log('RG relations:', albumData.relations.map(r => ({ type: r.type, artist: r.artist?.name })));
                 
-                const creditTypes = ['producer', 'co-producer', 'executive producer'];
+                const creditTypes = ['producer', 'co-producer', 'executive producer', 'mix', 'recording', 'mastering'];
                 const creditLabels = {
                     'producer': 'Producer',
                     'co-producer': 'Co-Producer',
-                    'executive producer': 'Executive Producer'
+                    'executive producer': 'Executive Producer',
+                    'mix': 'Mixed by',
+                    'recording': 'Engineered by',
+                    'mastering': 'Mastered by'
                 };
                 
                 const credits = {};
@@ -930,11 +933,14 @@
                 if (release.relations && release.relations.length > 0) {
                     console.log('MB relations:', release.relations.map(r => ({ type: r.type, 'target-type': r['target-type'], artist: r.artist?.name })));
                     
-                    const creditTypes = ['producer', 'co-producer', 'executive producer'];
+                    const creditTypes = ['producer', 'co-producer', 'executive producer', 'mix', 'recording', 'mastering'];
                     const creditLabels = {
                         'producer': 'Producer',
                         'co-producer': 'Co-Producer',
-                        'executive producer': 'Executive Producer'
+                        'executive producer': 'Executive Producer',
+                        'mix': 'Mixed by',
+                        'recording': 'Engineered by',
+                        'mastering': 'Mastered by'
                     };
                     
                     const credits = {};
