@@ -73,72 +73,12 @@
                             </svg>
                         </button>
                     </form>
-                    <div id="header-autocomplete" class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-2xl shadow-lg z-50 hidden mt-1 overflow-hidden"></div>
+                    <div id="header-autocomplete" class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-2xl shadow-lg z-50 hidden mt-1 overflow-hidden" style="max-height:420px;overflow-y:auto;"></div>
                 </div>
             </div>
         </div>
     </header>
-
-    <script>
-        (function() {
-            const form = document.getElementById('header-search-form');
-            const input = document.getElementById('header-search-input');
-            const dropdown = document.getElementById('header-autocomplete');
-            let debounceTimer;
-
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const q = input.value.trim();
-                if (q) window.location.href = `/results?q=${encodeURIComponent(q)}`;
-            });
-
-            input.addEventListener('input', () => {
-                clearTimeout(debounceTimer);
-                const q = input.value.trim();
-                if (q.length < 2) { dropdown.classList.add('hidden'); return; }
-                debounceTimer = setTimeout(() => fetchSuggestions(q), 300);
-            });
-
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('#header-search-form') && !e.target.closest('#header-autocomplete')) {
-                    dropdown.classList.add('hidden');
-                }
-            });
-
-            async function fetchSuggestions(q) {
-                try {
-                    const res = await fetch(`/api/autocomplete?q=${encodeURIComponent(q)}`);
-                    if (!res.ok) return;
-                    const data = await res.json();
-                    renderSuggestions(data);
-                } catch(e) {}
-            }
-
-            function renderSuggestions(data) {
-                const artists = data.artists || [];
-                const albums = data.albums || [];
-                if (artists.length === 0 && albums.length === 0) { dropdown.classList.add('hidden'); return; }
-                let html = artists.map(a => `
-                    <a href="/results?q=${encodeURIComponent(a.name)}" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-0">
-                        <svg width="16" height="16" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        <div>
-                            <div class="text-sm font-medium text-gray-900">${a.name}</div>
-                            ${a.country || a.disambiguation ? `<div class="text-xs text-gray-500">${[a.country, a.disambiguation].filter(Boolean).join(' · ')}</div>` : ''}
-                        </div>
-                    </a>`).join('');
-                html += albums.map(a => `
-                    <a href="/results?q=${encodeURIComponent(a.artist)}" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-0">
-                        <svg width="16" height="16" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
-                        <div>
-                            <div class="text-sm font-medium text-gray-900">${a.album}</div>
-                            <div class="text-xs text-gray-500">${a.artist}</div>
-                        </div>
-                    </a>`).join('');
-                dropdown.innerHTML = html;
-                dropdown.classList.remove('hidden');
-            }
-        })();
-    </script>
+    <script src="/findyl-search.js"></script>
 
     <main class="max-w-7xl mx-auto px-4 py-8">
         <!-- Results Header -->
