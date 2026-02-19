@@ -880,8 +880,9 @@
                 if (!response.ok) return;
 
                 const release = await response.json();
-
-                // Display label
+                console.log('MB release keys:', Object.keys(release));
+                console.log('MB relations?', release.relations);
+                console.log('MB label-info?', release['label-info']);
                 if (release['label-info'] && release['label-info'].length > 0) {
                     const labels = release['label-info']
                         .map(li => li.label?.name)
