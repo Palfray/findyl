@@ -464,6 +464,7 @@
             if (secondary.includes('mixtape/street')) return 'Mixtapes';
             if (secondary.includes('demo')) return 'Demos';
             if (secondary.includes('interview')) return null; // hide
+            if (secondary.includes('field recording')) return null; // hide
             if (secondary.includes('spokenword') || secondary.includes('audiobook') || secondary.includes('audio drama')) return null;
 
             // Primary types
@@ -475,6 +476,20 @@
             if (primary === 'other') return null;
 
             return null; // unknown — hide
+        }
+
+        // Filter out likely bootleg releases (no official release date, or date-based titles like "1978-07-08: ...")
+        function filterBootlegs(releases) {
+            return releases.filter(rg => {
+                // Must have a release date
+                if (!rg['first-release-date']) return false;
+                // Skip titles that look like bootleg concert recordings (date-prefixed titles)
+                const title = rg.title || '';
+                if (/^\d{4}[-\/]\d{2}[-\/]\d{2}/.test(title)) return false;
+                // Skip titles that are just venue/city names with dates
+                if (/^\d{4}[-\/]\d{2}/.test(title) && title.length < 60) return false;
+                return true;
+            });
         }
 
         function renderPills() {
@@ -564,7 +579,7 @@
 
                 do {
                     const response = await mbQueue.fetch(
-                        `https://musicbrainz.org/ws/2/release-group?artist=${artistMBID}&fmt=json&limit=100&offset=${offset}`
+                        `https://musicbrainz.org/ws/2/release-group?artist=${artistMBID}&release_group_status=website-default&fmt=json&limit=100&offset=${offset}`
                     );
                     if (!response.ok) break;
                     const data = await response.json();
@@ -583,6 +598,12 @@
                     if (!categories[cat]) categories[cat] = [];
                     categories[cat].push(rg);
                 });
+
+                // Filter out likely bootlegs from all categories
+                for (const cat of Object.keys(categories)) {
+                    categories[cat] = filterBootlegs(categories[cat]);
+                    if (categories[cat].length === 0) delete categories[cat];
+                }
 
                 // Sort each category by release date (newest first)
                 Object.values(categories).forEach(list => {
