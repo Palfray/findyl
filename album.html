@@ -525,6 +525,46 @@
                 return `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" alt="${storeName}" style="width:32px;height:32px;flex-shrink:0;">`;
             }
 
+            // Known eBay retailer sellers → display name + favicon domain
+            const knownEbaySellers = {
+                'hmv_official_store':   { name: 'HMV',              domain: 'hmv.com' },
+                'hmvstore':             { name: 'HMV',              domain: 'hmv.com' },
+                'rarewaves-outlet':     { name: 'Rarewaves',        domain: 'rarewaves.com' },
+                'rarewaves':            { name: 'Rarewaves',        domain: 'rarewaves.com' },
+                'rarewaves_superstore': { name: 'Rarewaves',        domain: 'rarewaves.com' },
+                'junorecords':          { name: 'Juno Records',     domain: 'juno.co.uk' },
+                'musicmagpie_shop':     { name: 'musicMagpie',      domain: 'musicmagpie.co.uk' },
+                'musicmagpie':          { name: 'musicMagpie',      domain: 'musicmagpie.co.uk' },
+                'zaborrecords':         { name: 'Zaborrecords',     domain: 'zabor.co.uk' },
+                'rough_trade':          { name: 'Rough Trade',      domain: 'roughtrade.com' },
+                'roughtrade':           { name: 'Rough Trade',      domain: 'roughtrade.com' },
+                'banaborecords':        { name: 'Banquet Records',  domain: 'banquetrecords.com' },
+                'empukstore':           { name: 'EMP',              domain: 'emp.co.uk' },
+                'zavvi_outlet':         { name: 'Zavvi',            domain: 'zavvi.com' },
+                'zavvistore':           { name: 'Zavvi',            domain: 'zavvi.com' },
+                'thesoundofvinyluk':    { name: 'Sound of Vinyl',   domain: 'thesoundofvinyl.com' },
+                'assairecords':         { name: 'Assai Records',    domain: 'assai.co.uk' },
+                'resident-music':       { name: 'Resident Music',   domain: 'resident-music.com' },
+                'normanrecords':        { name: 'Norman Records',   domain: 'normanrecords.com' },
+                'blackwellsonline':     { name: 'Blackwell\'s',     domain: 'blackwells.co.uk' },
+                'worldofbooksltd':      { name: 'World of Books',   domain: 'worldofbooks.com' },
+                'chalkys_uk':           { name: 'Chalkys',          domain: 'chalkys.com' },
+            };
+
+            function getSellerInfo(seller) {
+                if (!seller) return { displayName: 'eBay seller', logo: null };
+                const key = seller.toLowerCase().replace(/[-_.\s]/g, '_');
+                // Try exact match first, then try with common variations
+                const match = knownEbaySellers[key] || knownEbaySellers[seller.toLowerCase()];
+                if (match) {
+                    return {
+                        displayName: match.name,
+                        logo: `<img src="https://www.google.com/s2/favicons?domain=${match.domain}&sz=64" alt="${match.name}" style="width:20px;height:20px;border-radius:3px;flex-shrink:0;">`
+                    };
+                }
+                return { displayName: seller, logo: null };
+            }
+
             // ── Render standard retailer cards ──
             let html = retailerOptions.map(opt => `
                 <a href="${opt.link}" 
@@ -601,6 +641,7 @@
             const others = items.slice(1);
             const groupId = `ebay-${label.toLowerCase()}-dropdown`;
             const conditionLabel = label === 'New' ? 'New' : 'Pre-Owned';
+            const cheapestSeller = getSellerInfo(cheapest.seller);
 
             let card = `
             <div class="rounded-lg bg-white shadow-sm border border-gray-100 overflow-hidden">
@@ -614,7 +655,10 @@
                                     <span style="font-weight:600;color:#1F2937;">eBay</span>
                                     <span style="font-size:0.7rem;padding:2px 8px;border-radius:9999px;background:${label === 'New' ? '#ECFDF5' : '#FEF3C7'};color:${label === 'New' ? '#059669' : '#92400E'};white-space:nowrap;">${conditionLabel}</span>
                                 </div>
-                                ${cheapest.seller ? `<div style="font-size:0.75rem;color:#9CA3AF;margin-top:2px;">Seller: ${cheapest.seller}</div>` : ''}
+                                <div style="display:flex;align-items:center;gap:5px;margin-top:2px;">
+                                    ${cheapestSeller.logo || ''}
+                                    <span style="font-size:0.75rem;color:#9CA3AF;">${cheapestSeller.displayName}</span>
+                                </div>
                             </div>
                         </div>
                         <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
@@ -638,19 +682,22 @@
                     </button>
                 </div>
                 <div id="${groupId}" class="hidden" style="border-top:1px solid #F3F4F6;">
-                    ${others.map(opt => `
+                    ${others.map(opt => {
+                        const si = getSellerInfo(opt.seller);
+                        return `
                         <a href="${opt.link}" target="_blank" rel="noopener noreferrer sponsored"
                            style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 24px 12px 56px;text-decoration:none;transition:background 0.15s;border-bottom:1px solid #FAFAFA;"
                            onmouseenter="this.style.background='#F9FAFB'" onmouseleave="this.style.background='transparent'">
-                            <div style="min-width:0;">
-                                <span style="font-size:0.85rem;color:#1F2937;font-weight:500;">${opt.seller || 'eBay seller'}</span>
+                            <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+                                ${si.logo || ''}
+                                <span style="font-size:0.85rem;color:#1F2937;font-weight:500;">${si.displayName}</span>
                             </div>
                             <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
                                 <span style="font-weight:600;color:#FF6B6B;font-size:1.1rem;">£${opt.price.toFixed(2)}</span>
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
                             </div>
-                        </a>
-                    `).join('')}
+                        </a>`;
+                    }).join('')}
                 </div>`;
             }
 
