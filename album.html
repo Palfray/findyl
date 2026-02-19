@@ -341,7 +341,7 @@
             try {
                 // Get release group details
                 const rgResponse = await mbQueue.fetch(
-                    `https://musicbrainz.org/ws/2/release-group/${albumId}?inc=releases+tags+genres&fmt=json`
+                    `https://musicbrainz.org/ws/2/release-group/${albumId}?inc=releases+tags+genres+artist-rels&fmt=json`
                 );
 
                 if (!rgResponse.ok) throw new Error('Album not found');
@@ -404,6 +404,38 @@
             if (year) meta.push(`Released: ${year}`);
 
             document.getElementById('album-meta').innerHTML = meta.map(m => `<p>${m}</p>`).join('');
+
+            // Producer credits from release-group relations
+            if (albumData.relations && albumData.relations.length > 0) {
+                console.log('RG relations:', albumData.relations.map(r => ({ type: r.type, artist: r.artist?.name })));
+                
+                const creditTypes = ['producer', 'co-producer', 'executive producer'];
+                const creditLabels = {
+                    'producer': 'Producer',
+                    'co-producer': 'Co-Producer',
+                    'executive producer': 'Executive Producer'
+                };
+                
+                const credits = {};
+                albumData.relations.forEach(rel => {
+                    const relType = (rel.type || '').toLowerCase();
+                    if (creditTypes.includes(relType) && rel.artist?.name) {
+                        const label = creditLabels[relType] || rel.type;
+                        if (!credits[label]) credits[label] = [];
+                        if (!credits[label].includes(rel.artist.name)) {
+                            credits[label].push(rel.artist.name);
+                        }
+                    }
+                });
+
+                if (Object.keys(credits).length > 0) {
+                    const container = document.getElementById('credits-list');
+                    container.innerHTML = Object.entries(credits).map(([role, names]) => 
+                        `<p class="text-sm"><span class="text-gray-500">${role}:</span> <span class="font-semibold text-gray-900">${names.join(', ')}</span></p>`
+                    ).join('');
+                    document.getElementById('album-credits').classList.remove('hidden');
+                }
+            }
         }
 
         function setupStoreLinks() {
