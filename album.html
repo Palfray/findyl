@@ -165,7 +165,7 @@
                                 <img src="https://www.google.com/s2/favicons?domain=amazon.co.uk&sz=64" alt="Amazon" class="w-8 h-8">
                                 <div class="flex-1">
                                     <span class="font-semibold text-gray-900">Amazon</span>
-                                    <span class="ml-2 text-xs px-2 py-0.5 rounded-full whitespace-nowrap" style="background:#FFE5E5;color:#FF6B6B;">New &amp; Used</span>
+                                    <span class="ml-2 text-xs px-2 py-0.5 rounded-full whitespace-nowrap" style="background:#FF6B6B;color:#FFFFFF;">New &amp; Used</span>
                                 </div>
                                 <span class="text-sm text-gray-500">Search listings →</span>
                             </a>
@@ -173,7 +173,7 @@
                                 <img src="https://www.google.com/s2/favicons?domain=ebay.co.uk&sz=64" alt="eBay" class="w-8 h-8">
                                 <div class="flex-1">
                                     <span class="font-semibold text-gray-900">eBay</span>
-                                    <span class="ml-2 text-xs px-2 py-0.5 rounded-full whitespace-nowrap" style="background:#FFE5E5;color:#FF6B6B;">New &amp; Used</span>
+                                    <span class="ml-2 text-xs px-2 py-0.5 rounded-full whitespace-nowrap" style="background:#FF6B6B;color:#FFFFFF;">New &amp; Used</span>
                                 </div>
                                 <span class="text-sm text-gray-500">Search listings →</span>
                             </a>
@@ -633,7 +633,7 @@
 
             // ── Render standard retailer cards ──
             let html = retailerOptions.map(opt => {
-                const cb = opt.vinylColour ? `<span style="font-size:0.6rem;padding:2px 7px;border-radius:9999px;background:#FFE5E5;color:#FF6B6B;white-space:nowrap;font-weight:500;">Colour variant</span>` : '';
+                const cb = opt.vinylColour ? `<span style="font-size:0.6rem;padding:2px 7px;border-radius:9999px;background:#FF6B6B;color:#FFFFFF;white-space:nowrap;font-weight:500;">Colour variant</span>` : '';
                 return `
                 <a href="${opt.link}" 
                    target="_blank" rel="noopener noreferrer"
@@ -714,7 +714,7 @@
 
             function colourBadge(vc) {
                 if (!vc) return '';
-                return `<span style="font-size:0.6rem;padding:2px 7px;border-radius:9999px;background:#FFE5E5;color:#FF6B6B;white-space:nowrap;font-weight:500;">Colour variant</span>`;
+                return `<span style="font-size:0.6rem;padding:2px 7px;border-radius:9999px;background:#FF6B6B;color:#FFFFFF;white-space:nowrap;font-weight:500;">Colour variant</span>`;
             }
 
             let card = `
