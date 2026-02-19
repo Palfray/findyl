@@ -121,9 +121,9 @@
                         <div id="album-meta" class="text-sm text-gray-500 space-y-1">
                             <!-- Release year, label, etc. -->
                         </div>
-                        <div id="album-label" class="hidden mt-3 pt-3 border-t border-gray-100">
+                        <div id="album-label" class="hidden mt-3 pt-3 border-t border-gray-100 flex items-baseline gap-2">
                             <span class="text-sm text-gray-500">Label</span>
-                            <p id="label-name" class="text-sm font-semibold text-gray-900 mt-0.5"></p>
+                            <span id="label-name" class="text-sm font-semibold text-gray-900"></span>
                         </div>
                         <div id="album-credits" class="hidden mt-3 pt-3 border-t border-gray-100">
                             <span class="text-sm text-gray-500">Credits</span>
@@ -401,7 +401,7 @@
 
             // Meta info
             const meta = [];
-            if (year) meta.push(`Released: ${year}`);
+            if (year) meta.push(year);
 
             document.getElementById('album-meta').innerHTML = meta.map(m => `<p>${m}</p>`).join('');
 
