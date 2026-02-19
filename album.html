@@ -460,9 +460,13 @@
                     
                     matchingAlbums.forEach(album => {
                         if (album.buyOptions) {
+                            console.log('📋 Album object keys:', Object.keys(album));
+                            console.log('📋 First buyOption keys:', album.buyOptions[0] ? Object.keys(album.buyOptions[0]) : 'none');
+                            console.log('📋 Album data:', JSON.stringify(album).substring(0, 500));
                             album.buyOptions.forEach(opt => {
                                 // Try every possible field that might contain colour info
                                 const textToCheck = opt.productName || opt.name || opt.title || album.rawName || album.album || '';
+                                console.log('🎨 Colour check text:', textToCheck);
                                 opt.vinylColour = detectVinylColour(textToCheck);
                             });
                             allBuyOptions.push(...album.buyOptions);
