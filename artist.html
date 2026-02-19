@@ -506,7 +506,7 @@
         function renderPills() {
             const container = document.getElementById('category-pills');
             // Define display order
-            const order = ['Studio Albums', 'EPs', 'Singles', 'Live', 'Compilations', 'Soundtracks', 'Remixes', 'DJ Mixes', 'Mixtapes', 'Demos'];
+            const order = ['Studio Albums', 'EPs', 'Live'];
 
             const availableCategories = order.filter(cat => categories[cat] && categories[cat].length > 0);
 
@@ -547,11 +547,24 @@
                 if (!response.ok) throw new Error('Failed to load albums');
 
                 const data = await response.json();
-                let studioAlbums = (data['release-groups'] || []).filter(rg => {
+                const allAlbums = data['release-groups'] || [];
+                
+                let studioAlbums = allAlbums.filter(rg => {
                     const secondaryTypes = (rg['secondary-types'] || []).map(s => s.toLowerCase());
                     const excludedTypes = ['compilation', 'live', 'soundtrack', 'remix', 'dj-mix', 'mixtape/street'];
                     return !secondaryTypes.some(t => excludedTypes.includes(t));
                 });
+
+                // Extract live albums from the same response (no extra API call needed)
+                let liveAlbums = allAlbums.filter(rg => {
+                    const secondaryTypes = (rg['secondary-types'] || []).map(s => s.toLowerCase());
+                    return secondaryTypes.includes('live');
+                });
+                liveAlbums = filterBootlegs(liveAlbums);
+                if (liveAlbums.length > 0) {
+                    liveAlbums.sort((a, b) => (b['first-release-date'] || '').localeCompare(a['first-release-date'] || ''));
+                    categories['Live'] = liveAlbums;
+                }
 
                 studioAlbums.sort((a, b) => {
                     const dateA = a['first-release-date'] || '';
@@ -563,13 +576,17 @@
                 categories['Studio Albums'] = studioAlbums;
                 activeCategory = 'Studio Albums';
 
-                // Show heading (pills will appear later once background load completes)
-                document.getElementById('category-pills').innerHTML = '<h2 class="text-2xl font-bold">Studio Albums</h2>';
+                // Show pills immediately if live albums exist, otherwise heading
+                if (categories['Live']) {
+                    renderPills();
+                } else {
+                    document.getElementById('category-pills').innerHTML = '<h2 class="text-2xl font-bold">Studio Albums</h2>';
+                }
                 document.getElementById('album-count').textContent = 
                     `${studioAlbums.length} ${studioAlbums.length === 1 ? 'album' : 'albums'} found`;
                 displayAlbums(studioAlbums);
 
-                // Background: fetch ALL release groups to discover other categories
+                // Background: fetch EPs to complete the category pills
                 loadAllCategories();
 
             } catch (error) {
@@ -581,49 +598,21 @@
             }
         }
 
-        // Background loader — fetches all release types, categorises, then renders pills
+        // Background loader — fetches EPs only (live albums already extracted from initial fetch)
         async function loadAllCategories() {
             try {
-                let allReleaseGroups = [];
-                let offset = 0;
-                let totalCount = 0;
+                const epResponse = await mbQueue.fetch(
+                    `https://musicbrainz.org/ws/2/release-group?artist=${artistMBID}&type=ep&fmt=json&limit=100`
+                );
 
-                do {
-                    const response = await mbQueue.fetch(
-                        `https://musicbrainz.org/ws/2/release-group?artist=${artistMBID}&release_group_status=website-default&fmt=json&limit=100&offset=${offset}`
-                    );
-                    if (!response.ok) break;
-                    const data = await response.json();
-                    const batch = data['release-groups'] || [];
-                    allReleaseGroups = allReleaseGroups.concat(batch);
-                    totalCount = data['release-group-count'] || 0;
-                    offset += 100;
-                } while (offset < totalCount && offset < 500);
-
-                // Recategorise everything (overwrite studio albums with full set)
-                for (const cat of Object.keys(categories)) delete categories[cat];
-
-                allReleaseGroups.forEach(rg => {
-                    const cat = classifyReleaseGroup(rg);
-                    if (!cat) return;
-                    if (!categories[cat]) categories[cat] = [];
-                    categories[cat].push(rg);
-                });
-
-                // Filter out likely bootlegs from all categories
-                for (const cat of Object.keys(categories)) {
-                    categories[cat] = filterBootlegs(categories[cat]);
-                    if (categories[cat].length === 0) delete categories[cat];
+                if (epResponse.ok) {
+                    const epData = await epResponse.json();
+                    let eps = filterBootlegs(epData['release-groups'] || []);
+                    if (eps.length > 0) {
+                        eps.sort((a, b) => (b['first-release-date'] || '').localeCompare(a['first-release-date'] || ''));
+                        categories['EPs'] = eps;
+                    }
                 }
-
-                // Sort each category by release date (newest first)
-                Object.values(categories).forEach(list => {
-                    list.sort((a, b) => {
-                        const dateA = a['first-release-date'] || '';
-                        const dateB = b['first-release-date'] || '';
-                        return dateB.localeCompare(dateA);
-                    });
-                });
 
                 // Render pills (only if more than just studio albums exist)
                 renderPills();
