@@ -213,7 +213,8 @@ export default async function handler(req, res) {
             price: parseFloat(p.price),
             link: `https://www.awin1.com/cread.php?awinmid=118493&awinaffid=2772514&ued=${encodeURIComponent(popstoreUrl)}`,
             source: 'popstore',
-            availability: p.available ? 'In Stock' : 'Out of Stock'
+            availability: p.available ? 'In Stock' : 'Out of Stock',
+            rawProductName: p.title || ''
           }]
         });
       }
@@ -265,7 +266,8 @@ export default async function handler(req, res) {
         price: price,
         link: vc.link, // Changed from deeplink
         source: 'vinylcastle',
-        availability: vc.availability || 'In Stock' // Changed from in_stock check
+        availability: vc.availability || 'In Stock', // Changed from in_stock check
+        rawProductName: vc.album || vc.name || vc.title || ''
       };
       
       // Try to match with existing albums
@@ -354,7 +356,8 @@ export default async function handler(req, res) {
         price: price,
         link: emp.link,
         source: 'emp',
-        availability: emp.availability || 'In Stock'
+        availability: emp.availability || 'In Stock',
+        rawProductName: emp.album || emp.name || emp.title || ''
       };
       
       // Try to match with existing albums
