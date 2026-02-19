@@ -472,7 +472,7 @@
 
                     if (ebayData.results && ebayData.results.length > 0) {
                         // Take up to 5 best eBay results
-                        const ebayOptions = ebayData.results.slice(0, 5).map(item => ({
+                        const ebayOptions = ebayData.results.slice(0, 10).map(item => ({
                             storeName: 'eBay',
                             source: 'ebay',
                             price: item.price,
