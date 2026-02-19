@@ -264,10 +264,10 @@ export default async function handler(req, res) {
       const vinylCastleOption = {
         storeName: 'Vinyl Castle',
         price: price,
-        link: vc.link, // Changed from deeplink
+        link: vc.link,
         source: 'vinylcastle',
-        availability: vc.availability || 'In Stock', // Changed from in_stock check
-        rawProductName: vc.album || vc.name || vc.title || ''
+        availability: vc.availability || 'In Stock',
+        rawProductName: vc.product_name || vc.productName || vc.name || vc.title || vc.album || ''
       };
       
       // Try to match with existing albums
@@ -357,7 +357,7 @@ export default async function handler(req, res) {
         link: emp.link,
         source: 'emp',
         availability: emp.availability || 'In Stock',
-        rawProductName: emp.album || emp.name || emp.title || ''
+        rawProductName: emp.product_name || emp.productName || emp.name || emp.title || emp.album || ''
       };
       
       // Try to match with existing albums
