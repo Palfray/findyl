@@ -407,23 +407,32 @@
 
             // Producer credits from release-group relations
             if (albumData.relations && albumData.relations.length > 0) {
-                console.log('RG relations:', albumData.relations.map(r => ({ type: r.type, artist: r.artist?.name })));
                 
-                const creditTypes = ['producer', 'co-producer', 'executive producer', 'mix', 'recording', 'mastering'];
                 const creditLabels = {
                     'producer': 'Producer',
                     'co-producer': 'Co-Producer',
                     'executive producer': 'Executive Producer',
                     'mix': 'Mixed by',
                     'recording': 'Engineered by',
-                    'mastering': 'Mastered by'
+                    'mastering': 'Mastered by',
+                    'creative direction': 'Creative Direction',
+                    'art direction': 'Art Direction',
+                    'photography': 'Photography',
+                    'design/illustration': 'Design',
+                    'graphic design': 'Design',
+                    'arranger': 'Arranger',
+                    'orchestrator': 'Orchestrator',
+                    'programming': 'Programming'
                 };
+                
+                // Show these roles in this order
+                const displayOrder = ['Producer', 'Co-Producer', 'Executive Producer', 'Mixed by', 'Engineered by', 'Mastered by', 'Creative Direction', 'Arranger', 'Orchestrator', 'Programming'];
                 
                 const credits = {};
                 albumData.relations.forEach(rel => {
                     const relType = (rel.type || '').toLowerCase();
-                    if (creditTypes.includes(relType) && rel.artist?.name) {
-                        const label = creditLabels[relType] || rel.type;
+                    const label = creditLabels[relType];
+                    if (label && rel.artist?.name && rel.artist.name !== artistName) {
                         if (!credits[label]) credits[label] = [];
                         if (!credits[label].includes(rel.artist.name)) {
                             credits[label].push(rel.artist.name);
@@ -433,7 +442,13 @@
 
                 if (Object.keys(credits).length > 0) {
                     const container = document.getElementById('credits-list');
-                    container.innerHTML = Object.entries(credits).map(([role, names]) => 
+                    // Sort by display order
+                    const sorted = Object.entries(credits).sort((a, b) => {
+                        const ia = displayOrder.indexOf(a[0]);
+                        const ib = displayOrder.indexOf(b[0]);
+                        return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+                    });
+                    container.innerHTML = sorted.map(([role, names]) => 
                         `<p class="text-sm"><span class="text-gray-500">${role}:</span> <span class="font-semibold text-gray-900">${names.join(', ')}</span></p>`
                     ).join('');
                     document.getElementById('album-credits').classList.remove('hidden');
@@ -915,9 +930,6 @@
                 if (!response.ok) return;
 
                 const release = await response.json();
-                console.log('MB release keys:', Object.keys(release));
-                console.log('MB relations?', release.relations);
-                console.log('MB label-info?', release['label-info']);
                 if (release['label-info'] && release['label-info'].length > 0) {
                     const labels = release['label-info']
                         .map(li => li.label?.name)
@@ -931,23 +943,31 @@
 
                 // Display producer credits from artist relationships
                 if (release.relations && release.relations.length > 0) {
-                    console.log('MB relations:', release.relations.map(r => ({ type: r.type, 'target-type': r['target-type'], artist: r.artist?.name })));
                     
-                    const creditTypes = ['producer', 'co-producer', 'executive producer', 'mix', 'recording', 'mastering'];
                     const creditLabels = {
                         'producer': 'Producer',
                         'co-producer': 'Co-Producer',
                         'executive producer': 'Executive Producer',
                         'mix': 'Mixed by',
                         'recording': 'Engineered by',
-                        'mastering': 'Mastered by'
+                        'mastering': 'Mastered by',
+                        'creative direction': 'Creative Direction',
+                        'art direction': 'Art Direction',
+                        'photography': 'Photography',
+                        'design/illustration': 'Design',
+                        'graphic design': 'Design',
+                        'arranger': 'Arranger',
+                        'orchestrator': 'Orchestrator',
+                        'programming': 'Programming'
                     };
+                    
+                    const displayOrder = ['Producer', 'Co-Producer', 'Executive Producer', 'Mixed by', 'Engineered by', 'Mastered by', 'Creative Direction', 'Arranger', 'Orchestrator', 'Programming'];
                     
                     const credits = {};
                     release.relations.forEach(rel => {
                         const relType = (rel.type || '').toLowerCase();
-                        if (creditTypes.includes(relType) && rel.artist?.name) {
-                            const label = creditLabels[relType] || rel.type;
+                        const label = creditLabels[relType];
+                        if (label && rel.artist?.name) {
                             if (!credits[label]) credits[label] = [];
                             if (!credits[label].includes(rel.artist.name)) {
                                 credits[label].push(rel.artist.name);
@@ -955,9 +975,15 @@
                         }
                     });
 
-                    if (Object.keys(credits).length > 0) {
+                    // Only show if release-group didn't already populate credits
+                    if (Object.keys(credits).length > 0 && document.getElementById('album-credits').classList.contains('hidden')) {
                         const container = document.getElementById('credits-list');
-                        container.innerHTML = Object.entries(credits).map(([role, names]) => 
+                        const sorted = Object.entries(credits).sort((a, b) => {
+                            const ia = displayOrder.indexOf(a[0]);
+                            const ib = displayOrder.indexOf(b[0]);
+                            return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+                        });
+                        container.innerHTML = sorted.map(([role, names]) => 
                             `<p class="text-sm"><span class="text-gray-500">${role}:</span> <span class="font-semibold text-gray-900">${names.join(', ')}</span></p>`
                         ).join('');
                         document.getElementById('album-credits').classList.remove('hidden');
