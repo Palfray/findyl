@@ -497,6 +497,45 @@
             }
         }
 
+        // Known eBay retailer sellers → display name + favicon domain
+        const knownEbaySellers = {
+            'hmv_official_store':   { name: 'HMV',              domain: 'hmv.com' },
+            'hmvstore':             { name: 'HMV',              domain: 'hmv.com' },
+            'rarewaves-outlet':     { name: 'Rarewaves',        domain: 'rarewaves.com' },
+            'rarewaves':            { name: 'Rarewaves',        domain: 'rarewaves.com' },
+            'rarewaves_superstore': { name: 'Rarewaves',        domain: 'rarewaves.com' },
+            'junorecords':          { name: 'Juno Records',     domain: 'juno.co.uk' },
+            'musicmagpie_shop':     { name: 'musicMagpie',      domain: 'musicmagpie.co.uk' },
+            'musicmagpie':          { name: 'musicMagpie',      domain: 'musicmagpie.co.uk' },
+            'zaborrecords':         { name: 'Zaborrecords',     domain: 'zabor.co.uk' },
+            'rough_trade':          { name: 'Rough Trade',      domain: 'roughtrade.com' },
+            'roughtrade':           { name: 'Rough Trade',      domain: 'roughtrade.com' },
+            'banaborecords':        { name: 'Banquet Records',  domain: 'banquetrecords.com' },
+            'empukstore':           { name: 'EMP',              domain: 'emp.co.uk' },
+            'zavvi_outlet':         { name: 'Zavvi',            domain: 'zavvi.com' },
+            'zavvistore':           { name: 'Zavvi',            domain: 'zavvi.com' },
+            'thesoundofvinyluk':    { name: 'Sound of Vinyl',   domain: 'thesoundofvinyl.com' },
+            'assairecords':         { name: 'Assai Records',    domain: 'assai.co.uk' },
+            'resident-music':       { name: 'Resident Music',   domain: 'resident-music.com' },
+            'normanrecords':        { name: 'Norman Records',   domain: 'normanrecords.com' },
+            'blackwellsonline':     { name: 'Blackwell\'s',     domain: 'blackwells.co.uk' },
+            'worldofbooksltd':      { name: 'World of Books',   domain: 'worldofbooks.com' },
+            'chalkys_uk':           { name: 'Chalkys',          domain: 'chalkys.com' },
+        };
+
+        function getSellerInfo(seller) {
+            if (!seller) return { displayName: 'eBay seller', logo: null };
+            const key = seller.toLowerCase().replace(/[-_.\s]/g, '_');
+            const match = knownEbaySellers[key] || knownEbaySellers[seller.toLowerCase()];
+            if (match) {
+                return {
+                    displayName: match.name,
+                    logo: `<img src="https://www.google.com/s2/favicons?domain=${match.domain}&sz=64" alt="${match.name}" style="width:20px;height:20px;border-radius:3px;flex-shrink:0;">`
+                };
+            }
+            return { displayName: seller, logo: null };
+        }
+
         function displayBuyOptions(options) {
             const container = document.getElementById('buy-options');
 
@@ -523,46 +562,6 @@
                 };
                 const domain = domains[source] || 'example.com';
                 return `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" alt="${storeName}" style="width:32px;height:32px;flex-shrink:0;">`;
-            }
-
-            // Known eBay retailer sellers → display name + favicon domain
-            const knownEbaySellers = {
-                'hmv_official_store':   { name: 'HMV',              domain: 'hmv.com' },
-                'hmvstore':             { name: 'HMV',              domain: 'hmv.com' },
-                'rarewaves-outlet':     { name: 'Rarewaves',        domain: 'rarewaves.com' },
-                'rarewaves':            { name: 'Rarewaves',        domain: 'rarewaves.com' },
-                'rarewaves_superstore': { name: 'Rarewaves',        domain: 'rarewaves.com' },
-                'junorecords':          { name: 'Juno Records',     domain: 'juno.co.uk' },
-                'musicmagpie_shop':     { name: 'musicMagpie',      domain: 'musicmagpie.co.uk' },
-                'musicmagpie':          { name: 'musicMagpie',      domain: 'musicmagpie.co.uk' },
-                'zaborrecords':         { name: 'Zaborrecords',     domain: 'zabor.co.uk' },
-                'rough_trade':          { name: 'Rough Trade',      domain: 'roughtrade.com' },
-                'roughtrade':           { name: 'Rough Trade',      domain: 'roughtrade.com' },
-                'banaborecords':        { name: 'Banquet Records',  domain: 'banquetrecords.com' },
-                'empukstore':           { name: 'EMP',              domain: 'emp.co.uk' },
-                'zavvi_outlet':         { name: 'Zavvi',            domain: 'zavvi.com' },
-                'zavvistore':           { name: 'Zavvi',            domain: 'zavvi.com' },
-                'thesoundofvinyluk':    { name: 'Sound of Vinyl',   domain: 'thesoundofvinyl.com' },
-                'assairecords':         { name: 'Assai Records',    domain: 'assai.co.uk' },
-                'resident-music':       { name: 'Resident Music',   domain: 'resident-music.com' },
-                'normanrecords':        { name: 'Norman Records',   domain: 'normanrecords.com' },
-                'blackwellsonline':     { name: 'Blackwell\'s',     domain: 'blackwells.co.uk' },
-                'worldofbooksltd':      { name: 'World of Books',   domain: 'worldofbooks.com' },
-                'chalkys_uk':           { name: 'Chalkys',          domain: 'chalkys.com' },
-            };
-
-            function getSellerInfo(seller) {
-                if (!seller) return { displayName: 'eBay seller', logo: null };
-                const key = seller.toLowerCase().replace(/[-_.\s]/g, '_');
-                // Try exact match first, then try with common variations
-                const match = knownEbaySellers[key] || knownEbaySellers[seller.toLowerCase()];
-                if (match) {
-                    return {
-                        displayName: match.name,
-                        logo: `<img src="https://www.google.com/s2/favicons?domain=${match.domain}&sz=64" alt="${match.name}" style="width:20px;height:20px;border-radius:3px;flex-shrink:0;">`
-                    };
-                }
-                return { displayName: seller, logo: null };
             }
 
             // ── Render standard retailer cards ──
