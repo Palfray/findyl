@@ -514,7 +514,50 @@
 
         async function loadAlbums() {
             try {
-                // Fetch ALL release groups (no type filter) to get EPs, Singles, etc.
+                // Fast path: fetch albums only (same as original)
+                const response = await mbQueue.fetch(
+                    `https://musicbrainz.org/ws/2/release-group?artist=${artistMBID}&type=album&fmt=json&limit=100`
+                );
+                if (!response.ok) throw new Error('Failed to load albums');
+
+                const data = await response.json();
+                let studioAlbums = (data['release-groups'] || []).filter(rg => {
+                    const secondaryTypes = (rg['secondary-types'] || []).map(s => s.toLowerCase());
+                    const excludedTypes = ['compilation', 'live', 'soundtrack', 'remix', 'dj-mix', 'mixtape/street'];
+                    return !secondaryTypes.some(t => excludedTypes.includes(t));
+                });
+
+                studioAlbums.sort((a, b) => {
+                    const dateA = a['first-release-date'] || '';
+                    const dateB = b['first-release-date'] || '';
+                    return dateB.localeCompare(dateA);
+                });
+
+                // Store and display immediately
+                categories['Studio Albums'] = studioAlbums;
+                activeCategory = 'Studio Albums';
+
+                // Show heading (pills will appear later once background load completes)
+                document.getElementById('category-pills').innerHTML = '<h2 class="text-2xl font-bold">Studio Albums</h2>';
+                document.getElementById('album-count').textContent = 
+                    `${studioAlbums.length} ${studioAlbums.length === 1 ? 'album' : 'albums'} found`;
+                displayAlbums(studioAlbums);
+
+                // Background: fetch ALL release groups to discover other categories
+                loadAllCategories();
+
+            } catch (error) {
+                console.error('Error loading albums:', error);
+                document.getElementById('albums-grid').innerHTML = 
+                    '<p class="col-span-full text-center text-gray-600">Failed to load albums</p>';
+            } finally {
+                document.getElementById('loading').classList.add('hidden');
+            }
+        }
+
+        // Background loader — fetches all release types, categorises, then renders pills
+        async function loadAllCategories() {
+            try {
                 let allReleaseGroups = [];
                 let offset = 0;
                 let totalCount = 0;
@@ -523,15 +566,15 @@
                     const response = await mbQueue.fetch(
                         `https://musicbrainz.org/ws/2/release-group?artist=${artistMBID}&fmt=json&limit=100&offset=${offset}`
                     );
-                    if (!response.ok) throw new Error('Failed to load albums');
+                    if (!response.ok) break;
                     const data = await response.json();
                     const batch = data['release-groups'] || [];
                     allReleaseGroups = allReleaseGroups.concat(batch);
                     totalCount = data['release-group-count'] || 0;
                     offset += 100;
-                } while (offset < totalCount && offset < 500); // Cap at 500 to be safe
+                } while (offset < totalCount && offset < 500);
 
-                // Categorise all release groups
+                // Recategorise everything (overwrite studio albums with full set)
                 for (const cat of Object.keys(categories)) delete categories[cat];
 
                 allReleaseGroups.forEach(rg => {
@@ -550,22 +593,12 @@
                     });
                 });
 
-                // Render pills
+                // Render pills (only if more than just studio albums exist)
                 renderPills();
 
-                // Default to studio albums
-                const studioAlbums = categories['Studio Albums'] || [];
-                document.getElementById('album-count').textContent = 
-                    `${studioAlbums.length} ${studioAlbums.length === 1 ? 'album' : 'albums'} found`;
-
-                displayAlbums(studioAlbums);
-
-            } catch (error) {
-                console.error('Error loading albums:', error);
-                document.getElementById('albums-grid').innerHTML = 
-                    '<p class="col-span-full text-center text-gray-600">Failed to load albums</p>';
-            } finally {
-                document.getElementById('loading').classList.add('hidden');
+            } catch(e) {
+                console.warn('Background category load failed:', e);
+                // Not critical — studio albums are already displayed
             }
         }
 
