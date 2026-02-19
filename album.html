@@ -460,6 +460,10 @@
                     
                     matchingAlbums.forEach(album => {
                         if (album.buyOptions) {
+                            album.buyOptions.forEach(opt => {
+                                // Detect vinyl colour from product name if available
+                                opt.vinylColour = detectVinylColour(opt.productName || album.album || '');
+                            });
                             allBuyOptions.push(...album.buyOptions);
                         }
                     });
@@ -496,6 +500,68 @@
                 const loadingEl = document.getElementById('price-loading');
                 if (loadingEl) loadingEl.remove();
             }
+        }
+
+        // ── Vinyl colour detection (works on any product title) ──
+        function detectVinylColour(text) {
+            text = (text || '').toLowerCase();
+
+            // Don't flag standard black vinyl
+            const isJustBlack = /\bblack\s+vinyl\b/.test(text)
+                && !/splatter|marble|swirl|split|mix|stripe|smoke/i.test(text);
+            if (isJustBlack) return null;
+
+            const colourPatterns = [
+                // Multi-colour effects
+                { pattern: /\b(splatter(?:ed)?)\s*(vinyl|lp|disc)?\b/, label: 'Splatter' },
+                { pattern: /\b(marble(?:d)?)\s*(vinyl|lp|disc)?\b/, label: 'Marble' },
+                { pattern: /\b(swirl(?:ed)?)\s*(vinyl|lp|disc)?\b/, label: 'Swirl' },
+                { pattern: /\b(tie[- ]?dye(?:d)?)\s*(vinyl|lp|disc)?\b/, label: 'Tie-Dye' },
+                { pattern: /\b(galaxy)\s*(vinyl|lp|disc)?\b/, label: 'Galaxy' },
+                { pattern: /\b(haze)\s*(vinyl|lp|disc)?\b/, label: 'Haze' },
+                { pattern: /\b(smoke(?:d|y)?)\s*(vinyl|lp|disc)?\b/, label: 'Smoke' },
+                { pattern: /\b(translucent|transparent)\s*(vinyl|lp|disc)?\b/, label: 'Translucent' },
+                { pattern: /\b(picture\s*disc)\b/, label: 'Picture Disc' },
+                { pattern: /\b(glow.in.the.dark)\b/, label: 'Glow in the Dark' },
+                // Specific colours — require vinyl/LP context
+                { pattern: /\b(red)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Red' },
+                { pattern: /\b(blue)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Blue' },
+                { pattern: /\b(green)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Green' },
+                { pattern: /\b(yellow)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Yellow' },
+                { pattern: /\b(orange)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Orange' },
+                { pattern: /\b(pink)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Pink' },
+                { pattern: /\b(purple)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Purple' },
+                { pattern: /\b(white)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'White' },
+                { pattern: /\b(clear)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Clear' },
+                { pattern: /\b(gold)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Gold' },
+                { pattern: /\b(silver)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Silver' },
+                { pattern: /\b(grey|gray)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Grey' },
+                { pattern: /\b(cream)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Cream' },
+                { pattern: /\b(turquoise|teal)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Turquoise' },
+                { pattern: /\b(magenta)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Magenta' },
+                { pattern: /\b(burgundy|maroon)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Burgundy' },
+                { pattern: /\b(cobalt)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Cobalt' },
+                { pattern: /\b(coral)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Coral' },
+                { pattern: /\b(mint)\s+(vinyl|lp|pressing|colou?red)\b/, label: 'Mint' },
+                // Generic catch-all
+                { pattern: /\b(colou?red)\s+(vinyl|lp|pressing)\b/, label: 'Coloured' },
+                { pattern: /\b(limited)\s+(colou?r|edition)\b.*\bvinyl\b/, label: 'Limited Colour' },
+                // Bracket format used by some retailers: "LP [Red]", "LP [Blue Marble]"
+                { pattern: /lp\s*\[([^\]]*(?:red|blue|green|yellow|orange|pink|purple|white|clear|gold|silver|grey|gray|cream|splatter|marble|swirl)[^\]]*)\]/i, label: null, extract: true },
+            ];
+
+            for (const { pattern, label, extract } of colourPatterns) {
+                const match = text.match(pattern);
+                if (match) {
+                    if (extract && match[1]) {
+                        // Capitalise first letter of extracted colour
+                        const col = match[1].trim();
+                        return col.charAt(0).toUpperCase() + col.slice(1);
+                    }
+                    return label;
+                }
+            }
+            return null;
         }
 
         // Known eBay retailer sellers → display name + favicon domain
@@ -566,7 +632,9 @@
             }
 
             // ── Render standard retailer cards ──
-            let html = retailerOptions.map(opt => `
+            let html = retailerOptions.map(opt => {
+                const cb = opt.vinylColour ? `<span style="font-size:0.6rem;padding:2px 6px;border-radius:9999px;background:#F0EBFF;color:#6D28D9;white-space:nowrap;">🎨 ${opt.vinylColour}</span>` : '';
+                return `
                 <a href="${opt.link}" 
                    target="_blank" rel="noopener noreferrer"
                    class="block py-4 px-6 rounded-lg transition-all hover:shadow-lg bg-white shadow-sm border border-gray-100">
@@ -574,14 +642,15 @@
                         <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">
                             ${getStoreLogo(opt.source, opt.storeName)}
                             <span style="font-weight:600;color:#1F2937;">${opt.storeName}</span>
+                            ${cb}
                         </div>
                         <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
                             <span style="font-weight:700;color:#FF6B6B;font-size:1.5rem;">£${opt.price.toFixed(2)}</span>
                             ${opt.availability === 'In Stock' ? '<span style="color:#10b981;font-size:0.875rem;font-weight:500;">✓ In Stock</span>' : ''}
                         </div>
                     </div>
-                </a>
-            `).join('');
+                </a>`;
+            }).join('');
 
             // ── Render eBay grouped cards (New + Used) ──
             if (ebayOptions.length > 0) {
