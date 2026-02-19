@@ -479,8 +479,48 @@
                         const staticEbayLink = document.getElementById('ebay-link');
                         if (staticEbayLink) staticEbayLink.style.display = 'none';
 
-                        // Take up to 10 best eBay results
-                        const ebayOptions = ebayData.results.slice(0, 10).map(item => {
+                        // Filter eBay results to match the specific album
+                        const albumTitleLower = albumTitle.toLowerCase().replace(/\b(the|a|an)\b/g, '').trim();
+                        const artistLower = artist.toLowerCase().replace(/\b(the|a|an)\b/g, '').trim();
+                        const isSelfTitled = albumTitleLower === artistLower || 
+                            albumTitle.toLowerCase().trim() === artist.toLowerCase().trim();
+
+                        const filteredEbay = ebayData.results.filter(item => {
+                            const title = (item.title || '').toLowerCase();
+                            // Remove artist name and common suffixes to isolate album name in listing
+                            const titleClean = title
+                                .replace(/\b(vinyl|lp|2xlp|record|sealed|new|pre-owned|mint)\b/g, '')
+                                .replace(/\([^)]*\)/g, '')
+                                .replace(/\[[^\]]*\]/g, '')
+                                .trim();
+
+                            if (isSelfTitled) {
+                                // Self-titled: accept listings that DON'T clearly name a different album
+                                // Check if the listing title, after removing artist name, has very little left
+                                // (meaning it's probably just "Zach Bryan Vinyl LP" not "Zach Bryan Summertime Blues")
+                                const withoutArtist = titleClean.replace(new RegExp(artistLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '').trim();
+                                const remainingWords = withoutArtist.split(/\s+/).filter(w => w.length > 2);
+                                // If there are significant words left, it's likely a different album — 
+                                // but only reject if the album title words DON'T appear
+                                const albumWords = albumTitleLower.split(/\s+/).filter(w => w.length > 2);
+                                if (albumWords.length === 0) {
+                                    // Pure self-titled (single name = artist name), only keep if no other album name detected
+                                    return remainingWords.length <= 3;
+                                }
+                                return true;
+                            } else {
+                                // Normal album: require album title words to appear in listing
+                                const albumWords = albumTitleLower.split(/\s+/).filter(w => w.length > 2);
+                                if (albumWords.length === 0) return true; // Very short album name — can't filter reliably
+                                const matchCount = albumWords.filter(w => title.includes(w)).length;
+                                return matchCount >= Math.ceil(albumWords.length * 0.6); // At least 60% of words must match
+                            }
+                        });
+
+                        console.log(`🛒 eBay filtered: ${filteredEbay.length}/${ebayData.results.length} match "${albumTitle}"`);
+
+                        // Take up to 10 best filtered results
+                        const ebayOptions = filteredEbay.slice(0, 10).map(item => {
                             // Server returns vinylColour as string, convert to {label,hex} or use client detection
                             let vc = null;
                             if (item.vinylColour) {
