@@ -637,16 +637,16 @@
                 return `
                 <a href="${opt.link}" 
                    target="_blank" rel="noopener noreferrer"
-                   class="block py-4 px-6 rounded-lg transition-all hover:shadow-lg bg-white shadow-sm border border-gray-100">
-                    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-                        <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">
+                   class="block py-3 px-4 sm:py-4 sm:px-6 rounded-lg transition-all hover:shadow-lg bg-white shadow-sm border border-gray-100">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+                        <div style="display:flex;align-items:center;gap:8px;min-width:0;">
                             ${getStoreLogo(opt.source, opt.storeName)}
-                            <span style="font-weight:600;color:#1F2937;">${opt.storeName}</span>
+                            <span style="font-weight:600;color:#1F2937;font-size:0.95rem;">${opt.storeName}</span>
                             ${cb}
                         </div>
-                        <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
-                            <span style="font-weight:700;color:#FF6B6B;font-size:1.5rem;">£${opt.price.toFixed(2)}</span>
-                            ${opt.availability === 'In Stock' ? '<span style="color:#10b981;font-size:0.875rem;font-weight:500;">✓ In Stock</span>' : ''}
+                        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                            <span style="font-weight:700;color:#FF6B6B;font-size:1.25rem;">£${opt.price.toFixed(2)}</span>
+                            ${opt.availability === 'In Stock' ? '<span style="color:#10b981;font-size:0.8rem;font-weight:500;white-space:nowrap;">✓ In Stock</span>' : ''}
                         </div>
                     </div>
                 </a>`;
@@ -719,25 +719,25 @@
 
             let card = `
             <div class="rounded-lg bg-white shadow-sm border border-gray-100 overflow-hidden">
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 24px;">
-                    <a href="${cheapest.link}" target="_blank" rel="noopener noreferrer sponsored"
-                       style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;text-decoration:none;">
+                <a href="${cheapest.link}" target="_blank" rel="noopener noreferrer sponsored"
+                   style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 16px;text-decoration:none;flex-wrap:wrap;">
+                    <div style="display:flex;align-items:center;gap:8px;min-width:0;">
                         ${getStoreLogo('ebay', 'eBay')}
-                        <span style="font-weight:600;color:#1F2937;">eBay</span>
-                        <span style="font-size:0.65rem;padding:2px 7px;border-radius:9999px;background:${label === 'New' ? '#ECFDF5' : '#FEF3C7'};color:${label === 'New' ? '#059669' : '#92400E'};white-space:nowrap;">${conditionLabel}</span>
+                        <span style="font-weight:600;color:#1F2937;font-size:0.95rem;">eBay</span>
+                        <span style="font-size:0.6rem;padding:2px 7px;border-radius:9999px;background:${label === 'New' ? '#ECFDF5' : '#FEF3C7'};color:${label === 'New' ? '#059669' : '#92400E'};white-space:nowrap;">${conditionLabel}</span>
                         ${colourBadge(cheapest.vinylColour)}
-                        ${cheapestSeller.logo ? `<span style="margin-left:4px;display:flex;align-items:center;">${cheapestSeller.logo}</span>` : ''}
-                    </a>
-                    <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
-                        <span style="font-weight:700;color:#FF6B6B;font-size:1.5rem;">£${cheapest.price.toFixed(2)}</span>
-                        <span style="color:#10b981;font-size:0.875rem;font-weight:500;white-space:nowrap;">✓ In Stock</span>
+                        ${cheapestSeller.logo ? `<span style="display:flex;align-items:center;">${cheapestSeller.logo}</span>` : ''}
                     </div>
-                </div>`;
+                    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                        <span style="font-weight:700;color:#FF6B6B;font-size:1.25rem;">£${cheapest.price.toFixed(2)}</span>
+                        <span style="color:#10b981;font-size:0.8rem;font-weight:500;white-space:nowrap;">✓ In Stock</span>
+                    </div>
+                </a>`;
 
             if (others.length > 0) {
                 card += `
                 <button data-ebay-toggle="${groupId}" 
-                        style="width:100%;padding:6px 24px 8px;display:flex;align-items:center;gap:6px;background:none;border:none;border-top:1px solid #F3F4F6;cursor:pointer;color:#9CA3AF;font-size:0.75rem;font-family:'Raleway',sans-serif;">
+                        style="width:100%;padding:6px 16px 8px;display:flex;align-items:center;gap:6px;background:none;border:none;border-top:1px solid #F3F4F6;cursor:pointer;color:#9CA3AF;font-size:0.75rem;font-family:'Raleway',sans-serif;">
                     <svg class="ebay-arrow" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="transition:transform 0.2s;"><path d="M6 9l6 6 6-6"/></svg>
                     <span>${others.length} more from £${others[0].price.toFixed(2)}</span>
                 </button>
@@ -746,7 +746,7 @@
                         const si = getSellerInfo(opt.seller);
                         return `
                         <a href="${opt.link}" target="_blank" rel="noopener noreferrer sponsored"
-                           style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 24px 8px 44px;text-decoration:none;transition:background 0.15s;border-top:1px solid #F7F7F7;"
+                           style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 16px 8px 36px;text-decoration:none;transition:background 0.15s;border-top:1px solid #F7F7F7;"
                            onmouseenter="this.style.background='#F9FAFB'" onmouseleave="this.style.background='transparent'">
                             <div style="display:flex;align-items:center;gap:6px;min-width:0;flex-wrap:wrap;">
                                 ${si.logo || '<span style="width:20px;"></span>'}
