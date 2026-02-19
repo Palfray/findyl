@@ -136,7 +136,23 @@
             const res = await fetch(`/api/autocomplete?q=${encodeURIComponent(q)}`);
             if (!res.ok) return;
             const data = await res.json();
-            renderDropdown(data, q, inst);
+
+            // Normalise API response — handle both formats:
+            //   Format A: { artists: [...], albums: [...] }
+            //   Format B: { suggestions: [{ type: 'artist', name, ... }, { type: 'album', album, artist, ... }] }
+            let artists = data.artists || [];
+            let albums = data.albums || [];
+
+            if (artists.length === 0 && albums.length === 0 && Array.isArray(data.suggestions)) {
+                artists = data.suggestions
+                    .filter(s => s.type === 'artist')
+                    .map(s => ({ name: s.name, country: s.country || '', disambiguation: s.disambiguation || '' }));
+                albums = data.suggestions
+                    .filter(s => s.type === 'album')
+                    .map(s => ({ album: s.album, artist: s.artist }));
+            }
+
+            renderDropdown({ artists, albums }, q, inst);
         } catch (e) {
             // Silently fail
         }
