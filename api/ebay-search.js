@@ -245,10 +245,17 @@ function detectVinylColour(title, description) {
         // Generic "coloured vinyl" catch-all
         { pattern: /\b(colou?red)\s+(vinyl|lp|pressing)\b/i, label: 'Coloured' },
         { pattern: /\b(limited)\s+(colou?r|edition)\b.*\bvinyl\b/i, label: 'Limited Colour' },
+        // Bracket format: "LP [Red]", "LP [Blue Marble]"
+        { pattern: /lp\s*\[([^\]]*(?:red|blue|green|yellow|orange|pink|purple|white|clear|gold|silver|grey|gray|cream|splatter|marble|swirl)[^\]]*)\]/i, label: null, extract: true },
     ];
 
-    for (const { pattern, label } of colourPatterns) {
-        if (pattern.test(text)) {
+    for (const { pattern, label, extract } of colourPatterns) {
+        const match = text.match(pattern);
+        if (match) {
+            if (extract && match[1]) {
+                const col = match[1].trim();
+                return col.charAt(0).toUpperCase() + col.slice(1);
+            }
             return label;
         }
     }
