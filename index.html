@@ -70,17 +70,17 @@
         /* Showcase scroller */
         .showcase-section {
           background: #F9FAFB;
-          padding: 20px 0 24px;
+          padding: 16px 0 20px;
         }
         .showcase-title {
           font-family: 'DM Serif Display', serif;
-          font-size: 2.5rem;
+          font-size: 2rem;
           font-weight: 700;
           color: #111827;
           letter-spacing: -0.01em;
           text-align: left;
           max-width: 1280px;
-          margin: 0 auto 14px;
+          margin: 0 auto 12px;
           padding-left: 20px;
         }
         .showcase-scroll {
@@ -198,17 +198,17 @@
         }
         @media (max-width: 640px) {
           .sc-card { flex: 0 0 140px; }
-          .showcase-title { font-size: 2rem; }
+          .showcase-title { font-size: 1.6rem; }
         }
     </style>
 </head>
 <body class="bg-gray-50">
     <!-- Hero Section -->
-    <div id="hero" class="py-16" style="background-color: #FF6B6B;">
+    <div id="hero" class="py-8 md:py-10" style="background-color: #FF6B6B;">
         <div class="max-w-4xl mx-auto px-4 text-center">
             <!-- Original Logo -->
-            <div class="mb-8 flex justify-center">
-                <svg width="300" height="100" viewBox="0 0 300 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <div class="mb-3 flex justify-center">
+                <svg width="240" height="80" viewBox="0 0 300 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <!-- Clip path for bottom half of vinyl -->
                   <defs>
                     <clipPath id="bottomHalf">
@@ -231,6 +231,8 @@
                   <text x="150" y="50" font-family="'DM Serif Text', serif" font-size="48" fill="white" text-anchor="middle" font-weight="400">findyl</text>
                 </svg>
             </div>
+            <p class="text-white mb-1 text-base md:text-lg tracking-wide" style="opacity: 0.95; font-family: 'Raleway', sans-serif; font-weight: 500;">Collecting vinyl, made simple.</p>
+            <p class="text-white mb-4 text-xs md:text-sm tracking-wide" style="opacity: 0.7; font-family: 'Raleway', sans-serif; font-weight: 400;">Compare prices across UK vinyl retailers</p>
             
             <!-- Hero Search Bar -->
             <form id="hero-search-form" class="max-w-2xl mx-auto relative">
@@ -239,7 +241,7 @@
                         type="text" 
                         id="hero-search-input"
                         placeholder="Search for vinyl..."
-                        class="w-full px-6 py-4 pr-14 text-lg border-2 border-white rounded-full focus:outline-none text-gray-900 placeholder-gray-400"
+                        class="w-full px-6 py-3 pr-14 text-lg border-2 border-white rounded-full focus:outline-none text-gray-900 placeholder-gray-400"
                         autocomplete="off"
                     />
                     <button type="submit" class="absolute right-4 top-1/2 -translate-y-1/2">
@@ -320,7 +322,7 @@
     <!-- Horizontal Menu (below hero) -->
     <div class="bg-white border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4">
-            <nav class="flex justify-center gap-8 py-4">
+            <nav class="flex justify-center gap-8 py-2.5">
                 <a href="/local-stores" class="text-gray-700 hover:text-gray-900 font-medium">Find a store</a>
                 <a href="/sales" class="text-gray-700 hover:text-gray-900 font-medium">Sales</a>
                 <a href="/articles" class="text-gray-700 hover:text-gray-900 font-medium">Sleeve Notes</a>
