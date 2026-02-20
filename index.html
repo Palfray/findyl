@@ -771,6 +771,18 @@
         });
       });
     })();
+
+    // ── GA4: Track showcase card clicks ──
+    document.querySelectorAll('.sc-card[data-artist]').forEach(card => {
+      card.addEventListener('click', () => {
+        if (typeof gtag === 'function') {
+          gtag('event', 'showcase_click', {
+            artist: card.dataset.artist || '',
+            album: card.dataset.album || ''
+          });
+        }
+      });
+    });
     </script>
 </body>
 </html>
