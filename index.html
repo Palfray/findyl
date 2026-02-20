@@ -66,6 +66,140 @@
             transform: translateY(-4px);
             box-shadow: 0 8px 16px rgba(0,0,0,0.15);
         }
+
+        /* Showcase scroller */
+        .showcase-section {
+          background: #F9FAFB;
+          padding: 20px 0 24px;
+        }
+        .showcase-title {
+          font-family: 'DM Serif Display', serif;
+          font-size: 2.5rem;
+          font-weight: 700;
+          color: #111827;
+          letter-spacing: -0.01em;
+          text-align: left;
+          max-width: 1280px;
+          margin: 0 auto 14px;
+          padding-left: 20px;
+        }
+        .showcase-scroll {
+          display: flex;
+          gap: 14px;
+          overflow-x: auto;
+          scroll-snap-type: x mandatory;
+          -webkit-overflow-scrolling: touch;
+          padding: 0 20px 8px;
+          scrollbar-width: none;
+        }
+        .showcase-scroll::-webkit-scrollbar { display: none; }
+        .sc-card {
+          flex: 0 0 156px;
+          scroll-snap-align: start;
+          background: #fff;
+          border-radius: 10px;
+          overflow: hidden;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+          text-decoration: none;
+          color: inherit;
+          transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .sc-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+        .sc-art {
+          position: relative;
+          width: 100%;
+          aspect-ratio: 1;
+          background: #f3f4f6;
+        }
+        .sc-art img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+        .sc-rank {
+          position: absolute;
+          top: 6px;
+          left: 6px;
+          background: rgba(0,0,0,0.55);
+          color: #fff;
+          font-family: 'Raleway', sans-serif;
+          font-size: 0.7rem;
+          font-weight: 600;
+          padding: 2px 7px;
+          border-radius: 6px;
+        }
+        .sc-stores {
+          position: absolute;
+          bottom: 6px;
+          right: 6px;
+          background: rgba(255,255,255,0.92);
+          color: #374151;
+          font-family: 'Raleway', sans-serif;
+          font-size: 0.6rem;
+          font-weight: 500;
+          padding: 2px 7px;
+          border-radius: 6px;
+        }
+        .sc-body {
+          padding: 8px 10px 10px;
+        }
+        .sc-title {
+          font-family: 'DM Serif Display', serif;
+          font-size: 0.8rem;
+          font-weight: 700;
+          color: #111827;
+          line-height: 1.2;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .sc-artist {
+          font-family: 'Raleway', sans-serif;
+          font-size: 0.65rem;
+          color: #6B7280;
+          margin-top: 2px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .sc-price-row {
+          display: flex;
+          align-items: flex-end;
+          gap: 6px;
+          margin-top: 6px;
+        }
+        .sc-price-from {
+          font-family: 'Raleway', sans-serif;
+          font-size: 0.5rem;
+          text-transform: uppercase;
+          color: #9CA3AF;
+          letter-spacing: 0.03em;
+          display: block;
+          line-height: 1;
+          margin-bottom: 1px;
+        }
+        .sc-price {
+          font-family: 'DM Serif Display', serif;
+          font-size: 1.05rem;
+          font-weight: 700;
+          color: #111827;
+          line-height: 1;
+        }
+        .sc-price-high {
+          font-family: 'Raleway', sans-serif;
+          font-size: 0.6rem;
+          color: #D1D5DB;
+          text-decoration: line-through;
+          padding-bottom: 1px;
+        }
+        @media (max-width: 640px) {
+          .sc-card { flex: 0 0 140px; }
+          .showcase-title { font-size: 2rem; }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -194,6 +328,164 @@
             </nav>
         </div>
     </div>
+
+    <!-- Price Comparison Showcase -->
+    <section class="showcase-section">
+      <h2 class="showcase-title">Trending on vinyl</h2>
+      <div class="showcase-scroll">
+
+        <a href="/album?name=The+Life+of+a+Showgirl&artist=Taylor+Swift&id=9ae7e7e9-ac40-4874-bd43-d77a9bb9b617" class="sc-card">
+          <div class="sc-art">
+            <img src="https://coverartarchive.org/release-group/9ae7e7e9-ac40-4874-bd43-d77a9bb9b617/front-500" alt="The Life of a Showgirl" loading="lazy">
+            <div class="sc-rank">#1</div>
+            <div class="sc-stores">8 stores</div>
+          </div>
+          <div class="sc-body">
+            <div class="sc-title">The Life of a Showgirl</div>
+            <div class="sc-artist">Taylor Swift</div>
+            <div class="sc-price-row">
+              <div><span class="sc-price-from">from</span><span class="sc-price">£27.99</span></div><span class="sc-price-high">£43.99</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="/album?name=People+Watching&artist=Sam+Fender&id=5e04ecf9-2c55-4dbb-b03e-001727f9d285" class="sc-card">
+          <div class="sc-art">
+            <img src="https://coverartarchive.org/release-group/5e04ecf9-2c55-4dbb-b03e-001727f9d285/front-500" alt="People Watching" loading="lazy">
+            <div class="sc-rank">#2</div>
+            <div class="sc-stores">7 stores</div>
+          </div>
+          <div class="sc-body">
+            <div class="sc-title">People Watching</div>
+            <div class="sc-artist">Sam Fender</div>
+            <div class="sc-price-row">
+              <div><span class="sc-price-from">from</span><span class="sc-price">£23.99</span></div><span class="sc-price-high">£34.99</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="/album?name=(What%27s+the+Story)+Morning+Glory%3F&artist=Oasis&id=cc7e6348-cc55-31fa-aeb2-748a46a81cb3" class="sc-card">
+          <div class="sc-art">
+            <img src="https://coverartarchive.org/release-group/cc7e6348-cc55-31fa-aeb2-748a46a81cb3/front-500" alt="(What's the Story) Morning Glory?" loading="lazy">
+            <div class="sc-rank">#3</div>
+            <div class="sc-stores">6 stores</div>
+          </div>
+          <div class="sc-body">
+            <div class="sc-title">(What's the Story) Morning Glory?</div>
+            <div class="sc-artist">Oasis</div>
+            <div class="sc-price-row">
+              <div><span class="sc-price-from">from</span><span class="sc-price">£22.99</span></div><span class="sc-price-high">£38.99</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="/album?name=Lover+(Live+from+Paris)&artist=Taylor+Swift&id=9d8ee40d-075a-4cfe-b079-abfbe7002a21" class="sc-card">
+          <div class="sc-art">
+            <img src="https://coverartarchive.org/release-group/9d8ee40d-075a-4cfe-b079-abfbe7002a21/front-500" alt="Lover (Live from Paris)" loading="lazy">
+            <div class="sc-rank">#4</div>
+            <div class="sc-stores">5 stores</div>
+          </div>
+          <div class="sc-body">
+            <div class="sc-title">Lover (Live from Paris)</div>
+            <div class="sc-artist">Taylor Swift</div>
+            <div class="sc-price-row">
+              <div><span class="sc-price-from">from</span><span class="sc-price">£31.99</span></div><span class="sc-price-high">£44.99</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="/album?name=Short+n%27+Sweet&artist=Sabrina+Carpenter&id=c8bea388-c195-4177-bf9b-7469f6e695a1" class="sc-card">
+          <div class="sc-art">
+            <img src="https://coverartarchive.org/release-group/c8bea388-c195-4177-bf9b-7469f6e695a1/front-500" alt="Short n' Sweet" loading="lazy">
+            <div class="sc-rank">#5</div>
+            <div class="sc-stores">5 stores</div>
+          </div>
+          <div class="sc-body">
+            <div class="sc-title">Short n' Sweet</div>
+            <div class="sc-artist">Sabrina Carpenter</div>
+            <div class="sc-price-row">
+              <div><span class="sc-price-from">from</span><span class="sc-price">£24.99</span></div><span class="sc-price-high">£36.99</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="/album?name=Getting+Killed&artist=Geese&id=3c18308c-9072-4810-b26e-0c573e46fb07" class="sc-card">
+          <div class="sc-art">
+            <img src="https://coverartarchive.org/release-group/3c18308c-9072-4810-b26e-0c573e46fb07/front-500" alt="Getting Killed" loading="lazy">
+            <div class="sc-rank">#6</div>
+            <div class="sc-stores">4 stores</div>
+          </div>
+          <div class="sc-body">
+            <div class="sc-title">Getting Killed</div>
+            <div class="sc-artist">Geese</div>
+            <div class="sc-price-row">
+              <div><span class="sc-price-from">from</span><span class="sc-price">£23.99</span></div><span class="sc-price-high">£32.99</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="/album?name=West+End+Girl&artist=Lily+Allen&id=e0a7dcaa-3d5c-49a0-bd7e-42e2c89dd43e" class="sc-card">
+          <div class="sc-art">
+            <img src="https://coverartarchive.org/release-group/e0a7dcaa-3d5c-49a0-bd7e-42e2c89dd43e/front-500" alt="West End Girl" loading="lazy">
+            <div class="sc-rank">#7</div>
+            <div class="sc-stores">5 stores</div>
+          </div>
+          <div class="sc-body">
+            <div class="sc-title">West End Girl</div>
+            <div class="sc-artist">Lily Allen</div>
+            <div class="sc-price-row">
+              <div><span class="sc-price-from">from</span><span class="sc-price">£26.99</span></div><span class="sc-price-high">£34.99</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="/album?name=The+Art+of+Loving&artist=Olivia+Dean&id=35eae658-4243-4bf5-91d6-5a391bbb3699" class="sc-card">
+          <div class="sc-art">
+            <img src="https://coverartarchive.org/release-group/35eae658-4243-4bf5-91d6-5a391bbb3699/front-500" alt="The Art of Loving" loading="lazy">
+            <div class="sc-rank">#8</div>
+            <div class="sc-stores">6 stores</div>
+          </div>
+          <div class="sc-body">
+            <div class="sc-title">The Art of Loving</div>
+            <div class="sc-artist">Olivia Dean</div>
+            <div class="sc-price-row">
+              <div><span class="sc-price-from">from</span><span class="sc-price">£22.99</span></div><span class="sc-price-high">£31.99</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="/album?name=DeB%C3%8D+TiRAR+M%C3%A1S+FOToS&artist=Bad+Bunny&id=b3073a10-2d7c-484c-b387-e49ae629da3d" class="sc-card">
+          <div class="sc-art">
+            <img src="https://coverartarchive.org/release-group/b3073a10-2d7c-484c-b387-e49ae629da3d/front-500" alt="DeBÍ TiRAR MáS FOToS" loading="lazy">
+            <div class="sc-rank">#9</div>
+            <div class="sc-stores">4 stores</div>
+          </div>
+          <div class="sc-body">
+            <div class="sc-title">DeBÍ TiRAR MáS FOToS</div>
+            <div class="sc-artist">Bad Bunny</div>
+            <div class="sc-price-row">
+              <div><span class="sc-price-from">from</span><span class="sc-price">£29.99</span></div><span class="sc-price-high">£42.99</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="/album?name=Private+Music&artist=Deftones&id=5e9a3ca5-82ce-47da-9409-83f6f953b4a2" class="sc-card">
+          <div class="sc-art">
+            <img src="https://coverartarchive.org/release-group/5e9a3ca5-82ce-47da-9409-83f6f953b4a2/front-500" alt="Private Music" loading="lazy">
+            <div class="sc-rank">#10</div>
+            <div class="sc-stores">5 stores</div>
+          </div>
+          <div class="sc-body">
+            <div class="sc-title">Private Music</div>
+            <div class="sc-artist">Deftones</div>
+            <div class="sc-price-row">
+              <div><span class="sc-price-from">from</span><span class="sc-price">£25.99</span></div><span class="sc-price-high">£37.99</span>
+            </div>
+          </div>
+        </a>
+
+      </div>
+    </section>
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 py-12">
