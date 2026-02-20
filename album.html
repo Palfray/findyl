@@ -1079,6 +1079,34 @@
             arrow.style.transform = isHidden ? 'rotate(180deg)' : '';
         }
 
+        // ── GA4: Track retailer click-throughs ──
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('a[target="_blank"]');
+            if (!link || typeof gtag !== 'function') return;
+
+            const href = link.href || '';
+            // Only track outbound retailer links
+            if (href.startsWith('/') || href.includes('findyl.co.uk')) return;
+
+            // Determine store name from link content
+            const storeEl = link.querySelector('span[style*="font-weight:600"]') || link.querySelector('span[style*="font-weight: 600"]');
+            const storeName = storeEl ? storeEl.textContent.trim() : 'Unknown';
+
+            // Determine price if visible
+            const priceEl = link.querySelector('span[style*="color:#FF6B6B"]') || link.querySelector('span[style*="color: #FF6B6B"]');
+            const price = priceEl ? priceEl.textContent.trim() : '';
+
+            const params = new URLSearchParams(window.location.search);
+
+            gtag('event', 'retailer_click', {
+                retailer: storeName,
+                artist: params.get('artist') || '',
+                album: params.get('album') || '',
+                price: price,
+                link_url: href
+            });
+        });
+
         // Initialize
         loadAlbumData();
     </script>
