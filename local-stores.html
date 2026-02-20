@@ -2,284 +2,460 @@
 <html lang="en">
 <head>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-4VKXNETWR4"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag("js", new Date());
-      gtag("config", "G-4VKXNETWR4");
-    </script>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-4VKXNETWR4");</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Local Record Stores - findyl</title>
-    <meta name="description" content="Find independent record shops near you. Browse our directory of 285+ vinyl record stores across the UK.">
+    <title>Find a Record Shop — findyl</title>
+    <meta name="description" content="Find independent record shops near you. Browse our directory of 240+ vinyl record stores across the UK and Ireland.">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Raleway:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <style>
-        body { font-family: 'DM Serif Display', serif; }
-        .store-card { transition: transform 0.2s, box-shadow 0.2s; }
-        .store-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .store-card { animation: fadeIn 0.25s ease forwards; opacity: 0; }
+        * { box-sizing: border-box; }
+        body { font-family: 'DM Serif Display', serif; color: #374151; }
+        h1,h2,h3,h4 { font-family: 'DM Serif Display', serif; color: #111827; letter-spacing: -0.01em; }
+
+        .store-search-bar { background:#fff; border:1.5px solid #E5E7EB; border-radius:14px; transition:all .2s; }
+        .store-search-bar:focus-within { border-color:#FF6B6B; box-shadow:0 0 0 3px rgba(255,107,107,.1); }
+        .store-search-input { font-family:'Raleway',sans-serif; background:transparent; color:#1F2937; outline:none; width:100%; font-size:.95rem; }
+        .store-search-input::placeholder { color:#9CA3AF; }
+
+        .location-btn { font-family:'Raleway',sans-serif; display:inline-flex; align-items:center; gap:7px; padding:9px 16px; border-radius:10px; font-size:.8rem; font-weight:600; cursor:pointer; transition:all .2s; border:1.5px solid #E5E7EB; background:#fff; color:#6B7280; }
+        .location-btn:hover { border-color:#FF6B6B; color:#FF6B6B; }
+        .location-btn.active { background:#FFF1F1; border-color:#FF6B6B; color:#FF6B6B; }
+        .location-btn.loading { opacity:.6; pointer-events:none; }
+
+        .region-pill { font-family:'Raleway',sans-serif; font-size:.75rem; font-weight:500; padding:6px 14px; border-radius:9999px; border:1px solid #E5E7EB; background:#fff; color:#9CA3AF; cursor:pointer; transition:all .15s; white-space:nowrap; }
+        .region-pill:hover { border-color:#D1D5DB; color:#6B7280; }
+        .region-pill.active { border-color:#FF6B6B; color:#FF6B6B; background:#FFF1F1; }
+
+        #map { height:420px; border-radius:16px; border:1px solid #F3F4F6; box-shadow:0 1px 3px rgba(0,0,0,.04); z-index:1; }
+        @media(max-width:640px) { #map { height:300px; border-radius:12px; } }
+
+        .leaflet-popup-content-wrapper { border-radius:10px !important; box-shadow:0 4px 16px rgba(0,0,0,.12) !important; font-family:'Raleway',sans-serif !important; }
+        .leaflet-popup-content { margin:10px 14px !important; font-size:.82rem !important; }
+        .popup-name { font-weight:700; color:#111827; font-size:.88rem; margin-bottom:2px; }
+        .popup-location { color:#9CA3AF; font-size:.75rem; }
+        .popup-links { margin-top:8px; display:flex; gap:8px; }
+        .popup-links a { font-size:.7rem; font-weight:600; color:#FF6B6B; text-decoration:none; padding:3px 8px; border-radius:6px; background:#FFF1F1; transition:background .15s; }
+        .popup-links a:hover { background:#FFE0E0; }
+
+        .coral-marker { width:12px; height:12px; background:#FF6B6B; border:2px solid #fff; border-radius:50%; box-shadow:0 1px 4px rgba(0,0,0,.2); }
+        .coral-marker.highlight { width:16px; height:16px; border:3px solid #fff; box-shadow:0 0 0 2px #FF6B6B,0 2px 8px rgba(0,0,0,.2); }
+
+        .distance-banner { font-family:'Raleway',sans-serif; background:#FFF1F1; border:1px solid #FFE0E0; border-radius:10px; padding:10px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; font-size:.8rem; font-weight:500; color:#374151; }
+        .distance-banner button { background:none; border:none; color:#9CA3AF; cursor:pointer; padding:2px; border-radius:4px; }
+        .distance-banner button:hover { color:#6B7280; }
+
+        .store-card { background:white; border:1px solid #F3F4F6; border-radius:12px; padding:16px 18px; box-shadow:0 1px 2px rgba(0,0,0,.03); transition:transform .2s,box-shadow .2s; position:relative; cursor:pointer; animation:fadeUp .25s ease forwards; opacity:0; }
+        .store-card:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.06); }
+        .store-card.highlighted { border-color:#FF6B6B; box-shadow:0 0 0 1px #FF6B6B,0 4px 12px rgba(255,107,107,.1); }
+
+        .store-avatar { width:38px; height:38px; min-width:38px; border-radius:9px; background:#FFF1F1; display:flex; align-items:center; justify-content:center; }
+        .store-avatar span { color:#FF6B6B; font-weight:700; font-size:.72rem; font-family:'Raleway',sans-serif; }
+        .store-name { font-size:.92rem; font-weight:600; color:#111827; line-height:1.3; }
+        .store-location { font-family:'Raleway',sans-serif; font-size:.75rem; color:#9CA3AF; display:flex; align-items:center; gap:3px; margin-top:1px; }
+        .store-distance { font-family:'Raleway',sans-serif; font-size:.65rem; font-weight:600; color:#FF6B6B; background:#FFF1F1; padding:2px 8px; border-radius:9999px; position:absolute; top:12px; right:12px; }
+        .store-actions { display:flex; gap:5px; flex-wrap:wrap; margin-top:10px; }
+        .store-action { font-family:'Raleway',sans-serif; display:inline-flex; align-items:center; gap:4px; font-size:.68rem; font-weight:600; padding:5px 10px; border-radius:9999px; background:#F9FAFB; border:1px solid #F3F4F6; color:#6B7280; text-decoration:none; transition:all .15s; }
+        .store-action:hover { background:#FFF1F1; border-color:#FFE0E0; color:#FF6B6B; }
+
+        @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .no-results { text-align:center; padding:48px 20px; }
+        .no-results p { color:#9CA3AF; font-size:1rem; }
+        .no-results button { font-family:'Raleway',sans-serif; margin-top:10px; font-size:.82rem; font-weight:600; color:#FF6B6B; background:none; border:none; cursor:pointer; }
+        .no-results button:hover { text-decoration:underline; }
+        .stats-bar { font-family:'Raleway',sans-serif; display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; padding:0 2px; }
+        .stats-bar .count { font-size:.78rem; font-weight:600; color:#6B7280; }
+        .stats-bar .sort-label { font-size:.72rem; color:#9CA3AF; }
     </style>
 </head>
 <body class="bg-gray-50">
-
     <!-- Header -->
-    <!-- Standard findyl header -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-20">
         <div class="max-w-7xl mx-auto px-4 py-3">
             <div class="flex items-center gap-4">
-                <!-- Logo -->
                 <a href="/" class="flex-shrink-0 hover:opacity-80 transition-opacity">
                     <svg width="128" height="40" viewBox="0 0 320 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <text x="0" y="72" font-family="'DM Serif Display', serif" font-size="80" fill="#1F2937" font-weight="400">findyl</text>
-                        <g transform="translate(245, 50)">
-                            <circle cx="0" cy="0" r="28" fill="#FF6B6B"/>
-                            <circle cx="0" cy="0" r="22" fill="none" stroke="white" stroke-width="1"/>
-                            <circle cx="0" cy="0" r="16" fill="none" stroke="white" stroke-width="1"/>
-                            <circle cx="0" cy="0" r="10" fill="none" stroke="white" stroke-width="1"/>
-                            <circle cx="0" cy="0" r="8" fill="white"/>
-                            <circle cx="0" cy="0" r="3" fill="#FF6B6B"/>
-                        </g>
+                        <g transform="translate(245, 50)"><circle cx="0" cy="0" r="28" fill="#FF6B6B"/><circle cx="0" cy="0" r="22" fill="none" stroke="white" stroke-width="1"/><circle cx="0" cy="0" r="16" fill="none" stroke="white" stroke-width="1"/><circle cx="0" cy="0" r="10" fill="none" stroke="white" stroke-width="1"/><circle cx="0" cy="0" r="8" fill="white"/><circle cx="0" cy="0" r="3" fill="#FF6B6B"/></g>
                     </svg>
                 </a>
-
-                <!-- Search bar -->
                 <div class="flex-1 max-w-2xl relative">
                     <form id="header-search-form" class="relative">
-                        <input
-                            type="text"
-                            id="header-search-input" style="font-family:'Raleway', sans-serif;"
-                            placeholder="Search for vinyl..."
-                            class="w-full px-4 py-2 pr-10 border-[1.5px] border-gray-900 rounded-full focus:border-gray-900 focus:outline-none text-gray-900 placeholder-gray-400"
-                            autocomplete="off"
-                        />
-                        <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2" style="color:#FF6B6B">
-                            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="9" cy="9" r="6"/><path d="M14 14l4 4"/>
-                            </svg>
-                        </button>
+                        <input type="text" id="header-search-input" style="font-family:'Raleway',sans-serif;" placeholder="Search for vinyl..." class="w-full px-4 py-2 pr-10 border-[1.5px] border-gray-900 rounded-full focus:border-gray-900 focus:outline-none text-gray-900 placeholder-gray-400" autocomplete="off"/>
+                        <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2" style="color:#FF6B6B"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="M14 14l4 4"/></svg></button>
                     </form>
                     <div id="header-autocomplete" class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-2xl shadow-lg z-50 hidden mt-1 overflow-hidden"></div>
                 </div>
-
-
             </div>
         </div>
     </header>
 
     <script>
-        (function() {
-            const form = document.getElementById('header-search-form');
-            const input = document.getElementById('header-search-input');
-            const dropdown = document.getElementById('header-autocomplete');
-            let debounceTimer;
-
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const q = input.value.trim();
-                if (q) window.location.href = `/results?q=${encodeURIComponent(q)}`;
-            });
-
-            input.addEventListener('input', () => {
-                clearTimeout(debounceTimer);
-                const q = input.value.trim();
-                if (q.length < 2) { dropdown.classList.add('hidden'); return; }
-                debounceTimer = setTimeout(() => fetchSuggestions(q), 300);
-            });
-
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('#header-search-form') && !e.target.closest('#header-autocomplete')) {
-                    dropdown.classList.add('hidden');
-                }
-            });
-
-            async function fetchSuggestions(q) {
-                try {
-                    const res = await fetch(`/api/autocomplete?q=${encodeURIComponent(q)}`);
-                    if (!res.ok) return;
-                    const data = await res.json();
-                    renderSuggestions(data);
-                } catch(e) {}
-            }
-
-            function renderSuggestions(data) {
-                const artists = data.artists || [];
-                const albums = data.albums || [];
-                if (artists.length === 0 && albums.length === 0) { dropdown.classList.add('hidden'); return; }
-                let html = artists.map(a => `
-                    <a href="/results?q=${encodeURIComponent(a.name)}" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-0">
-                        <svg width="16" height="16" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        <div>
-                            <div class="text-sm font-medium text-gray-900">${a.name}</div>
-                            ${a.country || a.disambiguation ? `<div class="text-xs text-gray-500">${[a.country, a.disambiguation].filter(Boolean).join(' · ')}</div>` : ''}
-                        </div>
-                    </a>`).join('');
-                html += albums.map(a => `
-                    <a href="/results?q=${encodeURIComponent(a.artist)}" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-0">
-                        <svg width="16" height="16" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
-                        <div>
-                            <div class="text-sm font-medium text-gray-900">${a.album}</div>
-                            <div class="text-xs text-gray-500">${a.artist}</div>
-                        </div>
-                    </a>`).join('');
-                dropdown.innerHTML = html;
-                dropdown.classList.remove('hidden');
-            }
-        })();
+    (function(){const f=document.getElementById('header-search-form'),i=document.getElementById('header-search-input'),d=document.getElementById('header-autocomplete');let t;f.addEventListener('submit',e=>{e.preventDefault();const q=i.value.trim();if(q)window.location.href=`/results?q=${encodeURIComponent(q)}`;});i.addEventListener('input',()=>{clearTimeout(t);const q=i.value.trim();if(q.length<2){d.classList.add('hidden');return;}t=setTimeout(()=>fetchS(q),300);});document.addEventListener('click',e=>{if(!e.target.closest('#header-search-form')&&!e.target.closest('#header-autocomplete'))d.classList.add('hidden');});async function fetchS(q){try{const r=await fetch(`/api/autocomplete?q=${encodeURIComponent(q)}`);if(!r.ok)return;renderS(await r.json());}catch(e){}}function renderS(data){const a=data.artists||[],al=data.albums||[];if(!a.length&&!al.length){d.classList.add('hidden');return;}let h=a.map(x=>`<a href="/results?q=${encodeURIComponent(x.name)}" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-0"><svg width="16" height="16" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><div><div class="text-sm font-medium text-gray-900">${x.name}</div>${x.country||x.disambiguation?`<div class="text-xs text-gray-500">${[x.country,x.disambiguation].filter(Boolean).join(' · ')}</div>`:''}</div></a>`).join('');h+=al.map(x=>`<a href="/results?q=${encodeURIComponent(x.artist)}" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-0"><svg width="16" height="16" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg><div><div class="text-sm font-medium text-gray-900">${x.album}</div><div class="text-xs text-gray-500">${x.artist}</div></div></a>`).join('');d.innerHTML=h;d.classList.remove('hidden');}})();
     </script>
 
-    <main class="max-w-6xl mx-auto px-4 py-10">
-
-        <!-- Title -->
-        <div class="text-center mb-10">
-            <h1 class="text-4xl sm:text-5xl mb-3">Local Record Stores</h1>
-            <p class="text-gray-500">Find independent record stores across the UK & Ireland</p>
-            <p class="text-sm text-gray-400 mt-1">
-                <span id="storeCount">0</span> stores · Source: Record Store Day UK
-            </p>
-        </div>
-
-        <!-- Search -->
-        <div class="max-w-2xl mx-auto mb-8">
-            <div class="bg-white rounded-full px-5 py-3 shadow-sm border border-gray-200 flex items-center gap-3">
-                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <circle cx="11" cy="11" r="8" stroke-width="2"/>
-                    <path d="M21 21l-4.35-4.35" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-                <input type="text" id="searchInput" placeholder="Search by store name or city..."
-                    class="w-full outline-none text-sm bg-transparent"/>
-                <button id="clearBtn" class="text-gray-300 hover:text-gray-500 hidden flex-shrink-0">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
+    <!-- Hero -->
+    <section class="bg-white border-b border-gray-100">
+        <div class="max-w-6xl mx-auto px-4 pt-10 pb-8">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl sm:text-4xl mb-2" style="font-weight:400">Find a Record Shop</h1>
+                <p style="font-family:'Raleway',sans-serif; color:#9CA3AF; font-size:.85rem;">Independent record stores across the UK &amp; Ireland</p>
+            </div>
+            <div class="max-w-2xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
+                <div class="store-search-bar flex-1 flex items-center gap-3 px-4 py-3">
+                    <svg class="w-4 h-4 flex-shrink-0 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke-width="2" stroke-linecap="round"/></svg>
+                    <input type="text" id="storeSearchInput" class="store-search-input" placeholder="Search by name, city or postcode..." autocomplete="off"/>
+                    <button id="clearBtn" class="hidden flex-shrink-0 text-gray-300 hover:text-gray-500" style="background:none;border:none;cursor:pointer;padding:2px;">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <button id="locationBtn" class="location-btn">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3" stroke-linecap="round"/></svg>
+                    <span id="locationBtnText">Use my location</span>
                 </button>
             </div>
+            <div class="flex gap-2 flex-wrap justify-center" id="regionPills">
+                <button class="region-pill active" data-region="all">All</button>
+                <button class="region-pill" data-region="London">London</button>
+                <button class="region-pill" data-region="South">South</button>
+                <button class="region-pill" data-region="Midlands">Midlands</button>
+                <button class="region-pill" data-region="North">North</button>
+                <button class="region-pill" data-region="Scotland">Scotland</button>
+                <button class="region-pill" data-region="Wales">Wales</button>
+                <button class="region-pill" data-region="Ireland">Ireland</button>
+            </div>
         </div>
+    </section>
 
-        <!-- Store Grid -->
-        <div id="storesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-
-        <!-- No Results -->
-        <div id="noResults" class="text-center py-16 hidden">
-            <p class="text-gray-400 text-lg">No stores found for "<span id="noResultsQuery"></span>"</p>
-            <button id="clearSearch" class="mt-4 text-sm hover:underline" style="color:#FF6B6B">Clear search</button>
+    <!-- Main -->
+    <main class="max-w-6xl mx-auto px-4 py-6">
+        <div id="map" class="mb-6"></div>
+        <div id="distanceBanner" class="distance-banner" style="display:none">
+            <div>
+                <svg class="w-3.5 h-3.5 inline -mt-0.5 mr-1" fill="none" stroke="#FF6B6B" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="10" r="3"/></svg>
+                Showing stores nearest to you · <span id="nearestCount">0</span> within 50 miles
+            </div>
+            <button id="clearLocation" title="Clear location"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
         </div>
-
+        <div class="stats-bar">
+            <div class="count"><span id="storeCount">0</span> stores</div>
+            <div class="sort-label" id="sortLabel">A–Z</div>
+        </div>
+        <div id="storesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+        <div id="noResults" class="no-results hidden">
+            <p>No stores found for "<span id="noResultsQuery"></span>"</p>
+            <button id="clearSearch">Clear search</button>
+        </div>
     </main>
 
-    <footer class="bg-white border-t border-gray-200 mt-16">
-        <div class="max-w-6xl mx-auto px-4 py-8 text-center text-sm text-gray-500">
+    <footer class="bg-white border-t border-gray-200 mt-12">
+        <div class="max-w-6xl mx-auto px-4 py-8 text-center text-sm text-gray-400" style="font-family:'Raleway',sans-serif">
             <p>Store data sourced from <a href="https://www.recordstoreday.co.uk" target="_blank" class="hover:underline" style="color:#FF6B6B">Record Store Day UK</a></p>
             <p class="mt-1">findyl — Finding Vinyl, Made Simple</p>
         </div>
     </footer>
 
     <script>
-        const stores = [
-            {"name":"Off The Record","location":"UK"},{"name":"Lion Vibes","location":"UK"},{"name":"Derricks","location":"UK"},{"name":"Choons","location":"UK"},{"name":"12 Bar Music and Social","location":"UK"},{"name":"Townsend Records","location":"Great Harwood"},{"name":"Area 51 Records","location":"UK"},{"name":"VOD Music","location":"UK"},{"name":"Golden Discs","location":"Cork"},{"name":"Golden Discs","location":"Dundalk"},{"name":"Ignite Record Store","location":"UK"},{"name":"Far Land Records","location":"UK"},{"name":"Music Mania","location":"UK"},{"name":"Concorde Music Shop","location":"UK"},{"name":"The Second 45","location":"UK"},{"name":"World of Echo","location":"UK"},{"name":"Revolution Records Halesowen","location":"UK"},{"name":"Rough Trade Bristol","location":"Bristol"},{"name":"Raves from the Grave","location":"UK"},{"name":"Slipped Discs Billericay","location":"UK"},{"name":"Dash The Henge Store","location":"UK"},{"name":"Empire Records","location":"UK"},{"name":"Spillers Records","location":"Cardiff"},{"name":"Slide Record Shop","location":"UK"},{"name":"Monorail Music","location":"Glasgow"},{"name":"Regency Records","location":"UK"},{"name":"Specialist Subject","location":"UK"},{"name":"Save Our Souls Records","location":"UK"},{"name":"Clocktower Records","location":"UK"},{"name":"Big Moon Records","location":"UK"},{"name":"Roan Records","location":"UK"},{"name":"Phonica Records","location":"London"},{"name":"Truck Oxford","location":"Oxford"},{"name":"Music Mania Ltd","location":"UK"},{"name":"Vintage & Vinyl","location":"UK"},{"name":"Sound Cellar","location":"UK"},{"name":"Voxbox","location":"UK"},{"name":"Vinyl Attraction","location":"UK"},{"name":"Raven Retail","location":"UK"},{"name":"Vinyl Underground","location":"UK"},{"name":"Starr Records","location":"UK"},{"name":"Jacaranda Records","location":"Liverpool"},{"name":"Tower Records","location":"Dublin"},{"name":"Tubeway Records","location":"UK"},{"name":"Saturnalia Records","location":"UK"},{"name":"Museum Vinyl","location":"UK"},{"name":"Five Rise Records","location":"UK"},{"name":"Black Circle Records","location":"UK"},{"name":"The Vault Collective","location":"UK"},{"name":"Up North Records","location":"UK"},{"name":"Slow Century Records","location":"UK"},{"name":"Heathen Chemistry","location":"UK"},{"name":"Beyond Vinyl","location":"UK"},{"name":"Number One Records","location":"UK"},{"name":"Rubber Soul Records","location":"UK"},{"name":"Good Vibes Neighbourhood Store","location":"UK"},{"name":"Intense Records","location":"Nottingham"},{"name":"Record Room","location":"UK"},{"name":"Golden Discs","location":"Drogheda"},{"name":"Golden Discs","location":"Galway"},{"name":"Golden Discs","location":"Swords"},{"name":"Crash Records","location":"Leeds"},{"name":"Ventnor Exchange","location":"UK"},{"name":"Soul Brother","location":"London"},{"name":"Red House Records","location":"UK"},{"name":"Spun Out","location":"UK"},{"name":"Sound Records IOM","location":"Isle of Man"},{"name":"The Vinyl Whistle","location":"UK"},{"name":"Sounds Of The Universe","location":"London"},{"name":"Bella Union Vinyl Shop","location":"UK"},{"name":"S T Records","location":"UK"},{"name":"Stone Rock Records","location":"UK"},{"name":"Sister Ray","location":"London"},{"name":"Left for Dead","location":"UK"},{"name":"Love Music","location":"UK"},{"name":"Peckham Soul","location":"London"},{"name":"Steamboat Records","location":"UK"},{"name":"Revo Records","location":"UK"},{"name":"Seedee Jons","location":"UK"},{"name":"Future Audio","location":"UK"},{"name":"Jam Records","location":"UK"},{"name":"Spinning Discs Sheffield","location":"Sheffield"},{"name":"The LP Cafe","location":"UK"},{"name":"The Record Shop Ltd","location":"UK"},{"name":"Honest Jon's Records","location":"London"},{"name":"Sound Records","location":"UK"},{"name":"Venus Vinyl","location":"UK"},{"name":"Grooves Records","location":"UK"},{"name":"Music's Not Dead","location":"UK"},{"name":"The Vinyl Frontier","location":"UK"},{"name":"Record Vault","location":"UK"},{"name":"Polar Bear","location":"UK"},{"name":"Vinyl Head Record Shop","location":"UK"},{"name":"Casbah Records","location":"UK"},{"name":"Jumbo Records","location":"Leeds"},{"name":"Tough Love St Leonards","location":"UK"},{"name":"Strip Joint Records","location":"UK"},{"name":"Yew Tree Records","location":"UK"},{"name":"Over The Moon Records","location":"UK"},{"name":"Underground Solution","location":"UK"},{"name":"Golden Discs","location":"Athlone"},{"name":"JM Records","location":"UK"},{"name":"The Musical Box","location":"UK"},{"name":"Hundred Records","location":"UK"},{"name":"Longplay","location":"Dublin"},{"name":"Berwick Street Record Emporium","location":"London"},{"name":"Spin Inn","location":"Cork"},{"name":"Rough Trade East","location":"London"},{"name":"Rhythm Section International","location":"London"},{"name":"Banquet Records","location":"Kingston"},{"name":"Norman Records","location":"Leeds"},{"name":"Coda Music","location":"Edinburgh"},{"name":"Acid Jazz Records","location":"London"},{"name":"Beatin' Rhythm","location":"Manchester"},{"name":"Deep Cuts","location":"London"},{"name":"Reckless Records","location":"London"},{"name":"Selectadisc","location":"Nottingham"},{"name":"Probe Records","location":"Liverpool"},{"name":"Fopp","location":"Glasgow"},{"name":"Vinyl Exchange","location":"Manchester"},{"name":"Pure Groove","location":"London"},{"name":"All Ages Records","location":"London"},{"name":"Love Vinyl","location":"London"},{"name":"Flashback Records","location":"London"},{"name":"Eldica","location":"London"},{"name":"Intoxica!","location":"London"},{"name":"Record & Tape Exchange","location":"London"},{"name":"Vinyl Junkies","location":"London"},{"name":"Lucky Seven Records","location":"London"},{"name":"Bear Tree Records","location":"Sheffield"},{"name":"RPM Records","location":"Edinburgh"},{"name":"Elvis Shakespeare","location":"Edinburgh"},{"name":"Vinyl Villains","location":"Edinburgh"},{"name":"Avalanche Records","location":"Edinburgh"},{"name":"Piccadilly Records","location":"Manchester"},{"name":"Townsend Records","location":"Clitheroe"},{"name":"Record Collector","location":"Sheffield"},{"name":"Tangled Parrot","location":"Hereford"},{"name":"Assai","location":"Dundee"},{"name":"Rough Trade Vintage","location":"London"},{"name":"Dig Vinyl","location":"West Kirby"},{"name":"Resident Music","location":"Brighton"},{"name":"Assai","location":"Edinburgh"},{"name":"Stax of Wax","location":"Salisbury"},{"name":"Galaxy Records","location":"Poole"},{"name":"Spiller's Records","location":"Cardiff"},{"name":"Record Hunter","location":"Dublin"},{"name":"Golden Discs","location":"Navan"},{"name":"Manic Street Music","location":"Carmarthen"},{"name":"Timewarp Music","location":"Aberdeen"},{"name":"The Record Bar","location":"Leeds"},{"name":"Yorkshire Sound","location":"Selby"},{"name":"Wah Wah Records","location":"UK"},{"name":"Spinning Around Records","location":"UK"},{"name":"Rarekind Records","location":"UK"},{"name":"Just Dropped In","location":"UK"},{"name":"Vinyl Audio Cafe","location":"UK"},{"name":"Back to Mono","location":"UK"},{"name":"33 RPM","location":"UK"},{"name":"Tasty Records","location":"UK"},{"name":"RPM Music","location":"UK"},{"name":"Spindizzy Records","location":"UK"},{"name":"Pure Vinyl Records","location":"UK"},{"name":"Andy's Records","location":"UK"},{"name":"Reggie's Retro Record Store","location":"UK"},{"name":"101 Collectors Records","location":"UK"},{"name":"Beatdown Records","location":"UK"},{"name":"Bell, Book Candle","location":"UK"},{"name":"Smugglers Records","location":"UK"},{"name":"Europa Music","location":"UK"},{"name":"Cruisin Records","location":"UK"},{"name":"The Orpington","location":"UK"},{"name":"Toms Record Shop","location":"UK"},{"name":"Grinning Soul Records","location":"UK"},{"name":"Level Crossing Records","location":"UK"},{"name":"Hectic Records","location":"UK"},{"name":"Wax and Beans","location":"UK"},{"name":"Some Great Reward","location":"UK"},{"name":"Maestro Records","location":"UK"},{"name":"Global Groove","location":"UK"},{"name":"Diverse Vinyl","location":"UK"},{"name":"Cool Discs Music","location":"UK"},{"name":"Rockabuy Records","location":"UK"},{"name":"Missing Records","location":"UK"},{"name":"Catty Records","location":"UK"},{"name":"Hog's Head Beer Cafe","location":"UK"},{"name":"Hot Salvation","location":"UK"},{"name":"Backtrack Records","location":"UK"},{"name":"Broken Records","location":"UK"},{"name":"Music Minded","location":"UK"},{"name":"Bowerbird Records","location":"UK"},{"name":"Dragon Records","location":"UK"},{"name":"vinyl109","location":"UK"},{"name":"Ear Worm Records","location":"UK"},{"name":"Abbey Records","location":"UK"},{"name":"Vinyl Lounge","location":"UK"},{"name":"Music Stop","location":"UK"},{"name":"Arcade Records","location":"UK"},{"name":"Deckchair Records","location":"UK"},{"name":"Zebedee's Records","location":"UK"},{"name":"Underground Music","location":"UK"},{"name":"Spin It Records","location":"UK"},{"name":"Vinylicious","location":"UK"},{"name":"Record Surplus","location":"UK"},{"name":"Unearthed Records","location":"UK"},{"name":"Vinylheads","location":"UK"},{"name":"Spun Records","location":"UK"},{"name":"Sounds Good","location":"UK"},{"name":"Crumbs Records","location":"UK"},{"name":"SIDESHOW Records","location":"UK"},{"name":"Play Music","location":"UK"},{"name":"Resonance Records","location":"UK"},{"name":"Flipside Records","location":"UK"},{"name":"Vinilo Records","location":"UK"},{"name":"Drift Records","location":"UK"},{"name":"Music Zone","location":"UK"},{"name":"Record Archive","location":"UK"},{"name":"Wax Lyrical","location":"UK"},{"name":"Beat Records","location":"UK"},{"name":"Deja Vu Records","location":"UK"},{"name":"Music Box","location":"UK"},{"name":"Revolution Records","location":"UK"},{"name":"Vinyl Revival","location":"UK"},{"name":"Third Eye Records","location":"UK"},{"name":"Flatpack Records","location":"UK"},{"name":"Good Vibrations","location":"UK"},{"name":"Underground Records","location":"UK"},{"name":"Lost In Music","location":"UK"},{"name":"Pie & Vinyl","location":"UK"},{"name":"Electric Elephant Records","location":"UK"},{"name":"Vinyl Tap","location":"UK"},{"name":"Shockwaves","location":"UK"},{"name":"Haggle Vinyl","location":"London"},{"name":"Record Shack","location":"London"},{"name":"Out On The Floor","location":"London"},{"name":"Minus Zero Records","location":"London"},{"name":"Haggle","location":"London"},{"name":"Ray's Jazz","location":"London"},{"name":"Underground Solu'shn","location":"Edinburgh"}
-        ];
+    // ═══ DATA ═══
+    const cityCoords = {"Liverpool":[53.41,-2.98],"London":[51.51,-0.13],"Swansea":[51.62,-3.94],"Leamington Spa":[52.29,-1.54],"Great Harwood":[53.79,-2.41],"Peterborough":[52.57,-0.24],"Derry":[54.99,-7.32],"Cork":[51.9,-8.47],"Dundalk":[54,-6.42],"Tamworth":[52.63,-1.69],"Penzance":[50.12,-5.53],"Hastings":[50.85,0.57],"Lincoln":[53.23,-0.54],"Halesowen":[52.45,-2.05],"Bristol":[51.45,-2.59],"Cheltenham":[51.9,-2.07],"Billericay":[51.63,0.42],"Amesbury":[51.17,-1.77],"St Andrews":[56.34,-2.8],"Cardiff":[51.48,-3.18],"Glasgow":[55.86,-4.25],"Stroud":[51.75,-2.22],"Coventry":[52.41,-1.51],"Crediton":[50.79,-3.66],"Bath":[51.38,-2.36],"Pontcanna":[51.49,-3.2],"Oxford":[51.75,-1.26],"Bury St Edmunds":[52.25,0.72],"Edinburgh":[55.95,-3.19],"Dublin":[53.35,-6.26],"Leicester":[52.63,-1.13],"Colchester":[51.89,0.9],"Bingley":[53.85,-1.84],"Truro":[50.26,-5.05],"Newcastle":[54.98,-1.62],"Margate":[51.39,1.39],"Manchester":[53.48,-2.24],"Warwick":[52.28,-1.59],"Doncaster":[53.52,-1.13],"Stoke-on-Trent":[53,-2.18],"Nottingham":[52.95,-1.15],"Belfast":[54.6,-5.93],"Drogheda":[53.72,-6.35],"Galway":[53.27,-9.06],"Swords":[53.46,-6.22],"Leeds":[53.8,-1.55],"Ventnor":[50.59,-1.21],"Beverley":[53.84,-0.43],"Isle of Man":[54.24,-4.55],"Scarborough":[54.28,-0.4],"Blackburn":[53.75,-2.48],"Middlesbrough":[54.57,-1.24],"Wolverhampton":[52.59,-2.13],"Falmouth":[50.15,-5.07],"Sheffield":[53.38,-1.47],"Stockport":[53.41,-2.16],"Norwich":[52.63,1.3],"Bexhill-on-Sea":[50.84,0.47],"Chatham":[51.38,0.53],"Bridgend":[51.51,-3.58],"Birmingham":[52.48,-1.9],"Gravesend":[51.44,0.37],"Greenwich":[51.48,0],"St Leonards-on-Sea":[50.85,0.56],"Chester":[53.19,-2.89],"Chorlton":[53.44,-2.27],"Athlone":[53.42,-7.94],"Dundee":[56.46,-2.97],"Barrow-in-Furness":[54.11,-3.23],"Romsey":[50.99,-1.5],"Kingston":[51.41,-0.31],"Clitheroe":[53.87,-2.39],"Hereford":[52.06,-2.72],"West Kirby":[53.37,-3.18],"Brighton":[50.82,-0.14],"Salisbury":[51.07,-1.8],"Poole":[50.72,-1.98],"Navan":[53.65,-6.68],"Carmarthen":[51.86,-4.31],"Aberdeen":[57.15,-2.09],"Selby":[53.78,-1.07],"Whitchurch":[51.24,-1.34],"York":[53.96,-1.08],"Lytham St Annes":[53.75,-3.03],"Huddersfield":[53.65,-1.78],"Aberystwyth":[52.42,-4.08],"Farnham":[51.21,-0.8],"Deal":[51.22,1.4],"Stirling":[56.12,-3.94],"Orpington":[51.37,0.1],"Penarth":[51.44,-3.17],"Bury":[53.59,-2.3],"Leigh-on-Sea":[51.54,0.65],"Newport":[51.59,-3],"Shrewsbury":[52.71,-2.75],"Sowerby Bridge":[53.71,-1.91],"Bournemouth":[50.72,-1.88],"Barnstaple":[51.08,-4.06],"Crewe":[53.1,-2.44],"Neath":[51.66,-3.81],"Lancaster":[54.05,-2.8],"Whitby":[54.49,0.62],"Blackpool":[53.82,-3.05],"Worthing":[50.81,-0.37],"Walthamstow":[51.58,-0.02],"Hove":[50.83,-0.17],"Brentwood":[51.62,0.31],"Horsham":[51.06,-0.33],"Taunton":[51.02,-3.1],"Ipswich":[52.06,1.16],"Exeter":[50.72,-3.53],"Pumpsaint":[52.05,-3.92],"Southampton":[50.9,-1.4],"Totnes":[50.43,-3.69],"Birkenhead":[53.39,-3.01],"Warrington":[53.39,-2.59],"Preston":[53.76,-2.7],"Portsmouth":[50.8,-1.09],"Whitstable":[51.36,1.03],"Croydon":[51.38,-0.1]};
+    const regionMap = {"Liverpool":"North","London":"London","Swansea":"Wales","Leamington Spa":"Midlands","Great Harwood":"North","Peterborough":"Midlands","Derry":"Ireland","Cork":"Ireland","Dundalk":"Ireland","Tamworth":"Midlands","Penzance":"South","Hastings":"South","Lincoln":"North","Halesowen":"Midlands","Bristol":"South","Cheltenham":"South","Billericay":"South","Amesbury":"South","St Andrews":"Scotland","Cardiff":"Wales","Glasgow":"Scotland","Stroud":"South","Coventry":"Midlands","Crediton":"South","Bath":"South","Pontcanna":"Wales","Oxford":"South","Bury St Edmunds":"Midlands","Edinburgh":"Scotland","Dublin":"Ireland","Leicester":"Midlands","Colchester":"South","Bingley":"North","Truro":"South","Newcastle":"North","Margate":"South","Manchester":"North","Warwick":"Midlands","Doncaster":"North","Stoke-on-Trent":"Midlands","Nottingham":"Midlands","Belfast":"Ireland","Drogheda":"Ireland","Galway":"Ireland","Swords":"Ireland","Leeds":"North","Ventnor":"South","Beverley":"North","Isle of Man":"North","Scarborough":"North","Blackburn":"North","Middlesbrough":"North","Wolverhampton":"Midlands","Falmouth":"South","Sheffield":"North","Stockport":"North","Norwich":"Midlands","Bexhill-on-Sea":"South","Chatham":"South","Bridgend":"Wales","Birmingham":"Midlands","Gravesend":"London","Greenwich":"London","St Leonards-on-Sea":"South","Chester":"North","Chorlton":"North","Athlone":"Ireland","Dundee":"Scotland","Barrow-in-Furness":"North","Romsey":"South","Kingston":"London","Clitheroe":"North","Hereford":"Midlands","West Kirby":"North","Brighton":"South","Salisbury":"South","Poole":"South","Navan":"Ireland","Carmarthen":"Wales","Aberdeen":"Scotland","Selby":"North","Whitchurch":"South","York":"North","Lytham St Annes":"North","Huddersfield":"North","Aberystwyth":"Wales","Farnham":"South","Deal":"South","Stirling":"Scotland","Orpington":"London","Penarth":"Wales","Bury":"North","Leigh-on-Sea":"South","Newport":"Wales","Shrewsbury":"Midlands","Sowerby Bridge":"North","Bournemouth":"South","Barnstaple":"South","Crewe":"North","Neath":"Wales","Lancaster":"North","Whitby":"North","Blackpool":"North","Worthing":"South","Walthamstow":"London","Hove":"South","Brentwood":"London","Horsham":"South","Taunton":"South","Ipswich":"Midlands","Exeter":"South","Pumpsaint":"Wales","Southampton":"South","Totnes":"South","Birkenhead":"North","Warrington":"North","Preston":"North","Portsmouth":"South","Whitstable":"South","Croydon":"London"};
+    const stores = [{"name":"Off The Record","location":"Liverpool"},{"name":"Lion Vibes","location":"London"},{"name":"Derricks","location":"Swansea"},{"name":"Choons","location":"Leamington Spa"},{"name":"12 Bar Music and Social","location":"London"},{"name":"Townsend Records","location":"Great Harwood"},{"name":"Area 51 Records","location":"Peterborough"},{"name":"VOD Music","location":"Derry"},{"name":"Golden Discs","location":"Cork"},{"name":"Golden Discs","location":"Dundalk"},{"name":"Ignite Record Store","location":"Tamworth"},{"name":"Far Land Records","location":"Penzance"},{"name":"Music Mania","location":"Swansea"},{"name":"Concorde Music Shop","location":"Hastings"},{"name":"The Second 45","location":"Lincoln"},{"name":"World of Echo","location":"London"},{"name":"Revolution Records Halesowen","location":"Halesowen"},{"name":"Rough Trade Bristol","location":"Bristol"},{"name":"Raves from the Grave","location":"Cheltenham"},{"name":"Slipped Discs Billericay","location":"Billericay"},{"name":"Dash The Henge Store","location":"Amesbury"},{"name":"Empire Records","location":"St Andrews"},{"name":"Spillers Records","location":"Cardiff"},{"name":"Slide Record Shop","location":"London"},{"name":"Monorail Music","location":"Glasgow"},{"name":"Regency Records","location":"Stroud"},{"name":"Specialist Subject","location":"Bristol"},{"name":"Save Our Souls Records","location":"Coventry"},{"name":"Clocktower Records","location":"Crediton"},{"name":"Big Moon Records","location":"Bath"},{"name":"Roan Records","location":"Pontcanna"},{"name":"Phonica Records","location":"London"},{"name":"Truck Oxford","location":"Oxford"},{"name":"Music Mania Ltd","location":"Swansea"},{"name":"Vintage & Vinyl","location":"Bury St Edmunds"},{"name":"Sound Cellar","location":"Stroud"},{"name":"Voxbox","location":"Edinburgh"},{"name":"Vinyl Attraction","location":"Glasgow"},{"name":"Raven Retail","location":"London"},{"name":"Vinyl Underground","location":"Glasgow"},{"name":"Starr Records","location":"Glasgow"},{"name":"Jacaranda Records","location":"Liverpool"},{"name":"Tower Records","location":"Dublin"},{"name":"Tubeway Records","location":"Leicester"},{"name":"Saturnalia Records","location":"London"},{"name":"Museum Vinyl","location":"Colchester"},{"name":"Five Rise Records","location":"Bingley"},{"name":"Black Circle Records","location":"Truro"},{"name":"The Vault Collective","location":"Glasgow"},{"name":"Up North Records","location":"Newcastle"},{"name":"Slow Century Records","location":"Margate"},{"name":"Heathen Chemistry","location":"Manchester"},{"name":"Beyond Vinyl","location":"Warwick"},{"name":"Number One Records","location":"Doncaster"},{"name":"Rubber Soul Records","location":"Stoke-on-Trent"},{"name":"Good Vibes Neighbourhood Store","location":"London"},{"name":"Intense Records","location":"Nottingham"},{"name":"Record Room","location":"Belfast"},{"name":"Golden Discs","location":"Drogheda"},{"name":"Golden Discs","location":"Galway"},{"name":"Golden Discs","location":"Swords"},{"name":"Crash Records","location":"Leeds"},{"name":"Ventnor Exchange","location":"Ventnor"},{"name":"Soul Brother","location":"London"},{"name":"Red House Records","location":"Beverley"},{"name":"Spun Out","location":"London"},{"name":"Sound Records IOM","location":"Isle of Man"},{"name":"The Vinyl Whistle","location":"Bath"},{"name":"Sounds Of The Universe","location":"London"},{"name":"Bella Union Vinyl Shop","location":"London"},{"name":"S T Records","location":"Scarborough"},{"name":"Stone Rock Records","location":"Blackburn"},{"name":"Sister Ray","location":"London"},{"name":"Left for Dead","location":"Nottingham"},{"name":"Love Music","location":"Glasgow"},{"name":"Peckham Soul","location":"London"},{"name":"Steamboat Records","location":"London"},{"name":"Revo Records","location":"Middlesbrough"},{"name":"Seedee Jons","location":"Wolverhampton"},{"name":"Future Audio","location":"Leeds"},{"name":"Jam Records","location":"Falmouth"},{"name":"Spinning Discs Sheffield","location":"Sheffield"},{"name":"The LP Cafe","location":"London"},{"name":"The Record Shop Ltd","location":"Cheltenham"},{"name":"Honest Jon's Records","location":"London"},{"name":"Sound Records","location":"Stockport"},{"name":"Venus Vinyl","location":"Norwich"},{"name":"Grooves Records","location":"Glasgow"},{"name":"Music's Not Dead","location":"Bexhill-on-Sea"},{"name":"The Vinyl Frontier","location":"Chatham"},{"name":"Record Vault","location":"Bridgend"},{"name":"Polar Bear","location":"Birmingham"},{"name":"Vinyl Head Record Shop","location":"Gravesend"},{"name":"Casbah Records","location":"Greenwich"},{"name":"Jumbo Records","location":"Leeds"},{"name":"Tough Love St Leonards","location":"St Leonards-on-Sea"},{"name":"Strip Joint Records","location":"London"},{"name":"Yew Tree Records","location":"Chester"},{"name":"Over The Moon Records","location":"Chorlton"},{"name":"Underground Solution","location":"Stoke-on-Trent"},{"name":"Golden Discs","location":"Athlone"},{"name":"JM Records","location":"Dundee"},{"name":"The Musical Box","location":"Barrow-in-Furness"},{"name":"Hundred Records","location":"Romsey"},{"name":"Longplay","location":"Dublin"},{"name":"Berwick Street Record Emporium","location":"London"},{"name":"Spin Inn","location":"Cork"},{"name":"Rough Trade East","location":"London"},{"name":"Rhythm Section International","location":"London"},{"name":"Banquet Records","location":"Kingston"},{"name":"Norman Records","location":"Leeds"},{"name":"Coda Music","location":"Edinburgh"},{"name":"Acid Jazz Records","location":"London"},{"name":"Beatin' Rhythm","location":"Manchester"},{"name":"Deep Cuts","location":"London"},{"name":"Reckless Records","location":"London"},{"name":"Selectadisc","location":"Nottingham"},{"name":"Probe Records","location":"Liverpool"},{"name":"Fopp","location":"Glasgow"},{"name":"Vinyl Exchange","location":"Manchester"},{"name":"Pure Groove","location":"London"},{"name":"All Ages Records","location":"London"},{"name":"Love Vinyl","location":"London"},{"name":"Flashback Records","location":"London"},{"name":"Eldica","location":"London"},{"name":"Intoxica!","location":"London"},{"name":"Record & Tape Exchange","location":"London"},{"name":"Vinyl Junkies","location":"London"},{"name":"Lucky Seven Records","location":"London"},{"name":"Bear Tree Records","location":"Sheffield"},{"name":"RPM Records","location":"Edinburgh"},{"name":"Elvis Shakespeare","location":"Edinburgh"},{"name":"Vinyl Villains","location":"Edinburgh"},{"name":"Avalanche Records","location":"Edinburgh"},{"name":"Piccadilly Records","location":"Manchester"},{"name":"Townsend Records","location":"Clitheroe"},{"name":"Record Collector","location":"Sheffield"},{"name":"Tangled Parrot","location":"Hereford"},{"name":"Assai","location":"Dundee"},{"name":"Rough Trade Vintage","location":"London"},{"name":"Dig Vinyl","location":"West Kirby"},{"name":"Resident Music","location":"Brighton"},{"name":"Assai","location":"Edinburgh"},{"name":"Stax of Wax","location":"Salisbury"},{"name":"Galaxy Records","location":"Poole"},{"name":"Spiller's Records","location":"Cardiff"},{"name":"Record Hunter","location":"Dublin"},{"name":"Golden Discs","location":"Navan"},{"name":"Manic Street Music","location":"Carmarthen"},{"name":"Timewarp Music","location":"Aberdeen"},{"name":"The Record Bar","location":"Leeds"},{"name":"Yorkshire Sound","location":"Selby"},{"name":"Wah Wah Records","location":"London"},{"name":"Spinning Around Records","location":"Whitchurch"},{"name":"Rarekind Records","location":"Sheffield"},{"name":"Just Dropped In","location":"York"},{"name":"Vinyl Audio Cafe","location":"Lytham St Annes"},{"name":"Back to Mono","location":"Glasgow"},{"name":"33 RPM","location":"Birmingham"},{"name":"Tasty Records","location":"Huddersfield"},{"name":"RPM Music","location":"Newcastle"},{"name":"Spindizzy Records","location":"Dublin"},{"name":"Pure Vinyl Records","location":"Wolverhampton"},{"name":"Andy's Records","location":"Aberystwyth"},{"name":"Reggie's Retro Record Store","location":"Hastings"},{"name":"101 Collectors Records","location":"Farnham"},{"name":"Beatdown Records","location":"Newcastle"},{"name":"Bell, Book Candle","location":"London"},{"name":"Smugglers Records","location":"Deal"},{"name":"Europa Music","location":"Stirling"},{"name":"Cruisin Records","location":"Dundalk"},{"name":"The Orpington","location":"Orpington"},{"name":"Toms Record Shop","location":"London"},{"name":"Grinning Soul Records","location":"London"},{"name":"Level Crossing Records","location":"Penarth"},{"name":"Hectic Records","location":"Manchester"},{"name":"Wax and Beans","location":"Bury"},{"name":"Some Great Reward","location":"Leigh-on-Sea"},{"name":"Maestro Records","location":"Liverpool"},{"name":"Global Groove","location":"London"},{"name":"Diverse Vinyl","location":"Newport"},{"name":"Cool Discs Music","location":"Derry"},{"name":"Rockabuy Records","location":"London"},{"name":"Missing Records","location":"Glasgow"},{"name":"Catty Records","location":"Shrewsbury"},{"name":"Hog's Head Beer Cafe","location":"Sowerby Bridge"},{"name":"Hot Salvation","location":"London"},{"name":"Backtrack Records","location":"Bournemouth"},{"name":"Broken Records","location":"Barnstaple"},{"name":"Music Minded","location":"Crewe"},{"name":"Bowerbird Records","location":"Truro"},{"name":"Dragon Records","location":"Neath"},{"name":"vinyl109","location":"Leigh-on-Sea"},{"name":"Ear Worm Records","location":"Lancaster"},{"name":"Abbey Records","location":"Whitby"},{"name":"Vinyl Lounge","location":"Blackpool"},{"name":"Music Stop","location":"Bournemouth"},{"name":"Arcade Records","location":"Worthing"},{"name":"Deckchair Records","location":"Brighton"},{"name":"Zebedee's Records","location":"Walthamstow"},{"name":"Underground Music","location":"Hove"},{"name":"Spin It Records","location":"Brighton"},{"name":"Vinylicious","location":"Brentwood"},{"name":"Record Surplus","location":"London"},{"name":"Unearthed Records","location":"Walthamstow"},{"name":"Vinylheads","location":"Horsham"},{"name":"Spun Records","location":"London"},{"name":"Sounds Good","location":"Taunton"},{"name":"Crumbs Records","location":"Leeds"},{"name":"SIDESHOW Records","location":"Sheffield"},{"name":"Play Music","location":"Ipswich"},{"name":"Resonance Records","location":"Exeter"},{"name":"Flipside Records","location":"Pumpsaint"},{"name":"Vinilo Records","location":"Southampton"},{"name":"Drift Records","location":"Totnes"},{"name":"Music Zone","location":"Birkenhead"},{"name":"Record Archive","location":"Leeds"},{"name":"Wax Lyrical","location":"York"},{"name":"Beat Records","location":"Dundee"},{"name":"Deja Vu Records","location":"Blackpool"},{"name":"Music Box","location":"Warrington"},{"name":"Revolution Records","location":"Newcastle"},{"name":"Vinyl Revival","location":"Manchester"},{"name":"Third Eye Records","location":"Edinburgh"},{"name":"Flatpack Records","location":"Preston"},{"name":"Good Vibrations","location":"Belfast"},{"name":"Underground Records","location":"Newcastle"},{"name":"Lost In Music","location":"Sheffield"},{"name":"Pie & Vinyl","location":"Portsmouth"},{"name":"Electric Elephant Records","location":"Whitstable"},{"name":"Vinyl Tap","location":"Huddersfield"},{"name":"Shockwaves","location":"Croydon"},{"name":"Haggle Vinyl","location":"London"},{"name":"Record Shack","location":"London"},{"name":"Out On The Floor","location":"London"},{"name":"Minus Zero Records","location":"London"},{"name":"Haggle","location":"London"},{"name":"Ray's Jazz","location":"London"},{"name":"Underground Solu'shn","location":"Edinburgh"}];
 
-        function getInitials(name) {
-            return name.split(' ')
-                .filter(w => w.length > 1 && /[a-zA-Z]/.test(w[0]))
-                .map(w => w[0].toUpperCase())
-                .slice(0, 2).join('');
+    stores.forEach(s => {
+        const c = cityCoords[s.location];
+        if (c) { s.lat = c[0]; s.lng = c[1]; }
+        s.region = regionMap[s.location] || null;
+    });
+
+    const postcodeAreas = {
+        'AB': [57.15,-2.09], 'AL': [51.75,-0.34], 'B': [52.48,-1.90], 'BA': [51.38,-2.36],
+        'BB': [53.76,-2.47], 'BD': [53.79,-1.75], 'BH': [50.72,-1.88], 'BL': [53.58,-2.43],
+        'BN': [50.83,-0.14], 'BR': [51.41,0.01], 'BS': [51.45,-2.59], 'BT': [54.60,-5.93],
+        'CA': [54.89,-2.93], 'CB': [52.21,0.12], 'CF': [51.48,-3.18], 'CH': [53.19,-2.89],
+        'CM': [51.73,0.47], 'CO': [51.89,0.90], 'CR': [51.37,-0.10], 'CT': [51.28,1.08],
+        'CV': [52.41,-1.51], 'CW': [53.10,-2.44], 'DA': [51.45,0.22], 'DD': [56.46,-2.97],
+        'DE': [52.92,-1.47], 'DG': [55.07,-3.61], 'DH': [54.78,-1.57], 'DL': [54.52,-1.55],
+        'DN': [53.52,-1.13], 'DT': [50.71,-2.44], 'DY': [52.51,-2.08], 'E': [51.55,-0.05],
+        'EC': [51.52,-0.09], 'EH': [55.95,-3.19], 'EN': [51.65,-0.08], 'EX': [50.72,-3.53],
+        'FK': [56.12,-3.94], 'FY': [53.82,-3.05], 'G': [55.86,-4.25], 'GL': [51.87,-2.24],
+        'GU': [51.24,-0.77], 'HA': [51.58,-0.34], 'HD': [53.65,-1.78], 'HG': [54.00,-1.54],
+        'HP': [51.75,-0.74], 'HR': [52.06,-2.72], 'HS': [57.76,-7.01], 'HU': [53.75,-0.34],
+        'HX': [53.72,-1.86], 'IG': [51.56,0.08], 'IP': [52.06,1.16], 'IV': [57.48,-4.22],
+        'KA': [55.46,-4.63], 'KT': [51.38,-0.30], 'KW': [58.44,-3.10], 'KY': [56.25,-3.18],
+        'L': [53.41,-2.98], 'LA': [54.05,-2.80], 'LD': [52.25,-3.38], 'LE': [52.63,-1.13],
+        'LL': [53.12,-3.82], 'LN': [53.23,-0.54], 'LS': [53.80,-1.55], 'LU': [51.88,-0.42],
+        'M': [53.48,-2.24], 'ME': [51.39,0.53], 'MK': [52.04,-0.76], 'ML': [55.78,-3.98],
+        'N': [51.57,-0.10], 'NE': [55.00,-1.60], 'NG': [52.95,-1.15], 'NN': [52.24,-0.90],
+        'NP': [51.59,-3.00], 'NR': [52.63,1.30], 'NW': [51.55,-0.17], 'OL': [53.54,-2.12],
+        'OX': [51.75,-1.26], 'PA': [55.85,-4.43], 'PE': [52.57,-0.24], 'PH': [56.65,-3.78],
+        'PL': [50.37,-4.14], 'PO': [50.80,-1.09], 'PR': [53.76,-2.70], 'RG': [51.45,-0.97],
+        'RH': [51.12,-0.19], 'RM': [51.57,0.18], 'S': [53.38,-1.47], 'SA': [51.62,-3.94],
+        'SE': [51.49,-0.06], 'SG': [51.90,-0.19], 'SK': [53.39,-2.16], 'SL': [51.51,-0.65],
+        'SM': [51.37,-0.17], 'SN': [51.56,-1.78], 'SO': [50.90,-1.40], 'SP': [51.07,-1.80],
+        'SR': [54.91,-1.38], 'SS': [51.55,0.71], 'ST': [52.99,-2.18], 'SW': [51.46,-0.17],
+        'SY': [52.65,-2.75], 'TA': [51.02,-3.10], 'TD': [55.60,-2.43], 'TF': [52.68,-2.49],
+        'TN': [51.14,0.26], 'TQ': [50.47,-3.53], 'TR': [50.26,-5.05], 'TS': [54.57,-1.24],
+        'TW': [51.45,-0.34], 'UB': [51.53,-0.42], 'W': [51.52,-0.18], 'WA': [53.39,-2.59],
+        'WC': [51.52,-0.12], 'WD': [51.66,-0.40], 'WF': [53.68,-1.50], 'WN': [53.55,-2.63],
+        'WR': [52.19,-2.22], 'WS': [52.59,-1.98], 'WV': [52.59,-2.13], 'YO': [53.96,-1.08],
+        'ZE': [60.39,-1.15]
+    };
+
+    function postcodeToCoords(input) {
+        const clean = input.replace(/\s+/g, '').toUpperCase();
+        for (let len = Math.min(4, clean.length); len >= 1; len--) {
+            const prefix = clean.substring(0, len);
+            if (postcodeAreas[prefix]) return postcodeAreas[prefix];
         }
+        return null;
+    }
+    function isPostcodeSearch(q) { return /^[A-Za-z]{1,2}\d/.test(q.replace(/\s/g, "")); }
 
-        function renderStores(list) {
-            const grid = document.getElementById('storesGrid');
-            const noResults = document.getElementById('noResults');
-            document.getElementById('storeCount').textContent = list.length;
+    function distanceMiles(lat1, lng1, lat2, lng2) {
+        const R = 3959;
+        const dLat = (lat2-lat1)*Math.PI/180, dLng = (lng2-lng1)*Math.PI/180;
+        const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+    function formatDistance(m) { return m < 1 ? '< 1 mile' : Math.round(m) + ' miles'; }
+    function getInitials(name) { return name.split(' ').filter(w => w.length > 1 && /[a-zA-Z]/.test(w[0])).map(w => w[0].toUpperCase()).slice(0,2).join(''); }
+        // ═══ STATE ═══
+    let userLat = null, userLng = null, activeRegion = 'all', searchQuery = '';
 
-            if (list.length === 0) {
-                grid.innerHTML = '';
-                noResults.classList.remove('hidden');
-                document.getElementById('noResultsQuery').textContent = document.getElementById('searchInput').value;
-                return;
+    // ═══ DOM ═══
+    const searchInput = document.getElementById('storeSearchInput');
+    const clearBtn = document.getElementById('clearBtn');
+    const locationBtn = document.getElementById('locationBtn');
+    const locationBtnText = document.getElementById('locationBtnText');
+    const distanceBanner = document.getElementById('distanceBanner');
+    const grid = document.getElementById('storesGrid');
+    const noResults = document.getElementById('noResults');
+    const storeCountEl = document.getElementById('storeCount');
+    const sortLabel = document.getElementById('sortLabel');
+    const nearestCountEl = document.getElementById('nearestCount');
+    const regionPills = document.querySelectorAll('.region-pill');
+
+    // ═══ MAP ═══
+    const map = L.map('map', { scrollWheelZoom: false }).setView([54.5, -3.5], 6);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+        maxZoom: 18
+    }).addTo(map);
+
+    const coralIcon = L.divIcon({ className: '', html: '<div class="coral-marker"></div>', iconSize: [12, 12], iconAnchor: [6, 6] });
+    const highlightIcon = L.divIcon({ className: '', html: '<div class="coral-marker highlight"></div>', iconSize: [16, 16], iconAnchor: [8, 8] });
+    let markersLayer = L.layerGroup().addTo(map);
+    let userMarker = null;
+    let markerMap = new Map(); // store name -> marker
+
+    function updateMap(storeList) {
+        markersLayer.clearLayers();
+        markerMap.clear();
+        const bounds = [];
+
+        storeList.forEach(s => {
+            if (s.lat == null) return;
+            const mapsQ = encodeURIComponent(s.name + ' record store ' + s.location);
+            const m = L.marker([s.lat, s.lng], { icon: coralIcon })
+                .bindPopup('<div class="popup-name">' + s.name + '</div><div class="popup-location">' + s.location + '</div><div class="popup-links"><a href="https://www.google.com/maps/search/' + mapsQ + '" target="_blank">Directions</a></div>', { closeButton: false });
+            markersLayer.addLayer(m);
+            markerMap.set(s.name + '|' + s.location, m);
+            bounds.push([s.lat, s.lng]);
+        });
+
+        if (userLat !== null && userLng !== null) {
+            if (userMarker) map.removeLayer(userMarker);
+            userMarker = L.circleMarker([userLat, userLng], {
+                radius: 8, fillColor: '#3B82F6', fillOpacity: 0.9, color: '#fff', weight: 2
+            }).addTo(map).bindPopup('<div class="popup-name">You are here</div>', { closeButton: false });
+            bounds.push([userLat, userLng]);
+            const nearby = storeList.filter(s => s._dist != null && s._dist < 60).slice(0, 15);
+            if (nearby.length > 0) {
+                const nearBounds = [[userLat, userLng], ...nearby.map(s => [s.lat, s.lng])];
+                map.fitBounds(nearBounds, { padding: [40, 40], maxZoom: 11 });
+            } else {
+                map.setView([userLat, userLng], 9);
             }
+        } else if (bounds.length > 0) {
+            map.fitBounds(bounds, { padding: [30, 30], maxZoom: 12 });
+        }
+    }
 
-            noResults.classList.add('hidden');
+    function highlightStoreOnMap(store) {
+        if (!store.lat) return;
+        const key = store.name + '|' + store.location;
+        const m = markerMap.get(key);
+        if (m) {
+            m.setIcon(highlightIcon);
+            m.openPopup();
+            map.setView([store.lat, store.lng], 12, { animate: true });
+            setTimeout(() => m.setIcon(coralIcon), 3000);
+        }
+    }
 
-            grid.innerHTML = list.map((store, i) => {
-                const hasCity = store.location !== 'UK';
-                const mapsQ = encodeURIComponent(`${store.name} record store${hasCity ? ' ' + store.location : ' UK'}`);
-                const webQ = encodeURIComponent(`${store.name}${hasCity ? ' ' + store.location : ''} record shop site`);
-                const rsdSlug = store.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-                const initials = getInitials(store.name);
+    // ═══ FILTER & RENDER ═══
+    function getFilteredStores() {
+        let list = [...stores];
 
-                return `
-                <div class="store-card bg-white rounded-xl border border-gray-100 shadow-sm p-5" style="animation-delay:${Math.min(i * 12, 500)}ms">
-                    <div class="flex items-start gap-3 mb-4">
-                        <div style="width:42px;height:42px;min-width:42px;border-radius:10px;background:#FFE5E5;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                            <span style="color:#FF6B6B;font-weight:700;font-size:0.8rem">${initials}</span>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <h3 class="font-semibold text-gray-900 text-base leading-snug">${store.name}</h3>
-                            <p class="text-gray-400 text-sm mt-0.5 flex items-center gap-1">
-                                <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                </svg>
-                                ${store.location}
-                            </p>
-                        </div>
-                    </div>
-                    <div class="flex gap-2 flex-wrap">
-                        <a href="https://www.google.com/maps/search/${mapsQ}" target="_blank" rel="noopener"
-                           class="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-500 transition-colors font-medium">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
-                            </svg>
-                            Directions
-                        </a>
-                        <a href="https://www.google.com/search?q=${webQ}" target="_blank" rel="noopener"
-                           class="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-500 transition-colors font-medium">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                            </svg>
-                            Website
-                        </a>
-                        <a href="https://www.recordstoreday.co.uk/record-shop/${rsdSlug}" target="_blank" rel="noopener"
-                           class="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-500 transition-colors font-medium">
-                            RSD Page
-                        </a>
-                    </div>
-                </div>`;
-            }).join('');
+        if (searchQuery) {
+            if (isPostcodeSearch(searchQuery)) {
+                const coords = postcodeToCoords(searchQuery);
+                if (coords) {
+                    userLat = coords[0]; userLng = coords[1];
+                    locationBtnText.textContent = searchQuery.toUpperCase().replace(/\s/g,'').substring(0,4) + '…';
+                    locationBtn.classList.add('active');
+                    distanceBanner.style.display = 'flex';
+                }
+            } else {
+                const q = searchQuery.toLowerCase();
+                list = list.filter(s => s.name.toLowerCase().includes(q) || s.location.toLowerCase().includes(q));
+            }
         }
 
-        renderStores(stores);
+        if (activeRegion !== 'all') list = list.filter(s => s.region === activeRegion);
 
-        const searchInput = document.getElementById('searchInput');
-        const clearBtn = document.getElementById('clearBtn');
+        if (userLat !== null && userLng !== null) {
+            list.forEach(s => { s._dist = (s.lat != null) ? distanceMiles(userLat, userLng, s.lat, s.lng) : 99999; });
+            list.sort((a, b) => a._dist - b._dist);
+            sortLabel.textContent = 'Nearest first';
+            distanceBanner.style.display = 'flex';
+            nearestCountEl.textContent = list.filter(s => s._dist < 50).length;
+        } else {
+            list.sort((a, b) => a.name.localeCompare(b.name));
+            sortLabel.textContent = 'A–Z';
+            distanceBanner.style.display = 'none';
+        }
+        return list;
+    }
 
-        searchInput.addEventListener('input', function () {
-            const q = this.value.toLowerCase().trim();
-            clearBtn.classList.toggle('hidden', q === '');
-            renderStores(q === '' ? stores : stores.filter(s =>
-                s.name.toLowerCase().includes(q) || s.location.toLowerCase().includes(q)
-            ));
+    function renderStores(list) {
+        storeCountEl.textContent = list.length;
+        if (list.length === 0) {
+            grid.innerHTML = '';
+            noResults.classList.remove('hidden');
+            document.getElementById('noResultsQuery').textContent = searchQuery || activeRegion;
+            return;
+        }
+        noResults.classList.add('hidden');
+
+        grid.innerHTML = list.map((store, i) => {
+            const mapsQ = encodeURIComponent(store.name + ' record store ' + store.location);
+            const webQ = encodeURIComponent(store.name + ' ' + store.location + ' record shop');
+            const initials = getInitials(store.name);
+            const showDist = userLat !== null && store._dist != null && store._dist < 99999;
+            return '<div class="store-card" data-idx="' + i + '" style="animation-delay:' + Math.min(i*12,300) + 'ms">'
+                + (showDist ? '<span class="store-distance">' + formatDistance(store._dist) + '</span>' : '')
+                + '<div class="flex items-start gap-3">'
+                + '<div class="store-avatar"><span>' + initials + '</span></div>'
+                + '<div class="flex-1 min-w-0" style="padding-right:' + (showDist ? '65px' : '0') + '">'
+                + '<div class="store-name">' + store.name + '</div>'
+                + '<div class="store-location"><svg class="w-2.5 h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> ' + store.location + '</div>'
+                + '</div></div>'
+                + '<div class="store-actions">'
+                + '<a href="https://www.google.com/maps/search/' + mapsQ + '" target="_blank" rel="noopener" class="store-action" onclick="event.stopPropagation()"><svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg> Directions</a>'
+                + '<a href="https://www.google.com/search?q=' + webQ + '" target="_blank" rel="noopener" class="store-action" onclick="event.stopPropagation()"><svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg> Website</a>'
+                + '</div></div>';
+        }).join('');
+
+        grid.querySelectorAll('.store-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const idx = parseInt(card.dataset.idx);
+                highlightStoreOnMap(list[idx]);
+                card.classList.add('highlighted');
+                setTimeout(() => card.classList.remove('highlighted'), 2000);
+            });
         });
+    }
 
-        clearBtn.addEventListener('click', () => {
-            searchInput.value = '';
-            clearBtn.classList.add('hidden');
-            renderStores(stores);
-            searchInput.focus();
-        });
+    let currentList = [];
+    function refresh() {
+        currentList = getFilteredStores();
+        renderStores(currentList);
+        updateMap(currentList);
+    }
 
-        document.getElementById('clearSearch').addEventListener('click', () => {
-            searchInput.value = '';
-            clearBtn.classList.add('hidden');
-            renderStores(stores);
+    // ═══ EVENTS ═══
+    searchInput.addEventListener('input', () => {
+        searchQuery = searchInput.value.trim();
+        clearBtn.classList.toggle('hidden', searchQuery === '');
+        if (!isPostcodeSearch(searchQuery) && !locationBtn.dataset.geo) {
+            userLat = null; userLng = null;
+            locationBtn.classList.remove('active');
+            locationBtnText.textContent = 'Use my location';
+            if (userMarker) { map.removeLayer(userMarker); userMarker = null; }
+        }
+        refresh();
+    });
+
+    clearBtn.addEventListener('click', () => {
+        searchInput.value = ''; searchQuery = ''; clearBtn.classList.add('hidden');
+        if (!locationBtn.dataset.geo) {
+            userLat = null; userLng = null; locationBtn.classList.remove('active');
+            locationBtnText.textContent = 'Use my location';
+            if (userMarker) { map.removeLayer(userMarker); userMarker = null; }
+        }
+        refresh(); searchInput.focus();
+    });
+
+    document.getElementById('clearSearch').addEventListener('click', () => {
+        searchInput.value = ''; searchQuery = ''; clearBtn.classList.add('hidden');
+        activeRegion = 'all';
+        regionPills.forEach(p => p.classList.toggle('active', p.dataset.region === 'all'));
+        userLat = null; userLng = null; locationBtn.classList.remove('active');
+        locationBtn.removeAttribute('data-geo'); locationBtnText.textContent = 'Use my location';
+        if (userMarker) { map.removeLayer(userMarker); userMarker = null; }
+        refresh();
+    });
+
+    regionPills.forEach(pill => {
+        pill.addEventListener('click', () => {
+            activeRegion = pill.dataset.region;
+            regionPills.forEach(p => p.classList.toggle('active', p === pill));
+            refresh();
         });
+    });
+
+    locationBtn.addEventListener('click', () => {
+        if (userLat !== null && locationBtn.dataset.geo) {
+            userLat = null; userLng = null; locationBtn.classList.remove('active');
+            locationBtn.removeAttribute('data-geo'); locationBtnText.textContent = 'Use my location';
+            if (userMarker) { map.removeLayer(userMarker); userMarker = null; }
+            refresh(); return;
+        }
+        if (!navigator.geolocation) { locationBtnText.textContent = 'Not supported'; return; }
+        locationBtn.classList.add('loading'); locationBtnText.textContent = 'Finding you…';
+        navigator.geolocation.getCurrentPosition(
+            pos => {
+                userLat = pos.coords.latitude; userLng = pos.coords.longitude;
+                locationBtn.classList.remove('loading'); locationBtn.classList.add('active');
+                locationBtn.dataset.geo = 'true'; locationBtnText.textContent = 'Near me ✓';
+                if (isPostcodeSearch(searchQuery)) { searchInput.value = ''; searchQuery = ''; clearBtn.classList.add('hidden'); }
+                refresh();
+            },
+            () => {
+                locationBtn.classList.remove('loading'); locationBtnText.textContent = 'Location blocked';
+                setTimeout(() => { locationBtnText.textContent = 'Use my location'; }, 2500);
+            },
+            { enableHighAccuracy: false, timeout: 8000 }
+        );
+    });
+
+    document.getElementById('clearLocation').addEventListener('click', () => {
+        userLat = null; userLng = null; locationBtn.classList.remove('active');
+        locationBtn.removeAttribute('data-geo'); locationBtnText.textContent = 'Use my location';
+        if (userMarker) { map.removeLayer(userMarker); userMarker = null; }
+        if (isPostcodeSearch(searchQuery)) { searchInput.value = ''; searchQuery = ''; clearBtn.classList.add('hidden'); }
+        refresh();
+    });
+
+    // Initial render
+    refresh();
     </script>
 </body>
 </html>
