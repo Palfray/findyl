@@ -592,6 +592,10 @@
 
                         const filteredEbay = ebayData.results.filter(item => {
                             const title = (item.title || '').toLowerCase();
+
+                            // Reject non-vinyl products (merch, wall art, custom sleeves, singles)
+                            const rejectIndicators = /\b(7"|7 inch|7"|7"|45\s*rpm|12" single|cd single|cassingle|flexi|promo\s+single|wall art|wall decor|decorative|decoration|display|replica|novelty|custom vinyl|custom jacket|jacket only|sleeve only|cover only|poster|print|t-shirt|tshirt|t shirt|tee|hoodie|sweatshirt|mug|keyring|keychain|fridge magnet|coaster|canvas|frame|framed|sticker|badge|patch|pin|tote bag|cushion|pillow|jigsaw|puzzle|book|cassette|tape|cd\b(?!\s*vinyl))\b/i;
+                            if (rejectIndicators.test(title)) return false;
                             
                             // Common non-album words to ignore
                             const noiseWords = new Set(['vinyl','lp','2xlp','3xlp','record','records','sealed','new',
