@@ -92,9 +92,13 @@
           scroll-snap-type: x mandatory;
           -webkit-overflow-scrolling: touch;
           padding: 0 20px 8px;
-          scrollbar-width: none;
+          scroll-behavior: smooth;
         }
-        .showcase-scroll::-webkit-scrollbar { display: none; }
+        .showcase-scroll::-webkit-scrollbar { height: 6px; }
+        .showcase-scroll::-webkit-scrollbar-track { background: transparent; margin: 0 20px; }
+        .showcase-scroll::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }
+        .showcase-scroll::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+        .showcase-scroll { scrollbar-width: thin; scrollbar-color: #D1D5DB transparent; }
         .sc-card {
           flex: 0 0 156px;
           scroll-snap-align: start;
@@ -202,6 +206,25 @@
           .sc-card { flex: 0 0 140px; }
           .showcase-title { font-size: 1.6rem; }
         }
+        .sc-arrow {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-60%);
+          z-index: 10;
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: rgba(0,0,0,0.3);
+          border: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background 0.2s, opacity 0.2s;
+        }
+        .sc-arrow:hover { background: rgba(0,0,0,0.5); }
+        .sc-arrow-left { left: 6px; }
+        .sc-arrow-right { right: 6px; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -210,17 +233,18 @@
         <div class="max-w-4xl mx-auto px-4 text-center">
             <!-- Original Logo -->
             <div class="mb-0 flex justify-center">
-                <svg width="360" height="120" viewBox="0 0 300 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <!-- Clip path for bottom half of vinyl -->
+                <svg width="420" height="120" viewBox="0 0 420 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- findyl text -->
+                  <text x="210" y="56" font-family="'DM Serif Text', serif" font-size="54" fill="white" text-anchor="middle" font-weight="400">findyl</text>
+                  
+                  <!-- Vinyl record (bottom half, under the y descender) -->
                   <defs>
                     <clipPath id="bottomHalf">
-                      <rect x="126" y="58" width="56" height="42"/>
+                      <rect x="176" y="64" width="56" height="42"/>
                     </clipPath>
                   </defs>
-                  
-                  <!-- Vinyl Record (bottom half only) - moved further left -->
                   <g clip-path="url(#bottomHalf)">
-                    <g transform="translate(154, 58)">
+                    <g transform="translate(204, 64)">
                       <circle cx="0" cy="0" r="28" fill="none" stroke="white" stroke-width="1"/>
                       <circle cx="0" cy="0" r="22" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
                       <circle cx="0" cy="0" r="16" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
@@ -228,12 +252,11 @@
                       <circle cx="0" cy="0" r="3" fill="#FF6B6B"/>
                     </g>
                   </g>
-                  
-                  <!-- findyl text -->
-                  <text x="150" y="50" font-family="'DM Serif Text', serif" font-size="48" fill="white" text-anchor="middle" font-weight="400">findyl</text>
+
+                  <!-- Tagline to the right of the icon -->
+                  <text x="238" y="95" font-family="'Nunito Sans', sans-serif" font-size="12" fill="white" text-anchor="start" font-weight="300" opacity="0.85" letter-spacing="0.3">Record collecting, made simple.</text>
                 </svg>
             </div>
-            <p class="text-white mb-4 text-base md:text-lg" style="opacity: 0.95; font-family: 'Nunito Sans', sans-serif; font-weight: 400; letter-spacing: 0.02em;">Record collecting, made simple.</p>
             
             <!-- Hero Search Bar -->
             <form id="hero-search-form" class="max-w-2xl mx-auto relative">
@@ -336,6 +359,13 @@
     <!-- Price Comparison Showcase -->
     <section class="showcase-section">
       <h2 class="showcase-title">Trending vinyl</h2>
+      <div class="showcase-wrap" style="position:relative; max-width:1280px; margin:0 auto;">
+        <button class="sc-arrow sc-arrow-left" aria-label="Scroll left" style="display:none;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <button class="sc-arrow sc-arrow-right" aria-label="Scroll right">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
       <div class="showcase-scroll">
 
         <a href="/album?name=The+Life+of+a+Showgirl&artist=Taylor+Swift&id=9ae7e7e9-ac40-4874-bd43-d77a9bb9b617" class="sc-card" data-artist="Taylor Swift" data-album="The Life of a Showgirl">
@@ -489,10 +519,11 @@
         </a>
 
       </div>
+      </div>
     </section>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 pt-6 pb-12">
+    <main class="max-w-7xl mx-auto px-4 pt-2 pb-12">
         <!-- Sleeve Notes -->
         <section id="articles" class="mb-16">
             <p class="text-gray-500 mb-6 text-sm md:text-base" style="font-family: 'Nunito Sans', sans-serif; font-weight: 400;">Search artists, compare vinyl prices across UK record stores, and discover your next favourite album.</p>
@@ -502,7 +533,7 @@
                     <a href="/articles/best-selling-vinyl-2025" class="block">
                     <div class="p-6 pb-4">
                         <div class="text-sm mb-2" style="color:#FF6B6B">Charts</div>
-                        <h3 class="text-xl mb-2">The 20 Best Selling Vinyl Records of 2025</h3>
+                        <h3 class="text-2xl mb-2">The 20 Best Selling Vinyl Records of 2025</h3>
                         <p class="mb-0">From Taylor Swift to Sam Fender — the official UK vinyl chart rundown for 2025.</p>
                     </div>
                     <div class="h-48 overflow-hidden">
@@ -518,7 +549,7 @@
                     <a href="/articles/country-music-uk-2026" class="block">
                     <div class="p-6 pb-4">
                         <div class="text-sm mb-2" style="color:#FF6B6B">Sleeve Notes</div>
-                        <h3 class="text-xl mb-2">Country Music Is Taking Over the UK</h3>
+                        <h3 class="text-2xl mb-2">Country Music Is Taking Over the UK</h3>
                         <p class="mb-0">From Zach Bryan selling out Tottenham to Tyler Childers and a wave of new talent.</p>
                     </div>
                     <div class="h-48 overflow-hidden">
@@ -533,7 +564,7 @@
                 <article class="article-card bg-white rounded-lg overflow-hidden shadow-sm">
                     <div class="p-6 pb-4">
                         <div class="text-sm mb-2" style="color:#FF6B6B">Store Spotlight</div>
-                        <h3 class="text-xl mb-2">UK's Best Independent Record Stores</h3>
+                        <h3 class="text-2xl mb-2">UK's Best Independent Record Stores</h3>
                         <p class="mb-0">A curated guide to the finest vinyl shops across the United Kingdom.</p>
                     </div>
                     <div class="h-48 overflow-hidden">
@@ -650,6 +681,29 @@
                 stickyHeader.classList.remove('scrolled');
             }
         });
+    </script>
+
+    <!-- Showcase arrow navigation -->
+    <script>
+    (function() {
+      const scroll = document.querySelector('.showcase-scroll');
+      const leftBtn = document.querySelector('.sc-arrow-left');
+      const rightBtn = document.querySelector('.sc-arrow-right');
+      if (!scroll || !leftBtn || !rightBtn) return;
+
+      const scrollAmount = 340;
+
+      function updateArrows() {
+        leftBtn.style.display = scroll.scrollLeft > 10 ? 'flex' : 'none';
+        rightBtn.style.display = scroll.scrollLeft < scroll.scrollWidth - scroll.clientWidth - 10 ? 'flex' : 'none';
+      }
+
+      leftBtn.addEventListener('click', () => { scroll.scrollBy({ left: -scrollAmount, behavior: 'smooth' }); });
+      rightBtn.addEventListener('click', () => { scroll.scrollBy({ left: scrollAmount, behavior: 'smooth' }); });
+      scroll.addEventListener('scroll', updateArrows, { passive: true });
+      window.addEventListener('resize', updateArrows);
+      updateArrows();
+    })();
     </script>
 
     <!-- Shared search: autocomplete, syncing, keyboard nav -->
