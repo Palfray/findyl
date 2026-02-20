@@ -671,7 +671,7 @@
         'single','triple','heavyweight','audiophile','original','brand','factory']);
 
       // Words in eBay titles that indicate a single/EP or non-vinyl product
-      const rejectIndicators = /\b(7"|7 inch|7"|7"|45\s*rpm|12" single|cd single|cassingle|flexi|promo\s+single|wall art|wall decor|decorative|decoration|display|replica|novelty|poster|print|t-shirt|tshirt|t shirt|tee|hoodie|sweatshirt|mug|keyring|keychain|fridge magnet|coaster|canvas|frame|framed|sticker|badge|patch|pin|tote bag|cushion|pillow|jigsaw|puzzle|book|cassette|tape|cd\b(?!\s*vinyl))\b/i;
+      const rejectIndicators = /\b(7"|7 inch|7"|7"|45\s*rpm|12" single|cd single|cassingle|flexi|promo\s+single|wall art|wall decor|decorative|decoration|display|replica|novelty|custom vinyl|custom jacket|jacket only|sleeve only|cover only|poster|print|t-shirt|tshirt|t shirt|tee|hoodie|sweatshirt|mug|keyring|keychain|fridge magnet|coaster|canvas|frame|framed|sticker|badge|patch|pin|tote bag|cushion|pillow|jigsaw|puzzle|book|cassette|tape|cd\b(?!\s*vinyl))\b/i;
 
       // Filter eBay results to match a specific album (mirrors album.html logic)
       function filterEbay(items, albumName, artistName) {
