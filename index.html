@@ -686,9 +686,6 @@
           // Reject obvious singles, merch, and non-vinyl products
           if (rejectIndicators.test(title)) return false;
 
-          // Reject suspiciously cheap listings (likely singles or wrong item)
-          if (item.price && item.price < 8) return false;
-
           if (isSelfTitled) {
             const artistWords = new Set(artistName.toLowerCase().split(/\s+/));
             const titleWords = title.split(/[\s\-–—:,./]+/).filter(w => w.length > 1);
