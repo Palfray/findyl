@@ -20,7 +20,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://musicbrainz.org">
     <link rel="preconnect" href="https://coverartarchive.org">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Serif+Text:ital@0;1&family=Raleway:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Serif+Text&family=Nunito+Sans:wght@300;400&family=Raleway:wght@400&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Serif+Text&family=Nunito+Sans:wght@300;400&family=Raleway:wght@400&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'DM Serif Display', serif;
@@ -52,7 +54,7 @@
         #sticky-header {
             transition: all 0.3s ease;
         }
-        
+
         #sticky-header.scrolled {
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
@@ -70,7 +72,7 @@
         /* Showcase scroller */
         .showcase-section {
           background: #F9FAFB;
-          padding: 16px 0 20px;
+          padding: 10px 0 20px;
         }
         .showcase-title {
           font-family: 'DM Serif Display', serif;
@@ -80,7 +82,7 @@
           letter-spacing: -0.01em;
           text-align: left;
           max-width: 1280px;
-          margin: 0 auto 12px;
+          margin: 0 auto 10px;
           padding-left: 20px;
         }
         .showcase-scroll {
@@ -204,11 +206,11 @@
 </head>
 <body class="bg-gray-50">
     <!-- Hero Section -->
-    <div id="hero" class="py-8 md:py-10" style="background-color: #FF6B6B;">
+    <div id="hero" style="background-color: #FF6B6B; padding: 28px 0;">
         <div class="max-w-4xl mx-auto px-4 text-center">
             <!-- Original Logo -->
-            <div class="mb-3 flex justify-center">
-                <svg width="240" height="80" viewBox="0 0 300 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <div class="mb-0 flex justify-center">
+                <svg width="360" height="120" viewBox="0 0 300 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <!-- Clip path for bottom half of vinyl -->
                   <defs>
                     <clipPath id="bottomHalf">
@@ -231,8 +233,7 @@
                   <text x="150" y="50" font-family="'DM Serif Text', serif" font-size="48" fill="white" text-anchor="middle" font-weight="400">findyl</text>
                 </svg>
             </div>
-            <p class="text-white mb-1 text-base md:text-lg tracking-wide" style="opacity: 0.95; font-family: 'Raleway', sans-serif; font-weight: 500;">Collecting vinyl, made simple.</p>
-            <p class="text-white mb-4 text-xs md:text-sm tracking-wide" style="opacity: 0.7; font-family: 'Raleway', sans-serif; font-weight: 400;">Compare prices across UK vinyl retailers</p>
+            <p class="text-white mb-4 text-base md:text-lg" style="opacity: 0.95; font-family: 'Nunito Sans', sans-serif; font-weight: 400; letter-spacing: 0.02em;">Record collecting, made simple.</p>
             
             <!-- Hero Search Bar -->
             <form id="hero-search-form" class="max-w-2xl mx-auto relative">
@@ -260,11 +261,9 @@
     <header id="sticky-header" class="sticky top-0 z-50 hidden">
         <!-- Coral search bar -->
         <div class="border-b border-gray-200" style="background-color: #FF6B6B;">
-            <div class="max-w-7xl mx-auto px-4 py-3">
-                <!-- Logo & Search Row -->
-                <div class="flex items-center gap-4">
-                    <a href="/" class="flex items-center gap-1 flex-shrink-0">
-                        <!-- Compact logo - bigger version -->
+            <div class="max-w-4xl mx-auto px-4 py-3">
+                <div class="flex items-center gap-3">
+                    <a href="/" class="flex-shrink-0">
                         <svg width="150" height="50" viewBox="0 0 150 50" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <defs>
                             <clipPath id="bottomHalfSmall">
@@ -283,8 +282,7 @@
                           <text x="75" y="25" font-family="'DM Serif Text', serif" font-size="24" fill="white" text-anchor="middle" font-weight="400">findyl</text>
                         </svg>
                     </a>
-                    
-                    <form id="header-search-form" class="flex-1 max-w-2xl relative">
+                    <form id="header-search-form" class="flex-1 relative">
                         <div class="relative">
                             <input 
                                 type="text" 
@@ -310,10 +308,12 @@
         <div class="bg-white border-b border-gray-200">
             <div class="max-w-7xl mx-auto px-4">
                 <nav class="flex justify-center gap-8 py-3">
-                    <a href="/local-stores" class="text-gray-700 hover:text-gray-900">Find a store</a>
-                    <a href="/sales" class="text-gray-700 hover:text-gray-900">Sales</a>
-                    <a href="/articles" class="text-gray-700 hover:text-gray-900">Sleeve Notes</a>
-                    <a href="/about" class="text-gray-700 hover:text-gray-900">About</a>
+                    <a href="/local-stores" class="text-gray-700 hover:text-gray-900 flex items-center gap-1.5">
+                        Record Stores<svg width="12" height="12" viewBox="0 0 24 24" fill="#FF6B6B" stroke="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg></a>
+                    <a href="/articles" class="text-gray-700 hover:text-gray-900 flex items-center gap-1.5">
+                        Sleeve Notes<svg width="12" height="12" viewBox="0 0 24 24" fill="#FF6B6B" stroke="none"><path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"/><line x1="14" y1="10" x2="19" y2="10" stroke="white" stroke-width="1" opacity="0.8"/><line x1="14" y1="13" x2="18" y2="13" stroke="white" stroke-width="1" opacity="0.8"/><line x1="14" y1="16" x2="19" y2="16" stroke="white" stroke-width="1" opacity="0.8"/></svg></a>
+                    <a href="/sales" class="text-gray-700 hover:text-gray-900 flex items-center gap-1.5">
+                        Sales<svg width="12" height="12" viewBox="0 0 24 24" fill="#FF6B6B" stroke="none"><path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/></svg></a>
                 </nav>
             </div>
         </div>
@@ -323,22 +323,24 @@
     <div class="bg-white border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4">
             <nav class="flex justify-center gap-8 py-2.5">
-                <a href="/local-stores" class="text-gray-700 hover:text-gray-900 font-medium">Find a store</a>
-                <a href="/sales" class="text-gray-700 hover:text-gray-900 font-medium">Sales</a>
-                <a href="/articles" class="text-gray-700 hover:text-gray-900 font-medium">Sleeve Notes</a>
-                <a href="/about" class="text-gray-700 hover:text-gray-900 font-medium">About</a>
+                <a href="/local-stores" class="text-gray-700 hover:text-gray-900 font-medium flex items-center gap-1.5">
+                    Record Stores<svg width="14" height="14" viewBox="0 0 24 24" fill="#FF6B6B" stroke="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg></a>
+                <a href="/articles" class="text-gray-700 hover:text-gray-900 font-medium flex items-center gap-1.5">
+                    Sleeve Notes<svg width="14" height="14" viewBox="0 0 24 24" fill="#FF6B6B" stroke="none"><path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"/><line x1="14" y1="10" x2="19" y2="10" stroke="white" stroke-width="1" opacity="0.8"/><line x1="14" y1="13" x2="18" y2="13" stroke="white" stroke-width="1" opacity="0.8"/><line x1="14" y1="16" x2="19" y2="16" stroke="white" stroke-width="1" opacity="0.8"/></svg></a>
+                <a href="/sales" class="text-gray-700 hover:text-gray-900 font-medium flex items-center gap-1.5">
+                    Sales<svg width="14" height="14" viewBox="0 0 24 24" fill="#FF6B6B" stroke="none"><path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/></svg></a>
             </nav>
         </div>
     </div>
 
     <!-- Price Comparison Showcase -->
     <section class="showcase-section">
-      <h2 class="showcase-title">Trending on vinyl</h2>
+      <h2 class="showcase-title">Trending vinyl</h2>
       <div class="showcase-scroll">
 
         <a href="/album?name=The+Life+of+a+Showgirl&artist=Taylor+Swift&id=9ae7e7e9-ac40-4874-bd43-d77a9bb9b617" class="sc-card" data-artist="Taylor Swift" data-album="The Life of a Showgirl">
           <div class="sc-art">
-            <img src="https://coverartarchive.org/release-group/9ae7e7e9-ac40-4874-bd43-d77a9bb9b617/front-500" alt="The Life of a Showgirl" loading="lazy">
+            <img src="https://coverartarchive.org/release-group/9ae7e7e9-ac40-4874-bd43-d77a9bb9b617/front-500" alt="The Life of a Showgirl" loading="eager" fetchpriority="high">
             <div class="sc-rank">#1</div>
             <div class="sc-stores"></div>
           </div>
@@ -353,7 +355,7 @@
 
         <a href="/album?name=People+Watching&artist=Sam+Fender&id=5e04ecf9-2c55-4dbb-b03e-001727f9d285" class="sc-card" data-artist="Sam Fender" data-album="People Watching">
           <div class="sc-art">
-            <img src="https://coverartarchive.org/release-group/5e04ecf9-2c55-4dbb-b03e-001727f9d285/front-500" alt="People Watching" loading="lazy">
+            <img src="https://coverartarchive.org/release-group/5e04ecf9-2c55-4dbb-b03e-001727f9d285/front-500" alt="People Watching" loading="eager">
             <div class="sc-rank">#2</div>
             <div class="sc-stores"></div>
           </div>
@@ -368,7 +370,7 @@
 
         <a href="/album?name=(What%27s+the+Story)+Morning+Glory%3F&artist=Oasis&id=cc7e6348-cc55-31fa-aeb2-748a46a81cb3" class="sc-card" data-artist="Oasis" data-album="(What's the Story) Morning Glory?">
           <div class="sc-art">
-            <img src="https://coverartarchive.org/release-group/cc7e6348-cc55-31fa-aeb2-748a46a81cb3/front-500" alt="(What's the Story) Morning Glory?" loading="lazy">
+            <img src="https://coverartarchive.org/release-group/cc7e6348-cc55-31fa-aeb2-748a46a81cb3/front-500" alt="(What's the Story) Morning Glory?" loading="eager">
             <div class="sc-rank">#3</div>
             <div class="sc-stores"></div>
           </div>
@@ -383,7 +385,7 @@
 
         <a href="/album?name=Lover+(Live+from+Paris)&artist=Taylor+Swift&id=9d8ee40d-075a-4cfe-b079-abfbe7002a21" class="sc-card" data-artist="Taylor Swift" data-album="Lover (Live from Paris)">
           <div class="sc-art">
-            <img src="https://coverartarchive.org/release-group/9d8ee40d-075a-4cfe-b079-abfbe7002a21/front-500" alt="Lover (Live from Paris)" loading="lazy">
+            <img src="https://coverartarchive.org/release-group/9d8ee40d-075a-4cfe-b079-abfbe7002a21/front-500" alt="Lover (Live from Paris)" loading="eager">
             <div class="sc-rank">#4</div>
             <div class="sc-stores"></div>
           </div>
@@ -491,8 +493,9 @@
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 pt-6 pb-12">
-        <!-- Featured Articles Section -->
+        <!-- Sleeve Notes -->
         <section id="articles" class="mb-16">
+            <p class="text-gray-500 mb-6 text-sm md:text-base" style="font-family: 'Nunito Sans', sans-serif; font-weight: 400;">Search artists, compare vinyl prices across UK record stores, and discover your next favourite album.</p>
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Article 1 -->
                 <article class="article-card bg-white rounded-lg overflow-hidden shadow-sm">
@@ -621,6 +624,7 @@
                 <p class="mb-2">© 2026 findyl. Find vinyl records from UK retailers.</p>
                 <p class="text-sm">Compare prices across POPSTORE, Vinyl Castle, EMP UK, and more.</p>
             <p class="mt-2 text-xs text-gray-400">
+                <a href="/about" class="hover:underline mx-1">About</a> · 
                 <a href="/privacy" class="hover:underline mx-1">Privacy</a> · 
                 <a href="/terms" class="hover:underline mx-1">Terms</a> · 
                 <a href="/disclosure" class="hover:underline mx-1">Affiliate Disclosure</a>
@@ -651,9 +655,9 @@
     <!-- Shared search: autocomplete, syncing, keyboard nav -->
     <script src="/findyl-search.js"></script>
 
-    <!-- Showcase live pricing -->
+    <!-- Showcase live pricing (deferred until after first paint) -->
     <script>
-    (function() {
+    function loadShowcasePricing() {
       const cards = document.querySelectorAll('.sc-card[data-artist]');
       if (!cards.length) return;
 
@@ -777,7 +781,14 @@
           });
         });
       });
-    })();
+    }
+
+    // Defer pricing fetches until browser is idle (after first paint)
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(loadShowcasePricing, { timeout: 2000 });
+    } else {
+      setTimeout(loadShowcasePricing, 100);
+    }
 
     // ── GA4: Track showcase card clicks ──
     document.querySelectorAll('.sc-card[data-artist]').forEach(card => {
