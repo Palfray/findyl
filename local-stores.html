@@ -44,8 +44,10 @@
         .popup-links a { font-size:.7rem; font-weight:600; color:#FF6B6B; text-decoration:none; padding:3px 8px; border-radius:6px; background:#FFF1F1; transition:background .15s; }
         .popup-links a:hover { background:#FFE0E0; }
 
-        .coral-marker { width:12px; height:12px; background:#FF6B6B; border:2px solid #fff; border-radius:50%; box-shadow:0 1px 4px rgba(0,0,0,.2); }
-        .coral-marker.highlight { width:16px; height:16px; border:3px solid #fff; box-shadow:0 0 0 2px #FF6B6B,0 2px 8px rgba(0,0,0,.2); }
+        .coral-marker { width:22px; height:22px; }
+        .coral-marker svg { filter: drop-shadow(0 1px 3px rgba(0,0,0,0.25)); }
+        .coral-marker.highlight { width:30px; height:30px; }
+        .coral-marker.highlight svg { filter: drop-shadow(0 0 0 2px #FF6B6B) drop-shadow(0 2px 6px rgba(0,0,0,0.3)); }
 
         .distance-banner { font-family:'Raleway',sans-serif; background:#FFF1F1; border:1px solid #FFE0E0; border-radius:10px; padding:10px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; font-size:.8rem; font-weight:500; color:#374151; }
         .distance-banner button { background:none; border:none; color:#9CA3AF; cursor:pointer; padding:2px; border-radius:4px; }
@@ -104,8 +106,8 @@
     <section class="bg-white border-b border-gray-100">
         <div class="max-w-6xl mx-auto px-4 pt-10 pb-8">
             <div class="text-center mb-8">
-                <h1 class="text-3xl sm:text-4xl mb-2" style="font-weight:400">Find a Record Shop</h1>
-                <p style="font-family:'Raleway',sans-serif; color:#9CA3AF; font-size:.85rem;">Independent record stores across the UK &amp; Ireland</p>
+                <h1 class="text-3xl sm:text-4xl mb-2" style="font-weight:400">Nothing Beats the Real Thing</h1>
+                <p style="font-family:'Raleway',sans-serif; color:#6B7280; font-size:.9rem;">The best vinyl discoveries happen in person. Find an independent record shop near you.</p>
             </div>
             <div class="max-w-2xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
                 <div class="store-search-bar flex-1 flex items-center gap-3 px-4 py-3">
@@ -248,8 +250,9 @@
         maxZoom: 18
     }).addTo(map);
 
-    const coralIcon = L.divIcon({ className: '', html: '<div class="coral-marker"></div>', iconSize: [12, 12], iconAnchor: [6, 6] });
-    const highlightIcon = L.divIcon({ className: '', html: '<div class="coral-marker highlight"></div>', iconSize: [16, 16], iconAnchor: [8, 8] });
+    const vinylSVG = '<svg viewBox="0 0 28 36" xmlns="http://www.w3.org/2000/svg"><circle cx="14" cy="14" r="14" fill="#FF6B6B"/><circle cx="14" cy="14" r="11" fill="none" stroke="white" stroke-width="0.7" opacity="0.8"/><circle cx="14" cy="14" r="8" fill="none" stroke="white" stroke-width="0.7" opacity="0.6"/><circle cx="14" cy="14" r="5" fill="none" stroke="white" stroke-width="0.7" opacity="0.4"/><circle cx="14" cy="14" r="3.5" fill="white"/><circle cx="14" cy="14" r="1.5" fill="#FF6B6B"/><path d="M10 26 L14 34 L18 26" fill="#FF6B6B"/></svg>';
+    const coralIcon = L.divIcon({ className: '', html: '<div class="coral-marker">' + vinylSVG + '</div>', iconSize: [22, 28], iconAnchor: [11, 28] });
+    const highlightIcon = L.divIcon({ className: '', html: '<div class="coral-marker highlight">' + vinylSVG + '</div>', iconSize: [30, 39], iconAnchor: [15, 39] });
     let markersLayer = L.layerGroup().addTo(map);
     let userMarker = null;
     let markerMap = new Map(); // store name -> marker
