@@ -699,9 +699,9 @@
         // 2) eBay searches — one per album for this artist
         const ebayPromises = cardsForArtist.map(card =>
           fetch('/api/ebay-search?artist=' + encodeURIComponent(artist) + '&album=' + encodeURIComponent(card.dataset.album))
-            .then(r => r.ok ? r.json() : { itemSummaries: [] })
-            .catch(() => ({ itemSummaries: [] }))
-            .then(data => ({ card, items: data.itemSummaries || [] }))
+            .then(r => r.ok ? r.json() : { results: [] })
+            .catch(() => ({ results: [] }))
+            .then(data => ({ card, items: data.results || [] }))
         );
 
         Promise.all([hybridPromise, ...ebayPromises]).then(([hybridResults, ...ebayResults]) => {
@@ -724,8 +724,7 @@
             const ebayMatch = ebayResults.find(e => e.card === card);
             if (ebayMatch && ebayMatch.items.length > 0) {
               ebayMatch.items.forEach(item => {
-                const p = parseFloat(item.price?.value);
-                if (p > 0) prices.push(p);
+                if (item.price && item.price > 0) prices.push(item.price);
               });
             }
 
