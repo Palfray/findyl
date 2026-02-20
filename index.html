@@ -284,16 +284,33 @@
     <header id="sticky-header" class="sticky top-0 z-50 hidden">
         <!-- Coral search bar -->
         <div class="border-b border-gray-200" style="background-color: #FF6B6B;">
-            <div class="max-w-7xl mx-auto px-4 py-3">
-                <div class="flex items-center gap-4">
+            <div class="max-w-7xl mx-auto px-3 py-2 md:px-4 md:py-3">
+                <div class="flex items-center gap-2 md:gap-4">
                     <a href="/" class="flex-shrink-0">
-                        <svg width="150" height="50" viewBox="0 0 150 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <svg class="hidden md:block" width="150" height="50" viewBox="0 0 150 50" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <defs>
                             <clipPath id="bottomHalfSmall">
                               <rect x="62.5" y="28.75" width="28.75" height="21.25"/>
                             </clipPath>
                           </defs>
                           <g clip-path="url(#bottomHalfSmall)">
+                            <g transform="translate(77, 28.75)">
+                              <circle cx="0" cy="0" r="14" fill="none" stroke="white" stroke-width="1"/>
+                              <circle cx="0" cy="0" r="11" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
+                              <circle cx="0" cy="0" r="8" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
+                              <circle cx="0" cy="0" r="4.5" fill="white"/>
+                              <circle cx="0" cy="0" r="1.5" fill="#FF6B6B"/>
+                            </g>
+                          </g>
+                          <text x="75" y="25" font-family="'DM Serif Text', serif" font-size="24" fill="white" text-anchor="middle" font-weight="400">findyl</text>
+                        </svg>
+                        <svg class="md:hidden" width="130" height="43" viewBox="0 0 150 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <defs>
+                            <clipPath id="bottomHalfMobile">
+                              <rect x="62.5" y="28.75" width="28.75" height="21.25"/>
+                            </clipPath>
+                          </defs>
+                          <g clip-path="url(#bottomHalfMobile)">
                             <g transform="translate(77, 28.75)">
                               <circle cx="0" cy="0" r="14" fill="none" stroke="white" stroke-width="1"/>
                               <circle cx="0" cy="0" r="11" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/>
