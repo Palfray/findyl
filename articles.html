@@ -1,44 +1,200 @@
-[
-  {
-    "slug": "behind-the-sample-labi-siffre-eminem",
-    "title": "Behind the Sample: How Labi Siffre Made Eminem's Career (Then Made Him Change the Lyrics)",
-    "description": "The story of Labi Siffre's 'I Got The…', the 1975 funk track that became the backbone of 'My Name Is', and the principled stand that almost stopped it happening.",
-    "date": "2026-02-20",
-    "category": "features",
-    "series": "behind-the-sample",
-    "heroImage": "https://coverartarchive.org/release-group/dfe00af1-fbd2-3749-8d5a-8c42b9fc2734/front-1200",
-    "heroAlt": "Remember My Song by Labi Siffre",
-    "ogImage": "https://coverartarchive.org/release-group/dfe00af1-fbd2-3749-8d5a-8c42b9fc2734/front-1200",
-    "relatedArtists": [
-      "6838ca8e-da88-436c-a0fd-6d3a7e832f1f",
-      "b95ce3ff-3d05-4e87-9e01-c97b66af13d4"
-    ],
-    "relatedAlbums": []
-  },
-  {
-    "slug": "country-music-uk-2026",
-    "title": "Country Music Is Taking Over the UK — and These Are the Artists You Need on Vinyl",
-    "description": "From Zach Bryan selling out Tottenham to Tyler Childers and a wave of new talent, country is having its biggest UK moment ever. Here's who to watch and what to spin.",
-    "date": "2026-02-19",
-    "category": "features",
-    "series": "genre-spotlight",
-    "genre": "country",
-    "heroImage": "https://coverartarchive.org/release-group/84fd33ce-5719-4082-9756-dec4b38a48b4/front-1200",
-    "heroAlt": "With Heaven on Top by Zach Bryan — vinyl album cover",
-    "ogImage": "https://coverartarchive.org/release-group/84fd33ce-5719-4082-9756-dec4b38a48b4/front-1200",
-    "relatedArtists": ["51e90731-08c0-4f60-89b6-5b78e5844de8", "9947e874-ddd0-4e1a-b0d4-a76f6532fe45", "c20ee61f-071f-4e65-9c81-45ee931a54ce", "cf391be8-a609-4fcf-8de1-0eff6b639ae5"],
-    "relatedAlbums": []
-  },
-  {
-    "slug": "best-selling-vinyl-2025",
-    "title": "The Best-Selling Vinyl Records in the UK in 2025",
-    "description": "Taylor Swift, Sam Fender and Oasis led the charge as UK vinyl sales hit 7.6 million — an 18th consecutive year of growth.",
-    "date": "2026-01-15",
-    "category": "charts",
-    "heroImage": "https://coverartarchive.org/release-group/9ae7e7e9-ac40-4874-bd43-d77a9bb9b617/front-1200",
-    "heroAlt": "The Life of a Showgirl by Taylor Swift — the best-selling vinyl album in the UK in 2025",
-    "ogImage": "https://coverartarchive.org/release-group/9ae7e7e9-ac40-4874-bd43-d77a9bb9b617/front-1200",
-    "relatedArtists": [],
-    "relatedAlbums": []
-  }
-]
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sleeve Notes — findyl</title>
+  <meta name="description" content="Vinyl guides, new release roundups, album features and more from findyl.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4VKXNETWR4"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-4VKXNETWR4');</script>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Raleway:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { font-family: 'DM Serif Display', serif; font-weight: 400; color: #374151; }
+    h1, h2, h3, h4, h5, h6 { font-family: 'DM Serif Display', serif; font-weight: 700; color: #111827; letter-spacing: -0.01em; }
+
+    .article-card {
+      transition: transform 0.2s, box-shadow 0.2s;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .article-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    .article-card img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+    }
+    .category-badge {
+      display: inline-block;
+      background: #FFE5E5;
+      color: #FF6B6B;
+      font-size: 0.7rem;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      letter-spacing: 0.03em;
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+  <!-- HEADER -->
+  <header id="site-header" style="position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #E5E7EB;">
+    <div style="max-width:1100px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px;">
+      <a href="/" style="flex-shrink:0;text-decoration:none;">
+        <svg width="128" height="40" viewBox="0 0 320 100" fill="none">
+          <text x="0" y="72" font-family="'DM Serif Display', serif" font-size="80" fill="#1F2937" font-weight="400">findyl</text>
+          <g transform="translate(245, 50)">
+            <circle cx="0" cy="0" r="28" fill="#FF6B6B"/>
+            <circle cx="0" cy="0" r="22" fill="none" stroke="white" stroke-width="1"/>
+            <circle cx="0" cy="0" r="16" fill="none" stroke="white" stroke-width="1"/>
+            <circle cx="0" cy="0" r="10" fill="none" stroke="white" stroke-width="1"/>
+            <circle cx="0" cy="0" r="8" fill="white"/>
+            <circle cx="0" cy="0" r="3" fill="#FF6B6B"/>
+          </g>
+        </svg>
+      </a>
+      <form id="header-search-form" action="/results" method="GET" style="flex:1;max-width:480px;position:relative;">
+        <input type="text" name="q" id="header-search-input" placeholder="Search for vinyl..."
+          style="width:100%;padding:10px 44px 10px 16px;border:1.5px solid #111827;border-radius:9999px;font-family:'Raleway',sans-serif;font-size:0.95rem;font-weight:400;outline:none;background:#fff;"
+        >
+        <button type="submit" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;">
+          <svg width="20" height="20" fill="none" stroke="#FF6B6B" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <div id="header-autocomplete" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #E5E7EB;border-radius:12px;margin-top:4px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:50;max-height:400px;overflow-y:auto;"></div>
+      </form>
+    </div>
+  </header>
+
+  <!-- PAGE CONTENT -->
+  <main style="max-width:1100px;margin:0 auto;padding:48px 20px 80px;">
+    <h1 style="font-size:2rem;margin-bottom:8px;">Sleeve Notes</h1>
+    <p style="color:#6B7280;font-size:1.05rem;margin-bottom:40px;">Guides, features and roundups for UK vinyl collectors.</p>
+
+    <div id="articles-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px;">
+      <!-- Articles loaded dynamically -->
+    </div>
+
+    <div id="articles-empty" style="display:none;text-align:center;padding:60px 0;color:#9CA3AF;">
+      <p style="font-size:1.1rem;">No articles yet. Check back soon.</p>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer style="background:#1F2937;color:#9CA3AF;padding:40px 20px;text-align:center;font-size:0.85rem;">
+    <p>© 2026 findyl. Helping you find vinyl records from UK retailers.</p>
+    <p style="margin-top:8px;">
+      <a href="/about" style="color:#9CA3AF;text-decoration:underline;margin:0 8px;">About</a>
+      <a href="/articles" style="color:#9CA3AF;text-decoration:underline;margin:0 8px;">Sleeve Notes</a>
+      <a href="/local-stores" style="color:#9CA3AF;text-decoration:underline;margin:0 8px;">Find a store</a>
+    </p>
+    <p style="margin-top:8px;">
+      <a href="/privacy" style="color:#9CA3AF;text-decoration:underline;margin:0 8px;">Privacy</a>
+      <a href="/terms" style="color:#9CA3AF;text-decoration:underline;margin:0 8px;">Terms</a>
+      <a href="/disclosure" style="color:#9CA3AF;text-decoration:underline;margin:0 8px;">Affiliate Disclosure</a>
+    </p>
+  </footer>
+
+  <script>
+  (function() {
+    const grid = document.getElementById('articles-grid');
+    const empty = document.getElementById('articles-empty');
+
+    fetch('/articles-index.json')
+      .then(r => r.json())
+      .then(articles => {
+        if (!articles.length) { empty.style.display = 'block'; return; }
+
+        // Sort by date descending (newest first)
+        articles.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        grid.innerHTML = articles.map(article => {
+          const dateObj = new Date(article.date + 'T00:00:00');
+          const dateStr = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+          const imgHtml = article.heroImage
+            ? '<img src="' + article.heroImage + '" alt="' + (article.heroAlt || article.title) + '" loading="lazy" decoding="async">'
+            : '<div style="width:100%;height:220px;background:#FFE5E5;display:flex;align-items:center;justify-content:center;"><svg width="48" height="48" fill="none" stroke="#FF6B6B" stroke-width="1.5" viewBox="0 0 24 24"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg></div>';
+
+          return '<a href="/articles/' + article.slug + '" class="article-card" style="text-decoration:none;">'
+            + imgHtml
+            + '<div style="padding:20px;">'
+            + '<div style="margin-bottom:10px;">'
+            + (article.category ? '<span class="category-badge">' + article.category + '</span>' : '')
+            + '<span style="color:#9CA3AF;font-size:0.8rem;margin-left:8px;">' + dateStr + '</span>'
+            + '</div>'
+            + '<h3 style="font-size:1.15rem;line-height:1.35;margin-bottom:8px;color:#111827;">' + article.title + '</h3>'
+            + '<p style="color:#6B7280;font-size:0.9rem;line-height:1.5;margin:0;">' + article.description + '</p>'
+            + '</div>'
+            + '</a>';
+        }).join('');
+      })
+      .catch(err => {
+        console.error('Failed to load articles index:', err);
+        empty.style.display = 'block';
+      });
+  })();
+
+  // Header autocomplete
+  (function() {
+    const input = document.getElementById('header-search-input');
+    const dropdown = document.getElementById('header-autocomplete');
+    const form = document.getElementById('header-search-form');
+    let debounceTimer;
+
+    if (!input || !dropdown || !form) return;
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const q = input.value.trim();
+      if (q) window.location.href = '/results?q=' + encodeURIComponent(q);
+    });
+
+    input.addEventListener('input', function() {
+      clearTimeout(debounceTimer);
+      const q = input.value.trim();
+      if (q.length < 2) { dropdown.style.display = 'none'; return; }
+      debounceTimer = setTimeout(() => {
+        fetch('/api/autocomplete?q=' + encodeURIComponent(q))
+          .then(r => r.json())
+          .then(data => {
+            if (!data.artists?.length && !data.albums?.length) { dropdown.style.display = 'none'; return; }
+            let html = '';
+            if (data.artists?.length) {
+              html += '<div style="padding:8px 16px;font-size:0.7rem;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.05em;">Artists</div>';
+              data.artists.forEach(a => {
+                const meta = [a.type, a.country, a.disambiguation].filter(Boolean).join(' · ');
+                html += '<a href="/results?q=' + encodeURIComponent(a.name) + '" style="display:block;padding:10px 16px;text-decoration:none;color:#1F2937;font-size:0.95rem;border-bottom:1px solid #F3F4F6;">' + a.name + (meta ? '<span style="color:#9CA3AF;font-size:0.8rem;margin-left:8px;">' + meta + '</span>' : '') + '</a>';
+              });
+            }
+            if (data.albums?.length) {
+              html += '<div style="padding:8px 16px;font-size:0.7rem;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.05em;">Albums</div>';
+              data.albums.forEach(a => {
+                html += '<a href="/album?artist=' + encodeURIComponent(a.artist || '') + '&album=' + encodeURIComponent(a.name) + '" style="display:block;padding:10px 16px;text-decoration:none;color:#1F2937;font-size:0.95rem;border-bottom:1px solid #F3F4F6;">' + a.name + (a.artist ? '<span style="color:#9CA3AF;font-size:0.8rem;margin-left:8px;">' + a.artist + '</span>' : '') + '</a>';
+              });
+            }
+            dropdown.innerHTML = html;
+            dropdown.style.display = 'block';
+          })
+          .catch(() => { dropdown.style.display = 'none'; });
+      }, 300);
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!dropdown.contains(e.target) && e.target !== input) dropdown.style.display = 'none';
+    });
+  })();
+  </script>
+
+</body>
+</html>
