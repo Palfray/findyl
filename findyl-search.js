@@ -50,7 +50,15 @@
         inst.form.addEventListener('submit', (e) => {
             e.preventDefault();
             const q = inst.input.value.trim();
-            if (q) window.location.href = `/results?q=${encodeURIComponent(q)}`;
+            if (q) {
+                if (typeof gtag === 'function') {
+                    gtag('event', 'search', {
+                        search_term: q,
+                        method: 'typed'
+                    });
+                }
+                window.location.href = `/results?q=${encodeURIComponent(q)}`;
+            }
         });
 
         // Input with debounce + sync other bars
@@ -117,6 +125,20 @@
 
     // ── Close on outside click ──
     document.addEventListener('click', (e) => {
+        // Track autocomplete selections
+        const suggestion = e.target.closest('[data-suggestion]');
+        if (suggestion && typeof gtag === 'function') {
+            const href = suggestion.getAttribute('href') || '';
+            const params = new URLSearchParams(href.split('?')[1] || '');
+            const term = params.get('q') || '';
+            if (term) {
+                gtag('event', 'search', {
+                    search_term: term,
+                    method: 'autocomplete'
+                });
+            }
+        }
+
         const clickedInside = instances.some(inst =>
             e.target.closest(`#${inst.form.id}`) || e.target.closest(`#${inst.dropdown.id}`)
         );
