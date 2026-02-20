@@ -670,6 +670,9 @@
         'coloured','colored','colour','color','import','uk','eu','us','black','double',
         'single','triple','heavyweight','audiophile','original','brand','factory']);
 
+      // Words in eBay titles that indicate a single/EP or non-vinyl product
+      const rejectIndicators = /\b(7"|7 inch|7"|7"|45\s*rpm|12" single|cd single|cassingle|flexi|promo\s+single|wall art|poster|print|t-shirt|tshirt|t shirt|tee|hoodie|sweatshirt|mug|keyring|keychain|fridge magnet|coaster|canvas|frame|framed|sticker|badge|patch|pin|tote bag|cushion|pillow|jigsaw|puzzle|book|cassette|tape|cd\b(?!\s*vinyl))\b/i;
+
       // Filter eBay results to match a specific album (mirrors album.html logic)
       function filterEbay(items, albumName, artistName) {
         const albumClean = albumName.toLowerCase().replace(/\b(the|a|an)\b/g, '').trim();
@@ -679,6 +682,13 @@
 
         return items.filter(item => {
           const title = (item.title || '').toLowerCase();
+
+          // Reject obvious singles, merch, and non-vinyl products
+          if (rejectIndicators.test(title)) return false;
+
+          // Reject suspiciously cheap listings (likely singles or wrong item)
+          if (item.price && item.price < 8) return false;
+
           if (isSelfTitled) {
             const artistWords = new Set(artistName.toLowerCase().split(/\s+/));
             const titleWords = title.split(/[\s\-–—:,./]+/).filter(w => w.length > 1);
