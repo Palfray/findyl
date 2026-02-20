@@ -545,54 +545,56 @@
         <!-- Sleeve Notes -->
         <section id="articles" class="mb-16">
             <p class="text-gray-500 mb-6 text-sm md:text-base" style="font-family: 'Nunito Sans', sans-serif; font-weight: 400;">Search artists, compare vinyl prices across UK record stores, and discover your next favourite album.</p>
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Article 1 -->
-                <article class="article-card bg-white rounded-lg overflow-hidden shadow-sm">
-                    <a href="/articles/best-selling-vinyl-2025" class="block">
-                    <div class="p-6 pb-4">
-                        <div class="text-sm mb-2" style="color:#FF6B6B;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;">Charts</div>
-                        <h3 class="text-2xl mb-2">The 20 Best Selling Vinyl Records of 2025</h3>
-                        <p class="mb-0">From Taylor Swift to Sam Fender — the official UK vinyl chart rundown for 2025.</p>
-                    </div>
-                    <div class="h-48 overflow-hidden">
-                        <img loading="lazy" src="https://coverartarchive.org/release-group/9ae7e7e9-ac40-4874-bd43-d77a9bb9b617/front-500" 
-                             alt="The Life of a Showgirl by Taylor Swift" 
-                             class="w-full h-full object-cover">
-                    </div>
-                    </a>
-                </article>
-
-                <!-- Article 2 -->
-                <article class="article-card bg-white rounded-lg overflow-hidden shadow-sm">
-                    <a href="/articles/country-music-uk-2026" class="block">
-                    <div class="p-6 pb-4">
-                        <div class="text-sm mb-2" style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;"><span style="color:#FF6B6B">Features</span> <span style="color:#D1D5DB;font-size:0.6rem;">·</span> <span style="color:#FF8A8A">Genre Spotlight</span> <span style="color:#D1D5DB;font-size:0.6rem;">·</span> <span style="color:#FFB5B5">Country</span></div>
-                        <h3 class="text-2xl mb-2">Country Music Is Taking Over the UK</h3>
-                        <p class="mb-0">From Zach Bryan selling out Tottenham to Tyler Childers and a wave of new talent.</p>
-                    </div>
-                    <div class="h-48 overflow-hidden">
-                        <img loading="lazy" src="https://coverartarchive.org/release-group/84fd33ce-5719-4082-9756-dec4b38a48b4/front-500" 
-                             alt="With Heaven on Top by Zach Bryan" 
-                             class="w-full h-full object-cover">
-                    </div>
-                    </a>
-                </article>
-
-                <!-- Article 3 -->
-                <article class="article-card bg-white rounded-lg overflow-hidden shadow-sm">
-                    <div class="p-6 pb-4">
-                        <div class="text-sm mb-2" style="color:#FF6B6B;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;">Store Spotlight</div>
-                        <h3 class="text-2xl mb-2">UK's Best Independent Record Stores</h3>
-                        <p class="mb-0">A curated guide to the finest vinyl shops across the United Kingdom.</p>
-                    </div>
-                    <div class="h-48 overflow-hidden">
-                        <img loading="lazy" src="https://images.unsplash.com/photo-1594623930572-300a3011d9ae?w=600&h=400&fit=crop" 
-                             alt="Record store" 
-                             class="w-full h-full object-cover">
-                    </div>
-                </article>
+            <div id="hp-articles" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Loaded dynamically from articles-index.json -->
             </div>
         </section>
+        <script>
+        (function() {
+          var seriesNames = {
+            'genre-spotlight': 'Genre Spotlight',
+            'behind-the-sample': 'Behind the Sample',
+            'history-of': 'The History of\u2026'
+          };
+          function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+          function buildTagHtml(a) {
+            var parts = [];
+            if (a.category) parts.push('<span style="color:#FF6B6B">' + cap(a.category) + '</span>');
+            if (a.series && seriesNames[a.series]) {
+              parts.push('<span style="color:#D1D5DB;font-size:0.6rem;">\u00b7</span>');
+              parts.push('<span style="color:#FF8A8A">' + seriesNames[a.series] + '</span>');
+            }
+            if (a.genre) {
+              parts.push('<span style="color:#D1D5DB;font-size:0.6rem;">\u00b7</span>');
+              parts.push('<span style="color:#FFB5B5">' + cap(a.genre) + '</span>');
+            }
+            return parts.join(' ');
+          }
+          fetch('/articles-index.json')
+            .then(function(r) { return r.json(); })
+            .then(function(articles) {
+              articles.sort(function(a, b) { return new Date(b.date) - new Date(a.date); });
+              var latest = articles.slice(0, 3);
+              var grid = document.getElementById('hp-articles');
+              grid.innerHTML = latest.map(function(a) {
+                var imgSrc = a.heroImage ? a.heroImage.replace('front-1200', 'front-500') : '';
+                var imgHtml = imgSrc
+                  ? '<div class="h-48 overflow-hidden"><img loading="lazy" src="' + imgSrc + '" alt="' + (a.heroAlt || a.title) + '" class="w-full h-full object-cover"></div>'
+                  : '<div class="h-48 overflow-hidden" style="background:linear-gradient(135deg,#FFE5E5,#FFF0F0);display:flex;align-items:center;justify-content:center;"><span style="font-size:2.5rem;">🎵</span></div>';
+                return '<article class="article-card bg-white rounded-lg overflow-hidden shadow-sm">'
+                  + '<a href="/articles/' + a.slug + '" class="block">'
+                  + '<div class="p-6 pb-4">'
+                  + '<div class="text-sm mb-2" style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;">' + buildTagHtml(a) + '</div>'
+                  + '<h3 class="text-2xl mb-2">' + a.title + '</h3>'
+                  + '<p class="mb-0">' + a.description + '</p>'
+                  + '</div>'
+                  + imgHtml
+                  + '</a></article>';
+              }).join('');
+            })
+            .catch(function(err) { console.error('Failed to load homepage articles:', err); });
+        })();
+        </script>
 
         <!-- Guides Section -->
         <section id="guides">
