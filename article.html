@@ -59,8 +59,20 @@
     /* Hero image */
     .hero-image { width: 100%; max-height: 520px; object-fit: contain; background: #000; border-radius: 8px; }
 
-    /* Category badge */
-    .category-badge { display: inline-block; background: #FFE5E5; color: #FF6B6B; font-size: 0.75rem; font-weight: 500; padding: 4px 12px; border-radius: 9999px; letter-spacing: 0.03em; }
+    /* Article tags */
+    .article-tags { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .article-tag {
+      display: inline-block; background: #FFE5E5; color: #FF6B6B;
+      font-size: 0.72rem; font-weight: 400; padding: 4px 12px;
+      border-radius: 9999px; letter-spacing: 0.03em; text-decoration: none;
+      text-transform: uppercase; transition: background 0.2s;
+    }
+    .article-tag:hover { background: #FFD4D4; }
+    .article-tag-dot { color: #D1D5DB; font-size: 0.6rem; }
+
+    /* Affiliate notice */
+    .affiliate-notice { display: none; font-size: 0.75rem; color: #9CA3AF; margin-top: 8px; }
+    .affiliate-notice a { color: #9CA3AF; text-decoration: underline; }
 
     /* Loading state */
     .loading-pulse { animation: pulse 1.5s ease-in-out infinite; }
@@ -114,15 +126,22 @@
 
     <!-- Article container (hidden until loaded) -->
     <article id="article-container" style="display:none;">
-      <!-- Meta -->
+      <!-- Tags -->
+      <div id="article-tags" class="article-tags"></div>
+
+      <!-- Date -->
       <div style="margin-bottom:20px;">
-        <span id="article-category" class="category-badge"></span>
-        <span id="article-date" style="color:#9CA3AF;font-size:0.85rem;margin-left:12px;"></span>
+        <span id="article-date" style="color:#9CA3AF;font-size:0.85rem;"></span>
       </div>
 
       <!-- Hero image -->
       <div id="article-hero-wrap" style="margin-bottom:32px;display:none;">
         <img id="article-hero" class="hero-image" src="" alt="" loading="eager" fetchpriority="high" decoding="async">
+      </div>
+
+      <!-- Affiliate notice -->
+      <div id="article-affiliate" class="affiliate-notice">
+        This article contains links to retailers where findyl may earn a commission. <a href="/disclosure">Learn more</a>
       </div>
 
       <!-- Rendered markdown -->
@@ -140,7 +159,7 @@
     <p>© 2026 findyl. Helping you find vinyl records from UK retailers.</p>
     <p style="margin-top:8px;">
       <a href="/about" style="color:#9CA3AF;text-decoration:underline;margin:0 8px;">About</a>
-      <a href="/articles" style="color:#9CA3AF;text-decoration:underline;margin:0 8px;">Articles</a>
+      <a href="/articles" style="color:#9CA3AF;text-decoration:underline;margin:0 8px;">Sleeve Notes</a>
       <a href="/local-stores" style="color:#9CA3AF;text-decoration:underline;margin:0 8px;">Find a store</a>
     </p>
     <p style="margin-top:8px;">
@@ -152,13 +171,44 @@
 
   <script>
   (function() {
-    // Get slug from URL path: /articles/best-selling-vinyl-2025 → best-selling-vinyl-2025
     const path = window.location.pathname.replace(/\/$/, '');
     const slug = path.split('/').pop();
 
     if (!slug || slug === 'articles') {
       window.location.href = '/articles';
       return;
+    }
+
+    const seriesNames = {
+      'genre-spotlight': 'Genre Spotlight',
+      'behind-the-sample': 'Behind the Sample',
+      'history-of': 'The History of…'
+    };
+
+    function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+
+    // Build tags that link back to filtered Sleeve Notes views
+    function buildTags(meta) {
+      const tagsEl = document.getElementById('article-tags');
+      if (!tagsEl || !meta.category) return;
+
+      let html = '';
+      // Category tag
+      html += '<a href="/articles" class="article-tag">' + cap(meta.category) + '</a>';
+
+      // Series tag (features only)
+      if (meta.series && seriesNames[meta.series]) {
+        html += '<span class="article-tag-dot">·</span>';
+        html += '<a href="/articles" class="article-tag">' + seriesNames[meta.series] + '</a>';
+      }
+
+      // Genre tag (genre-spotlight only)
+      if (meta.genre) {
+        html += '<span class="article-tag-dot">·</span>';
+        html += '<a href="/articles" class="article-tag">' + cap(meta.genre) + '</a>';
+      }
+
+      tagsEl.innerHTML = html;
     }
 
     // Load article index and markdown in parallel
@@ -182,8 +232,10 @@
         document.querySelector('meta[property="og:image"]').setAttribute('content', meta.ogImage);
       }
 
-      // Category and date
-      document.getElementById('article-category').textContent = meta.category || '';
+      // Tags
+      buildTags(meta);
+
+      // Date
       const dateObj = new Date(meta.date + 'T00:00:00');
       document.getElementById('article-date').textContent = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -197,19 +249,17 @@
 
       // Render markdown — strip the H1 since we show the title from meta
       let md = markdown.trim();
-      // Remove leading H1 (first line starting with #)
       md = md.replace(/^#\s+.+\n+/, '');
 
-      // Configure marked
-      marked.setOptions({
-        breaks: false,
-        gfm: true
-      });
-
+      marked.setOptions({ breaks: false, gfm: true });
       document.getElementById('article-body').innerHTML = marked.parse(md);
 
-      // Inject findyl links — wrap artist names in album table rows with search links
-      // (This is a lightweight enhancement, not essential)
+      // Show affiliate notice if article contains findyl links
+      const body = document.getElementById('article-body');
+      const hasInternalLinks = body.querySelector('a[href*="/artist"], a[href*="/album"], a[href*="/results"]');
+      if (hasInternalLinks) {
+        document.getElementById('article-affiliate').style.display = 'block';
+      }
 
       // Show article, hide loading
       document.getElementById('article-loading').style.display = 'none';
@@ -222,7 +272,7 @@
     });
   })();
 
-  // Header autocomplete (same IIFE as other pages)
+  // Header autocomplete
   (function() {
     const input = document.getElementById('header-search-input');
     const dropdown = document.getElementById('header-autocomplete');

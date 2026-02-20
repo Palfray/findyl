@@ -4,19 +4,25 @@
     "title": "Country Music Is Taking Over the UK — and These Are the Artists You Need on Vinyl",
     "description": "From Zach Bryan selling out Tottenham to Tyler Childers and a wave of new talent, country is having its biggest UK moment ever. Here's who to watch and what to spin.",
     "date": "2026-02-19",
-    "category": "Features",
+    "category": "features",
+    "series": "genre-spotlight",
+    "genre": "country",
     "heroImage": "https://coverartarchive.org/release-group/84fd33ce-5719-4082-9756-dec4b38a48b4/front-1200",
     "heroAlt": "With Heaven on Top by Zach Bryan — vinyl album cover",
-    "ogImage": "https://coverartarchive.org/release-group/84fd33ce-5719-4082-9756-dec4b38a48b4/front-1200"
+    "ogImage": "https://coverartarchive.org/release-group/84fd33ce-5719-4082-9756-dec4b38a48b4/front-1200",
+    "relatedArtists": ["51e90731-08c0-4f60-89b6-5b78e5844de8", "9947e874-ddd0-4e1a-b0d4-a76f6532fe45", "c20ee61f-071f-4e65-9c81-45ee931a54ce", "cf391be8-a609-4fcf-8de1-0eff6b639ae5"],
+    "relatedAlbums": []
   },
   {
     "slug": "best-selling-vinyl-2025",
     "title": "The Best-Selling Vinyl Records in the UK in 2025",
     "description": "Taylor Swift, Sam Fender and Oasis led the charge as UK vinyl sales hit 7.6 million — an 18th consecutive year of growth.",
     "date": "2026-01-15",
-    "category": "Charts & Data",
+    "category": "charts",
     "heroImage": "https://coverartarchive.org/release-group/9ae7e7e9-ac40-4874-bd43-d77a9bb9b617/front-1200",
     "heroAlt": "The Life of a Showgirl by Taylor Swift — the best-selling vinyl album in the UK in 2025",
-    "ogImage": "https://coverartarchive.org/release-group/9ae7e7e9-ac40-4874-bd43-d77a9bb9b617/front-1200"
+    "ogImage": "https://coverartarchive.org/release-group/9ae7e7e9-ac40-4874-bd43-d77a9bb9b617/front-1200",
+    "relatedArtists": [],
+    "relatedAlbums": []
   }
 ]
