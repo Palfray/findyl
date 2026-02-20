@@ -663,6 +663,36 @@
         return s.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\b(the|a|an)\b/g, '').replace(/\s+/g, ' ').trim();
       }
 
+      // eBay noise words — same list as album page
+      const noiseWords = new Set(['vinyl','lp','2xlp','3xlp','record','records','sealed','new',
+        'pre-owned','used','mint','near','very','good','12','7','10','inch','180g','180',
+        'gram','gatefold','reissue','remastered','edition','limited','deluxe','pressing',
+        'coloured','colored','colour','color','import','uk','eu','us','black','double',
+        'single','triple','heavyweight','audiophile','original','brand','factory']);
+
+      // Filter eBay results to match a specific album (mirrors album.html logic)
+      function filterEbay(items, albumName, artistName) {
+        const albumClean = albumName.toLowerCase().replace(/\b(the|a|an)\b/g, '').trim();
+        const artistClean = artistName.toLowerCase().replace(/\b(the|a|an)\b/g, '').trim();
+        const isSelfTitled = albumClean === artistClean ||
+          albumName.toLowerCase().trim() === artistName.toLowerCase().trim();
+
+        return items.filter(item => {
+          const title = (item.title || '').toLowerCase();
+          if (isSelfTitled) {
+            const artistWords = new Set(artistName.toLowerCase().split(/\s+/));
+            const titleWords = title.split(/[\s\-–—:,./]+/).filter(w => w.length > 1);
+            const remaining = titleWords.filter(w => !artistWords.has(w) && !noiseWords.has(w));
+            return remaining.length <= 1;
+          } else {
+            const albumWords = albumClean.split(/\s+/).filter(w => w.length > 2 && !noiseWords.has(w));
+            if (albumWords.length === 0) return true;
+            const matchCount = albumWords.filter(w => title.includes(w)).length;
+            return matchCount >= Math.ceil(albumWords.length * 0.6);
+          }
+        });
+      }
+
       // Update a card's price display
       function updateCard(card, prices) {
         const priceEl = card.querySelector('.sc-price');
@@ -720,10 +750,11 @@
               });
             }
 
-            // Match from eBay results
+            // Match from eBay results (filtered for album accuracy)
             const ebayMatch = ebayResults.find(e => e.card === card);
             if (ebayMatch && ebayMatch.items.length > 0) {
-              ebayMatch.items.forEach(item => {
+              const filtered = filterEbay(ebayMatch.items, card.dataset.album, card.dataset.artist);
+              filtered.forEach(item => {
                 if (item.price && item.price > 0) prices.push(item.price);
               });
             }
