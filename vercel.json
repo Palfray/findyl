@@ -7,6 +7,9 @@
     { "source": "/sales", "destination": "/sales.html" },
     { "source": "/local-stores", "destination": "/local-stores.html" },
     { "source": "/articles", "destination": "/articles.html" },
-    { "source": "/articles/:slug", "destination": "/article.html" }
+    { "source": "/articles/:slug", "destination": "/article.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/terms", "destination": "/terms.html" },
+    { "source": "/disclosure", "destination": "/disclosure.html" }
   ]
 }
