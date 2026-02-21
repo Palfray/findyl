@@ -19,31 +19,156 @@
     * { font-family: 'DM Serif Display', serif; font-weight: 400; color: #374151; }
     h1, h2, h3, h4, h5, h6 { font-family: 'DM Serif Display', serif; font-weight: 700; color: #111827; letter-spacing: -0.01em; }
 
+    /* Card styles */
     .article-card {
       transition: transform 0.2s, box-shadow 0.2s;
       overflow: hidden;
       border-radius: 12px;
       background: #fff;
       box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      text-decoration: none;
+      display: block;
     }
     .article-card:hover {
       transform: translateY(-4px);
       box-shadow: 0 8px 24px rgba(0,0,0,0.12);
     }
-    .article-card img {
+
+    /* Pill styles */
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      overflow: hidden;
+      transition: max-height 0.25s ease, opacity 0.25s ease, margin 0.25s ease;
+    }
+    .pill-row.collapsed {
+      max-height: 0;
+      opacity: 0;
+      margin-top: 0 !important;
+      margin-bottom: 0 !important;
+    }
+    .pill-row.expanded {
+      max-height: 200px;
+      opacity: 1;
+    }
+
+    /* Level 1 — Category pills */
+    .cat-pill {
+      padding: 6px 18px;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1.5px solid #D1D5DB;
+      background: #fff;
+      color: #6B7280;
+      transition: all 0.15s ease;
+    }
+    .cat-pill:hover { border-color: #FF6B6B; color: #FF6B6B; }
+    .cat-pill.active { background: #FF6B6B; color: #fff; border-color: #FF6B6B; }
+
+    /* Level 2 — Series sub-pills */
+    .series-pill {
+      padding: 5px 14px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1.5px solid #D1D5DB;
+      background: #fff;
+      color: #6B7280;
+      transition: all 0.15s ease;
+    }
+    .series-pill:hover { border-color: #FF6B6B; color: #FF6B6B; }
+    .series-pill.active { background: #FFF0F0; color: #FF6B6B; border-color: #FF6B6B; }
+
+    /* Level 3 — Genre pills */
+    .genre-pill {
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1.5px solid #D1D5DB;
+      background: #fff;
+      color: #6B7280;
+      transition: all 0.15s ease;
+    }
+    .genre-pill:hover { border-color: #FFB5B5; color: #FF6B6B; }
+    .genre-pill.active { background: #FFF5F5; color: #FF6B6B; border-color: #FFB5B5; }
+
+    /* Featured card (All view, latest article) */
+    .featured-card img {
       width: 100%;
-      height: 220px;
+      height: 320px;
       object-fit: cover;
     }
-    .category-badge {
+    .featured-card .fc-title {
+      font-size: 1.6rem;
+      line-height: 1.25;
+      margin-bottom: 10px;
+      color: #111827;
+    }
+
+    /* Standard card — horizontal */
+    .standard-card {
+      display: flex;
+      flex-direction: row;
+    }
+    .standard-card .sc-img {
+      width: 200px;
+      min-width: 200px;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 12px 0 0 12px;
+    }
+    .standard-card .sc-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      flex: 1;
+      min-width: 0;
+    }
+    .standard-card .sc-title {
+      font-size: 1.1rem;
+      line-height: 1.3;
+      margin-bottom: 6px;
+      color: #111827;
+    }
+    .standard-card .sc-desc {
+      color: #6B7280;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin: 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Mobile: stack standard cards */
+    @media (max-width: 640px) {
+      .standard-card { flex-direction: column; }
+      .standard-card .sc-img {
+        width: 100%;
+        min-width: unset;
+        height: 200px;
+        border-radius: 12px 12px 0 0;
+      }
+    }
+
+    /* Tag badges */
+    .meta-tag {
       display: inline-block;
-      background: #FFE5E5;
-      color: #FF6B6B;
       font-size: 0.7rem;
       font-weight: 500;
-      padding: 3px 10px;
+      padding: 2px 8px;
       border-radius: 9999px;
       letter-spacing: 0.03em;
+      text-transform: capitalize;
     }
   </style>
 </head>
@@ -79,12 +204,20 @@
 
   <!-- PAGE CONTENT -->
   <main style="max-width:1100px;margin:0 auto;padding:48px 20px 80px;">
-    <h1 style="font-size:2rem;margin-bottom:8px;">Sleeve Notes</h1>
-    <p style="color:#6B7280;font-size:1.05rem;margin-bottom:40px;">Guides, features and roundups for UK vinyl collectors.</p>
+    <h1 style="font-size:2rem;margin-bottom:8px;text-align:center;">Sleeve Notes</h1>
+    <p style="color:#6B7280;font-size:1.05rem;margin-bottom:32px;text-align:center;">The records worth owning and the stories behind them.</p>
 
-    <div id="articles-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px;">
-      <!-- Articles loaded dynamically -->
-    </div>
+    <!-- Level 1: Category pills -->
+    <div id="cat-pills" class="pill-row expanded" style="margin-bottom:12px;"></div>
+
+    <!-- Level 2: Series sub-pills (Features only) -->
+    <div id="series-pills" class="pill-row collapsed" style="margin-bottom:12px;"></div>
+
+    <!-- Level 3: Genre pills (Genre Spotlight only) -->
+    <div id="genre-pills" class="pill-row collapsed" style="margin-bottom:12px;"></div>
+
+    <!-- Articles grid -->
+    <div id="articles-grid" style="display:flex;flex-direction:column;gap:20px;margin-top:32px;"></div>
 
     <div id="articles-empty" style="display:none;text-align:center;padding:60px 0;color:#9CA3AF;">
       <p style="font-size:1.1rem;">No articles yet. Check back soon.</p>
@@ -108,85 +241,293 @@
 
   <script>
   (function() {
-    const grid = document.getElementById('articles-grid');
-    const empty = document.getElementById('articles-empty');
+    /* ─── Data & state ─── */
+    var allArticles = [];
+    var activeCat = 'all';
+    var activeSeries = 'all';
+    var activeGenre = 'all';
 
-    fetch('/articles-index.json')
-      .then(r => r.json())
-      .then(articles => {
-        if (!articles.length) { empty.style.display = 'block'; return; }
+    var seriesNames = {
+      'genre-spotlight': 'Genre Spotlight',
+      'behind-the-sample': 'Behind the Sample',
+      'history-of': 'The History of\u2026'
+    };
 
-        // Sort by date descending (newest first)
-        articles.sort((a, b) => new Date(b.date) - new Date(a.date));
+    function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
 
-        grid.innerHTML = articles.map(article => {
-          const dateObj = new Date(article.date + 'T00:00:00');
-          const dateStr = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-          const imgHtml = article.heroImage
-            ? '<img src="' + article.heroImage + '" alt="' + (article.heroAlt || article.title) + '" loading="lazy" decoding="async">'
-            : '<div style="width:100%;height:220px;background:#FFE5E5;display:flex;align-items:center;justify-content:center;"><svg width="48" height="48" fill="none" stroke="#FF6B6B" stroke-width="1.5" viewBox="0 0 24 24"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg></div>';
+    function fmtDate(d) {
+      var dt = new Date(d + 'T00:00:00');
+      return dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
 
-          return '<a href="/articles/' + article.slug + '" class="article-card" style="text-decoration:none;">'
-            + imgHtml
-            + '<div style="padding:20px;">'
-            + '<div style="margin-bottom:10px;">'
-            + (article.category ? '<span class="category-badge">' + article.category + '</span>' : '')
-            + '<span style="color:#9CA3AF;font-size:0.8rem;margin-left:8px;">' + dateStr + '</span>'
-            + '</div>'
-            + '<h3 style="font-size:1.15rem;line-height:1.35;margin-bottom:8px;color:#111827;">' + article.title + '</h3>'
-            + '<p style="color:#6B7280;font-size:0.9rem;line-height:1.5;margin:0;">' + article.description + '</p>'
-            + '</div>'
-            + '</a>';
-        }).join('');
-      })
-      .catch(err => {
-        console.error('Failed to load articles index:', err);
+    /* ─── Tag HTML for cards ─── */
+    function buildTagHtml(a) {
+      var parts = [];
+      if (a.category) {
+        parts.push('<span class="meta-tag" style="background:#FFE5E5;color:#FF6B6B;">' + cap(a.category) + '</span>');
+      }
+      if (a.series && seriesNames[a.series]) {
+        parts.push('<span class="meta-tag" style="background:#FFF0F0;color:#FF8A8A;">' + seriesNames[a.series] + '</span>');
+      }
+      if (a.genre) {
+        parts.push('<span class="meta-tag" style="background:#FFF5F5;color:#FFB5B5;">' + cap(a.genre) + '</span>');
+      }
+      return parts.join(' ');
+    }
+
+    /* ─── Image helper ─── */
+    function imgTag(a, height, radiusClass) {
+      if (a.heroImage) {
+        var src = a.heroImage.replace('front-1200', 'front-500');
+        return '<img src="' + src + '" alt="' + (a.heroAlt || a.title) + '" loading="lazy" decoding="async" style="width:100%;height:' + height + ';object-fit:cover;' + (radiusClass || '') + '">';
+      }
+      return '<div style="width:100%;height:' + height + ';background:#FFE5E5;display:flex;align-items:center;justify-content:center;' + (radiusClass || '') + '"><span style="font-size:2.5rem;">🎵</span></div>';
+    }
+
+    /* ─── Render featured card ─── */
+    function featuredCardHtml(a) {
+      return '<a href="/articles/' + a.slug + '" class="article-card featured-card">'
+        + imgTag(a, '320px', '')
+        + '<div style="padding:24px;">'
+        + '<div style="margin-bottom:10px;">' + buildTagHtml(a)
+        + '<span style="color:#9CA3AF;font-size:0.8rem;margin-left:8px;">' + fmtDate(a.date) + '</span>'
+        + '</div>'
+        + '<h3 class="fc-title">' + a.title + '</h3>'
+        + '<p style="color:#6B7280;font-size:0.95rem;line-height:1.6;margin:0;">' + a.description + '</p>'
+        + '</div></a>';
+    }
+
+    /* ─── Render standard card ─── */
+    function standardCardHtml(a) {
+      return '<a href="/articles/' + a.slug + '" class="article-card standard-card">'
+        + imgTag(a, '160px', 'border-radius:12px 0 0 12px;')
+        + '<div class="sc-body">'
+        + '<div style="margin-bottom:8px;">' + buildTagHtml(a)
+        + '<span style="color:#9CA3AF;font-size:0.75rem;margin-left:8px;">' + fmtDate(a.date) + '</span>'
+        + '</div>'
+        + '<h3 class="sc-title">' + a.title + '</h3>'
+        + '<p class="sc-desc">' + a.description + '</p>'
+        + '</div></a>';
+    }
+
+    /* ─── Filter articles ─── */
+    function getFiltered() {
+      var list = allArticles;
+      if (activeCat !== 'all') {
+        list = list.filter(function(a) { return a.category === activeCat; });
+      }
+      if (activeCat === 'features' && activeSeries !== 'all') {
+        list = list.filter(function(a) { return a.series === activeSeries; });
+      }
+      if (activeSeries === 'genre-spotlight' && activeGenre !== 'all') {
+        list = list.filter(function(a) { return a.genre === activeGenre; });
+      }
+      return list;
+    }
+
+    /* ─── Render articles ─── */
+    function renderArticles() {
+      var grid = document.getElementById('articles-grid');
+      var empty = document.getElementById('articles-empty');
+      var filtered = getFiltered();
+
+      if (!filtered.length) {
+        grid.innerHTML = '';
         empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+
+      var showFeatured = (activeCat === 'all');
+      var html = '';
+
+      if (showFeatured) {
+        html += featuredCardHtml(filtered[0]);
+        for (var i = 1; i < filtered.length; i++) {
+          html += standardCardHtml(filtered[i]);
+        }
+      } else {
+        for (var j = 0; j < filtered.length; j++) {
+          html += standardCardHtml(filtered[j]);
+        }
+      }
+      grid.innerHTML = html;
+    }
+
+    /* ─── Build category pills ─── */
+    function buildCatPills() {
+      var cats = ['all', 'charts', 'features', 'guides'];
+      var labels = { all: 'All', charts: 'Charts', features: 'Features', guides: 'Guides' };
+      var row = document.getElementById('cat-pills');
+      row.innerHTML = cats.map(function(c) {
+        return '<button class="cat-pill' + (c === activeCat ? ' active' : '') + '" data-cat="' + c + '">' + labels[c] + '</button>';
+      }).join('');
+
+      row.querySelectorAll('.cat-pill').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          activeCat = btn.dataset.cat;
+          activeSeries = 'all';
+          activeGenre = 'all';
+          updateAllPills();
+          renderArticles();
+        });
+      });
+    }
+
+    /* ─── Build series sub-pills ─── */
+    function buildSeriesPills() {
+      var row = document.getElementById('series-pills');
+
+      if (activeCat !== 'features') {
+        row.classList.remove('expanded');
+        row.classList.add('collapsed');
+        return;
+      }
+
+      var series = ['all', 'genre-spotlight', 'behind-the-sample', 'history-of'];
+      var labels = {
+        all: 'All Features',
+        'genre-spotlight': 'Genre Spotlight',
+        'behind-the-sample': 'Behind the Sample',
+        'history-of': 'The History of\u2026'
+      };
+
+      // Only show pills for series that have content
+      var available = series.filter(function(s) {
+        if (s === 'all') return true;
+        return allArticles.some(function(a) { return a.category === 'features' && a.series === s; });
+      });
+
+      row.innerHTML = available.map(function(s) {
+        return '<button class="series-pill' + (s === activeSeries ? ' active' : '') + '" data-series="' + s + '">' + labels[s] + '</button>';
+      }).join('');
+
+      row.classList.remove('collapsed');
+      row.classList.add('expanded');
+
+      row.querySelectorAll('.series-pill').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          activeSeries = btn.dataset.series;
+          activeGenre = 'all';
+          updateAllPills();
+          renderArticles();
+        });
+      });
+    }
+
+    /* ─── Build genre pills ─── */
+    function buildGenrePills() {
+      var row = document.getElementById('genre-pills');
+
+      if (activeSeries !== 'genre-spotlight') {
+        row.classList.remove('expanded');
+        row.classList.add('collapsed');
+        return;
+      }
+
+      // Collect unique genres from published genre-spotlight articles
+      var genres = [];
+      allArticles.forEach(function(a) {
+        if (a.series === 'genre-spotlight' && a.genre && genres.indexOf(a.genre) === -1) {
+          genres.push(a.genre);
+        }
+      });
+      genres.sort();
+
+      if (genres.length < 2) {
+        // Only one genre — no point showing genre pills
+        row.classList.remove('expanded');
+        row.classList.add('collapsed');
+        return;
+      }
+
+      var pills = ['<button class="genre-pill' + (activeGenre === 'all' ? ' active' : '') + '" data-genre="all">All Genres</button>'];
+      genres.forEach(function(g) {
+        pills.push('<button class="genre-pill' + (g === activeGenre ? ' active' : '') + '" data-genre="' + g + '">' + cap(g) + '</button>');
+      });
+
+      row.innerHTML = pills.join('');
+      row.classList.remove('collapsed');
+      row.classList.add('expanded');
+
+      row.querySelectorAll('.genre-pill').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          activeGenre = btn.dataset.genre;
+          updateAllPills();
+          renderArticles();
+        });
+      });
+    }
+
+    /* ─── Refresh all pill rows ─── */
+    function updateAllPills() {
+      buildCatPills();
+      buildSeriesPills();
+      buildGenrePills();
+    }
+
+    /* ─── Init ─── */
+    fetch('/articles-index.json')
+      .then(function(r) { return r.json(); })
+      .then(function(articles) {
+        if (!articles.length) {
+          document.getElementById('articles-empty').style.display = 'block';
+          return;
+        }
+        // Sort by date descending
+        articles.sort(function(a, b) { return new Date(b.date) - new Date(a.date); });
+        allArticles = articles;
+        updateAllPills();
+        renderArticles();
+      })
+      .catch(function(err) {
+        console.error('Failed to load articles index:', err);
+        document.getElementById('articles-empty').style.display = 'block';
       });
   })();
 
-  // Header autocomplete
+  /* ─── Header autocomplete (self-contained IIFE) ─── */
   (function() {
-    const input = document.getElementById('header-search-input');
-    const dropdown = document.getElementById('header-autocomplete');
-    const form = document.getElementById('header-search-form');
-    let debounceTimer;
+    var input = document.getElementById('header-search-input');
+    var dropdown = document.getElementById('header-autocomplete');
+    var form = document.getElementById('header-search-form');
+    var debounceTimer;
 
     if (!input || !dropdown || !form) return;
 
     form.addEventListener('submit', function(e) {
       e.preventDefault();
-      const q = input.value.trim();
+      var q = input.value.trim();
       if (q) window.location.href = '/results?q=' + encodeURIComponent(q);
     });
 
     input.addEventListener('input', function() {
       clearTimeout(debounceTimer);
-      const q = input.value.trim();
+      var q = input.value.trim();
       if (q.length < 2) { dropdown.style.display = 'none'; return; }
-      debounceTimer = setTimeout(() => {
+      debounceTimer = setTimeout(function() {
         fetch('/api/autocomplete?q=' + encodeURIComponent(q))
-          .then(r => r.json())
-          .then(data => {
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
             if (!data.artists?.length && !data.albums?.length) { dropdown.style.display = 'none'; return; }
-            let html = '';
+            var html = '';
             if (data.artists?.length) {
               html += '<div style="padding:8px 16px;font-size:0.7rem;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.05em;">Artists</div>';
-              data.artists.forEach(a => {
-                const meta = [a.type, a.country, a.disambiguation].filter(Boolean).join(' · ');
+              data.artists.forEach(function(a) {
+                var meta = [a.type, a.country, a.disambiguation].filter(Boolean).join(' · ');
                 html += '<a href="/results?q=' + encodeURIComponent(a.name) + '" style="display:block;padding:10px 16px;text-decoration:none;color:#1F2937;font-size:0.95rem;border-bottom:1px solid #F3F4F6;">' + a.name + (meta ? '<span style="color:#9CA3AF;font-size:0.8rem;margin-left:8px;">' + meta + '</span>' : '') + '</a>';
               });
             }
             if (data.albums?.length) {
               html += '<div style="padding:8px 16px;font-size:0.7rem;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.05em;">Albums</div>';
-              data.albums.forEach(a => {
+              data.albums.forEach(function(a) {
                 html += '<a href="/album?artist=' + encodeURIComponent(a.artist || '') + '&album=' + encodeURIComponent(a.name) + '" style="display:block;padding:10px 16px;text-decoration:none;color:#1F2937;font-size:0.95rem;border-bottom:1px solid #F3F4F6;">' + a.name + (a.artist ? '<span style="color:#9CA3AF;font-size:0.8rem;margin-left:8px;">' + a.artist + '</span>' : '') + '</a>';
               });
             }
             dropdown.innerHTML = html;
             dropdown.style.display = 'block';
           })
-          .catch(() => { dropdown.style.display = 'none'; });
+          .catch(function() { dropdown.style.display = 'none'; });
       }, 300);
     });
 
