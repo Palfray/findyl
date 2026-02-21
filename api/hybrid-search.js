@@ -27,6 +27,8 @@ export default async function handler(req, res) {
 
   try {
     const searchTerm = q.toLowerCase().trim();
+    // Normalize: strip punctuation for matching
+    const normalize = s => s.toLowerCase().replace(/[.\-'",!?()]/g, '').replace(/\s+/g, ' ').trim();
 
     // STEP 1: Search POPSTORE (from Upstash, fallback to live AWIN redirect)
     let popstoreResults = [];
@@ -38,8 +40,8 @@ export default async function handler(req, res) {
         console.log(`✅ POPSTORE: ${allPop.length} total products in Upstash`);
         // Filter to matching products
         popstoreResults = allPop.filter(p => {
-          const text = `${p.artist} ${p.album} ${p.title || ''} ${p.product_name || ''}`.toLowerCase();
-          const words = searchTerm.split(/\s+/);
+          const text = normalize(`${p.artist} ${p.album} ${p.title || ''} ${p.product_name || ''}`);
+          const words = normalize(searchTerm).split(/\s+/);
           return words.every(w => text.includes(w));
         }).slice(0, 20);
         console.log('✅ POPSTORE matched:', popstoreResults.length, 'products');
@@ -200,16 +202,16 @@ export default async function handler(req, res) {
       
       // Filter by artist for multi-word searches
       if (searchTerm.includes(' ')) {
-        const artistLower = artist.toLowerCase();
-        const artistWithoutThe = artistLower.replace(/^the\s+/, '');
-        const searchWithoutThe = searchTerm.replace(/^the\s+/, '');
+        const artistNorm = normalize(artist);
+        const searchNorm = normalize(searchTerm);
+        const artistWithoutThe = artistNorm.replace(/^the\s+/, '');
+        const searchWithoutThe = searchNorm.replace(/^the\s+/, '');
         
-        // Check if search term contains the artist name OR artist contains search term
-        const artistMatch = artistLower === searchTerm || 
-          searchTerm.startsWith(artistLower + ' ') ||
-          searchTerm.startsWith(artistWithoutThe + ' ') ||
-          artistLower.startsWith(searchTerm + ' ') ||
-          artistLower === searchWithoutThe ||
+        const artistMatch = artistNorm === searchNorm || 
+          searchNorm.startsWith(artistNorm + ' ') ||
+          searchNorm.startsWith(artistWithoutThe + ' ') ||
+          artistNorm.startsWith(searchNorm + ' ') ||
+          artistNorm === searchWithoutThe ||
           artistWithoutThe === searchWithoutThe;
         
         if (!artistMatch) {
@@ -260,15 +262,16 @@ export default async function handler(req, res) {
     vinylCastleResults.forEach((vc, idx) => {
       // Filter by artist for multi-word searches
       if (searchTerm.includes(' ')) {
-        const artistLower = vc.artist.toLowerCase();
-        const artistWithoutThe = artistLower.replace(/^the\s+/, '');
-        const searchWithoutThe = searchTerm.replace(/^the\s+/, '');
+        const artistNorm = normalize(vc.artist);
+        const searchNorm = normalize(searchTerm);
+        const artistWithoutThe = artistNorm.replace(/^the\s+/, '');
+        const searchWithoutThe = searchNorm.replace(/^the\s+/, '');
         
-        const artistMatch = artistLower === searchTerm || 
-          searchTerm.startsWith(artistLower + ' ') ||
-          searchTerm.startsWith(artistWithoutThe + ' ') ||
-          artistLower.startsWith(searchTerm + ' ') ||
-          artistLower === searchWithoutThe ||
+        const artistMatch = artistNorm === searchNorm || 
+          searchNorm.startsWith(artistNorm + ' ') ||
+          searchNorm.startsWith(artistWithoutThe + ' ') ||
+          artistNorm.startsWith(searchNorm + ' ') ||
+          artistNorm === searchWithoutThe ||
           artistWithoutThe === searchWithoutThe;
         
         if (!artistMatch) {
@@ -348,15 +351,16 @@ export default async function handler(req, res) {
     empResults.forEach((emp, idx) => {
       // Filter by artist for multi-word searches
       if (searchTerm.includes(' ')) {
-        const artistLower = emp.artist.toLowerCase();
-        const artistWithoutThe = artistLower.replace(/^the\s+/, '');
-        const searchWithoutThe = searchTerm.replace(/^the\s+/, '');
+        const artistNorm = normalize(emp.artist);
+        const searchNorm = normalize(searchTerm);
+        const artistWithoutThe = artistNorm.replace(/^the\s+/, '');
+        const searchWithoutThe = searchNorm.replace(/^the\s+/, '');
         
-        const artistMatch = artistLower === searchTerm || 
-          searchTerm.startsWith(artistLower + ' ') ||
-          searchTerm.startsWith(artistWithoutThe + ' ') ||
-          artistLower.startsWith(searchTerm + ' ') ||
-          artistLower === searchWithoutThe ||
+        const artistMatch = artistNorm === searchNorm || 
+          searchNorm.startsWith(artistNorm + ' ') ||
+          searchNorm.startsWith(artistWithoutThe + ' ') ||
+          artistNorm.startsWith(searchNorm + ' ') ||
+          artistNorm === searchWithoutThe ||
           artistWithoutThe === searchWithoutThe;
         
         if (!artistMatch) {
