@@ -267,7 +267,7 @@
         + imgHtml
         + '<div class="card-body">'
         + '<div style="margin-bottom:8px;">' + buildTagHtml(a)
-        + '<span style="color:#9CA3AF;font-size:0.75rem;margin-left:8px;">' + fmtDate(a.date) + '</span>'
+        + '<span style="color:#9CA3AF;font-size:0.75rem;margin-left:8px;">' + (a.category !== 'guides' ? fmtDate(a.date) : '') + '</span>'
         + '</div>'
         + '<h3 class="card-title">' + a.title + '</h3>'
         + '<p class="card-desc">' + a.description + '</p>'
