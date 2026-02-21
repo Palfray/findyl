@@ -11,7 +11,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Artist - findyl</title>
-    <meta name="description" content="Browse the full vinyl discography and compare prices across UK retailers on findyl.">
+    <meta name="description" id="meta-description" content="Browse the full vinyl discography and compare prices across UK retailers on findyl.">
+    <link rel="canonical" id="canonical-link" href="https://findyl.co.uk/artist">
+    <meta property="og:title" id="og-title" content="Artist — findyl">
+    <meta property="og:description" id="og-description" content="Browse the full vinyl discography and compare prices across UK retailers on findyl.">
+    <meta property="og:type" content="music.musician">
+    <meta property="og:url" id="og-url" content="https://findyl.co.uk/artist">
+    <meta property="og:site_name" content="findyl">
+    <script type="application/ld+json" id="schema-jsonld">{}</script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -401,7 +408,31 @@
 
         function displayArtistInfo(artist) {
             document.getElementById('artist-name').textContent = artist.name;
-            document.title = `${artist.name} - findyl`;
+            document.title = `${artist.name} — Vinyl Discography & UK Prices | findyl`;
+
+            // Dynamic meta description
+            const metaDesc = `Browse ${artist.name}'s full vinyl discography and compare prices across UK retailers on findyl.`;
+            document.getElementById('meta-description').setAttribute('content', metaDesc);
+
+            // Canonical URL
+            const canonicalUrl = `https://findyl.co.uk/artist?name=${encodeURIComponent(artist.name)}`;
+            document.getElementById('canonical-link').setAttribute('href', canonicalUrl);
+
+            // OG tags
+            document.getElementById('og-title').setAttribute('content', `${artist.name} — Vinyl Discography & UK Prices | findyl`);
+            document.getElementById('og-description').setAttribute('content', metaDesc);
+            document.getElementById('og-url').setAttribute('content', canonicalUrl);
+
+            // JSON-LD MusicGroup schema
+            const schema = {
+              "@context": "https://schema.org",
+              "@type": artist.type === 'Person' ? 'MusicGroup' : 'MusicGroup',
+              "name": artist.name,
+              "url": canonicalUrl,
+              "mainEntityOfPage": { "@type": "WebPage", "@id": canonicalUrl }
+            };
+            if (artist.country) schema.foundingLocation = { "@type": "Country", "name": artist.country };
+            document.getElementById('schema-jsonld').textContent = JSON.stringify(schema);
 
             const meta = [];
             if (artist.country) meta.push(artist.country);

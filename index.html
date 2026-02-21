@@ -12,8 +12,29 @@
     <meta name="impact-site-verification" value="bd1aea7f-d4f9-472f-971a-a828d0fa4049">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>findyl - Find vinyl records from UK retailers</title>
+    <title>findyl — Compare Vinyl Record Prices Across UK Retailers</title>
     <meta name="description" content="Compare vinyl record prices across UK retailers. Search artists, browse discographies and find the best deals on new and used vinyl.">
+    <link rel="canonical" href="https://findyl.co.uk/">
+    <meta property="og:title" content="findyl — Compare Vinyl Record Prices Across UK Retailers">
+    <meta property="og:description" content="Compare vinyl record prices across UK retailers. Search artists, browse discographies and find the best deals on new and used vinyl.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://findyl.co.uk/">
+    <meta property="og:site_name" content="findyl">
+    <!-- JSON-LD WebSite schema with SearchAction for sitelinks -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "findyl",
+      "url": "https://findyl.co.uk",
+      "description": "Compare vinyl record prices across UK retailers. Search artists, browse discographies and find the best deals.",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://findyl.co.uk/results?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -550,7 +571,16 @@
                 <a href="/articles" style="color:#FF6B6B;font-size:0.9rem;text-decoration:none;font-family:'Nunito Sans',sans-serif;font-weight:400;">View all →</a>
             </div>
             <div id="hp-articles" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Loaded dynamically from articles-index.json (non-guide articles) -->
+                <!-- Hardcoded for SEO crawlability, JS will re-render with full cards -->
+                <a href="/articles/behind-the-sample-labi-siffre-eminem" class="article-card bg-white rounded-lg overflow-hidden shadow-sm" style="text-decoration:none;color:inherit;">
+                  <div style="padding:16px 20px 20px;"><h3 style="font-size:1.2rem;line-height:1.3;margin:0 0 8px;">Behind the Sample: How Labi Siffre Made Eminem's Career (Then Made Him Change the Lyrics)</h3><p style="font-size:0.9rem;color:#6B7280;margin:0;">The story of Labi Siffre's 'I Got The…', the 1975 funk track that became the backbone of 'My Name Is'.</p></div>
+                </a>
+                <a href="/articles/best-selling-vinyl-2025" class="article-card bg-white rounded-lg overflow-hidden shadow-sm" style="text-decoration:none;color:inherit;">
+                  <div style="padding:16px 20px 20px;"><h3 style="font-size:1.2rem;line-height:1.3;margin:0 0 8px;">The Best-Selling Vinyl Records in the UK in 2025</h3><p style="font-size:0.9rem;color:#6B7280;margin:0;">Taylor Swift, Sam Fender and Oasis led the charge as UK vinyl sales hit 7.6 million.</p></div>
+                </a>
+                <a href="/articles/country-music-uk-2026" class="article-card bg-white rounded-lg overflow-hidden shadow-sm" style="text-decoration:none;color:inherit;">
+                  <div style="padding:16px 20px 20px;"><h3 style="font-size:1.2rem;line-height:1.3;margin:0 0 8px;">Country Music Is Taking Over the UK — and These Are the Artists You Need on Vinyl</h3><p style="font-size:0.9rem;color:#6B7280;margin:0;">From Zach Bryan selling out Tottenham to Tyler Childers and a wave of new talent.</p></div>
+                </a>
             </div>
         </section>
 
@@ -561,7 +591,25 @@
                 <a href="/articles" style="color:#FF6B6B;font-size:0.9rem;text-decoration:none;font-family:'Nunito Sans',sans-serif;font-weight:400;">View all →</a>
             </div>
             <div id="hp-guides" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Loaded dynamically from articles-index.json (guides only) -->
+                <!-- Hardcoded for SEO crawlability, JS will re-render with full cards -->
+                <a href="/articles/record-store-day-2026-survival-guide" class="article-card bg-white rounded-lg overflow-hidden shadow-sm" style="text-decoration:none;color:inherit;">
+                  <div style="padding:16px 20px 20px;"><h3 style="font-size:1.2rem;line-height:1.3;margin:0 0 8px;">Record Store Day 2026: A Survival Guide</h3><p style="font-size:0.9rem;color:#6B7280;margin:0;">Everything you need to know for RSD 2026 on 18 April.</p></div>
+                </a>
+                <a href="/articles/coloured-vinyl-vs-black-vinyl" class="article-card bg-white rounded-lg overflow-hidden shadow-sm" style="text-decoration:none;color:inherit;">
+                  <div style="padding:16px 20px 20px;"><h3 style="font-size:1.2rem;line-height:1.3;margin:0 0 8px;">Coloured Vinyl vs Black Vinyl: Does It Actually Sound Different?</h3><p style="font-size:0.9rem;color:#6B7280;margin:0;">The science, the myths, and what actually affects how your records sound.</p></div>
+                </a>
+                <a href="/articles/how-to-clean-vinyl-records" class="article-card bg-white rounded-lg overflow-hidden shadow-sm" style="text-decoration:none;color:inherit;">
+                  <div style="padding:16px 20px 20px;"><h3 style="font-size:1.2rem;line-height:1.3;margin:0 0 8px;">How to Clean Your Vinyl Records</h3><p style="font-size:0.9rem;color:#6B7280;margin:0;">From the 30-second pre-play routine to a full deep clean for charity shop rescues.</p></div>
+                </a>
+                <a href="/articles/how-to-store-vinyl-records" class="article-card bg-white rounded-lg overflow-hidden shadow-sm" style="text-decoration:none;color:inherit;">
+                  <div style="padding:16px 20px 20px;"><h3 style="font-size:1.2rem;line-height:1.3;margin:0 0 8px;">How to Store Vinyl Records Properly</h3><p style="font-size:0.9rem;color:#6B7280;margin:0;">Everything you need to know about storing your vinyl collection.</p></div>
+                </a>
+                <a href="/articles/understanding-vinyl-pressings" class="article-card bg-white rounded-lg overflow-hidden shadow-sm" style="text-decoration:none;color:inherit;">
+                  <div style="padding:16px 20px 20px;"><h3 style="font-size:1.2rem;line-height:1.3;margin:0 0 8px;">Understanding Vinyl Pressings: 180g, Coloured, First Pressing Explained</h3><p style="font-size:0.9rem;color:#6B7280;margin:0;">180g doesn't automatically mean better sound. Here's what actually matters.</p></div>
+                </a>
+                <a href="/articles/vinyl-grading-guide-uk" class="article-card bg-white rounded-lg overflow-hidden shadow-sm" style="text-decoration:none;color:inherit;">
+                  <div style="padding:16px 20px 20px;"><h3 style="font-size:1.2rem;line-height:1.3;margin:0 0 8px;">Vinyl Record Grading Guide: What the Grades Actually Mean</h3><p style="font-size:0.9rem;color:#6B7280;margin:0;">The Goldmine standard, the Record Collector system, and what VG+ really means.</p></div>
+                </a>
             </div>
         </section>
 

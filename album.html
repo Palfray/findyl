@@ -11,7 +11,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Album - findyl</title>
-    <meta name="description" content="Compare prices for this vinyl record across UK retailers including eBay, POPSTORE, Vinyl Castle and more.">
+    <meta name="description" id="meta-description" content="Compare prices for this vinyl record across UK retailers including eBay, POPSTORE, Vinyl Castle and more.">
+    <link rel="canonical" id="canonical-link" href="https://findyl.co.uk/album">
+    <meta property="og:title" id="og-title" content="Album — findyl">
+    <meta property="og:description" id="og-description" content="Compare vinyl prices across UK retailers on findyl.">
+    <meta property="og:type" content="music.album">
+    <meta property="og:url" id="og-url" content="https://findyl.co.uk/album">
+    <meta property="og:image" id="og-image" content="">
+    <meta property="og:site_name" content="findyl">
+    <script type="application/ld+json" id="schema-jsonld">{}</script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -408,7 +416,34 @@
             const year = albumData['first-release-date'] ? albumData['first-release-date'].substring(0, 4) : '';
 
             // Set page title
-            document.title = `${title} - ${artist} - findyl`;
+            document.title = `${title} by ${artist} — Compare Vinyl Prices UK | findyl`;
+
+            // Dynamic meta description
+            const metaDesc = `Compare UK prices for ${title} by ${artist} on vinyl. Find the best deal across multiple retailers on findyl.`;
+            document.getElementById('meta-description').setAttribute('content', metaDesc);
+
+            // Canonical URL (use album ID as the canonical identifier)
+            const canonicalUrl = `https://findyl.co.uk/album?id=${encodeURIComponent(albumId)}&artist=${encodeURIComponent(artist)}&name=${encodeURIComponent(title)}`;
+            document.getElementById('canonical-link').setAttribute('href', canonicalUrl);
+
+            // OG tags
+            document.getElementById('og-title').setAttribute('content', `${title} by ${artist} — Compare Vinyl Prices UK | findyl`);
+            document.getElementById('og-description').setAttribute('content', metaDesc);
+            document.getElementById('og-url').setAttribute('content', canonicalUrl);
+            document.getElementById('og-image').setAttribute('content', `https://coverartarchive.org/release-group/${albumId}/front-500`);
+
+            // JSON-LD MusicAlbum schema
+            const schema = {
+              "@context": "https://schema.org",
+              "@type": "MusicAlbum",
+              "name": title,
+              "byArtist": { "@type": "MusicGroup", "name": artist },
+              "url": canonicalUrl,
+              "image": `https://coverartarchive.org/release-group/${albumId}/front-500`,
+              "mainEntityOfPage": { "@type": "WebPage", "@id": canonicalUrl }
+            };
+            if (year) schema.datePublished = year;
+            document.getElementById('schema-jsonld').textContent = JSON.stringify(schema);
 
             // Breadcrumb
             document.getElementById('breadcrumb-artist').textContent = artist;
