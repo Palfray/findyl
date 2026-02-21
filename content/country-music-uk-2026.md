@@ -1,4 +1,4 @@
-[country-music-uk-2026 (3).md](https://github.com/user-attachments/files/25453322/country-music-uk-2026.3.md)
+[country-music-uk-2026 (4).md](https://github.com/user-attachments/files/25454263/country-music-uk-2026.4.md)
 # Country Music Is Taking Over the UK and These Are the Artists You Need on Vinyl
 
 [Zach Bryan](/artist?name=Zach+Bryan&id=51e90731-08c0-4f60-89b6-5b78e5844de8) is playing Anfield. That sentence would have been a joke five years ago. [Garth Brooks](/artist?name=Garth+Brooks&id=b76645c5-78b0-4e4c-8f95-003f40013a45) is headlining BST Hyde Park. Brooks sold more albums in 1990s America than anyone except the Beatles, and now he's doing a Sunday evening in London like it's perfectly normal. And an eighteen-year-old from Arkansas who recorded his debut EP in his parents' rec room is about to play the O2.
