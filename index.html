@@ -577,8 +577,17 @@
           fetch('/articles-index.json')
             .then(function(r) { return r.json(); })
             .then(function(articles) {
-              articles.sort(function(a, b) { return new Date(b.date) - new Date(a.date); });
-              var latest = articles.slice(0, 3);
+              // Custom display order by slug
+              var order = [
+                'behind-the-sample-labi-siffre-eminem',
+                'best-selling-vinyl-2025',
+                'country-music-uk-2026',
+                'record-store-day-2026-survival-guide',
+                'how-to-clean-vinyl-records'
+              ];
+              var bySlug = {};
+              articles.forEach(function(a) { bySlug[a.slug] = a; });
+              var latest = order.map(function(s) { return bySlug[s]; }).filter(Boolean);
               var grid = document.getElementById('hp-articles');
               grid.innerHTML = latest.map(function(a) {
                 var imgSrc = a.heroImage ? a.heroImage.replace('front-1200', 'front-500') : '';
