@@ -1,3 +1,10 @@
+import { Redis } from '@upstash/redis';
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
+
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -21,17 +28,31 @@ export default async function handler(req, res) {
   try {
     const searchTerm = q.toLowerCase().trim();
 
-    // STEP 1: Search POPSTORE
+    // STEP 1: Search POPSTORE (from Upstash, fallback to live AWIN redirect)
     let popstoreResults = [];
     try {
-      const popstoreResponse = await fetch(
-        `https://www.awin1.com/cread.php?awinmid=118493&awinaffid=2772514&ued=https://www.wearepopstore.com/search/suggest.json?q=${encodeURIComponent(q)}&resources[type]=product&resources[limit]=20`
-      );
-
-      if (popstoreResponse.ok) {
-        const popstoreData = await popstoreResponse.json();
-        popstoreResults = popstoreData.resources?.results?.products || [];
-        console.log('✅ POPSTORE found:', popstoreResults.length, 'products');
+      // Try Upstash first
+      const popData = await redis.get('feed:popstore');
+      if (popData) {
+        const allPop = typeof popData === 'string' ? JSON.parse(popData) : popData;
+        console.log(`✅ POPSTORE: ${allPop.length} total products in Upstash`);
+        // Filter to matching products
+        popstoreResults = allPop.filter(p => {
+          const text = `${p.artist} ${p.album} ${p.title || ''}`.toLowerCase();
+          return text.includes(searchTerm);
+        }).slice(0, 20);
+        console.log('✅ POPSTORE matched:', popstoreResults.length, 'products');
+      } else {
+        // Fallback to live AWIN redirect
+        console.log('⚠️ POPSTORE: Upstash empty, trying live API');
+        const popstoreResponse = await fetch(
+          `https://www.awin1.com/cread.php?awinmid=118493&awinaffid=2772514&ued=https://www.wearepopstore.com/search/suggest.json?q=${encodeURIComponent(q)}&resources[type]=product&resources[limit]=20`
+        );
+        if (popstoreResponse.ok) {
+          const popstoreData = await popstoreResponse.json();
+          popstoreResults = popstoreData.resources?.results?.products || [];
+          console.log('✅ POPSTORE (live) found:', popstoreResults.length, 'products');
+        }
       }
     } catch (error) {
       console.error('❌ POPSTORE error:', error.message);
@@ -152,14 +173,28 @@ export default async function handler(req, res) {
     
     // Add POPSTORE results
     popstoreResults.forEach(p => {
-      // Extract artist and album from title
-      const titleParts = p.title.split(' - ');
-      let artist = 'Unknown Artist';
-      let album = p.title;
-      
-      if (titleParts.length >= 2) {
-        artist = titleParts[0].trim();
-        album = titleParts.slice(1).join(' - ').trim();
+      // Handle both formats: Upstash (has artist/album/link) and live API (has title/url)
+      let artist, album, popstoreUrl, rawTitle;
+
+      if (p.artist && p.album) {
+        // Upstash format
+        artist = p.artist;
+        album = p.album;
+        popstoreUrl = p.link || p.url || '';
+        rawTitle = p.title || p.product_name || `${p.artist} - ${p.album}`;
+      } else {
+        // Live API format: title = "Artist - Album, Vinyl"
+        const titleParts = (p.title || '').split(' - ');
+        artist = 'Unknown Artist';
+        album = p.title || '';
+
+        if (titleParts.length >= 2) {
+          artist = titleParts[0].trim();
+          album = titleParts.slice(1).join(' - ').trim();
+        }
+        const rawUrl = p.url || '';
+        popstoreUrl = rawUrl.startsWith('http') ? rawUrl : `https://www.wearepopstore.com${rawUrl}`;
+        rawTitle = p.title || '';
       }
       
       // Filter by artist for multi-word searches
@@ -198,8 +233,10 @@ export default async function handler(req, res) {
       
       console.log(`POPSTORE: "${album}" → "${cleanAlbum}"`);
       
-      // Build proper POPSTORE URL
-      const popstoreUrl = p.url.startsWith('http') ? p.url : `https://www.wearepopstore.com${p.url}`;
+      // Build proper POPSTORE affiliate URL
+      const affiliateLink = popstoreUrl.includes('awin1.com') 
+        ? popstoreUrl 
+        : `https://www.awin1.com/cread.php?awinmid=118493&awinaffid=2772514&ued=${encodeURIComponent(popstoreUrl)}`;
       
       if (!albumMap.has(key)) {
         albumMap.set(key, {
@@ -211,10 +248,10 @@ export default async function handler(req, res) {
           buyOptions: [{
             storeName: 'POP Store',
             price: parseFloat(p.price),
-            link: `https://www.awin1.com/cread.php?awinmid=118493&awinaffid=2772514&ued=${encodeURIComponent(popstoreUrl)}`,
+            link: affiliateLink,
             source: 'popstore',
-            availability: p.available ? 'In Stock' : 'Out of Stock',
-            rawProductName: p.title || ''
+            availability: p.availability || (p.available ? 'In Stock' : 'Out of Stock'),
+            rawProductName: rawTitle
           }]
         });
       }
