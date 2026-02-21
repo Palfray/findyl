@@ -544,7 +544,11 @@
     <main class="max-w-7xl mx-auto px-4 pt-2 pb-12">
         <!-- Sleeve Notes -->
         <section id="articles" class="mb-16">
-            <p class="text-gray-500 mb-6 text-sm md:text-base" style="font-family: 'Nunito Sans', sans-serif; font-weight: 400;">Search artists, compare vinyl prices across UK record stores, and discover your next favourite album.</p>
+            <p class="text-gray-500 mb-8 text-sm md:text-base" style="font-family: 'Nunito Sans', sans-serif; font-weight: 400;">Search artists, compare vinyl prices across UK record stores, and discover your next favourite album.</p>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:20px;">
+                <h2 class="text-2xl font-bold" style="margin:0;">Sleeve Notes</h2>
+                <a href="/articles" style="color:#FF6B6B;font-size:0.9rem;text-decoration:none;font-family:'Nunito Sans',sans-serif;font-weight:400;">View all →</a>
+            </div>
             <div id="hp-articles" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Loaded dynamically from articles-index.json -->
             </div>
@@ -579,16 +583,16 @@
               grid.innerHTML = latest.map(function(a) {
                 var imgSrc = a.heroImage ? a.heroImage.replace('front-1200', 'front-500') : '';
                 var imgHtml = imgSrc
-                  ? '<div class="h-48 overflow-hidden"><img loading="lazy" src="' + imgSrc + '" alt="' + (a.heroAlt || a.title) + '" class="w-full h-full object-cover"></div>'
-                  : '<div class="h-48 overflow-hidden" style="background:linear-gradient(135deg,#FFE5E5,#FFF0F0);display:flex;align-items:center;justify-content:center;"><span style="font-size:2.5rem;">🎵</span></div>';
-                return '<article class="article-card bg-white rounded-lg overflow-hidden shadow-sm">'
-                  + '<a href="/articles/' + a.slug + '" class="block">'
-                  + '<div class="p-6 pb-4">'
-                  + '<div class="text-sm mb-2" style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;">' + buildTagHtml(a) + '</div>'
-                  + '<h3 class="text-2xl mb-2">' + a.title + '</h3>'
-                  + '<p class="mb-0">' + a.description + '</p>'
-                  + '</div>'
+                  ? '<div style="height:200px;overflow:hidden;"><img loading="lazy" src="' + imgSrc + '" alt="' + (a.heroAlt || a.title) + '" style="width:100%;height:100%;object-fit:cover;display:block;"></div>'
+                  : '<div style="height:200px;overflow:hidden;background:linear-gradient(135deg,#FFE5E5,#FFF0F0);display:flex;align-items:center;justify-content:center;"><span style="font-size:2.5rem;">🎵</span></div>';
+                return '<article class="article-card bg-white rounded-lg overflow-hidden shadow-sm" style="display:flex;flex-direction:column;">'
+                  + '<a href="/articles/' + a.slug + '" style="display:flex;flex-direction:column;height:100%;text-decoration:none;color:inherit;">'
                   + imgHtml
+                  + '<div style="padding:16px 20px 20px;display:flex;flex-direction:column;flex:1;">'
+                  + '<div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">' + buildTagHtml(a) + '</div>'
+                  + '<h3 style="font-size:1.2rem;line-height:1.3;margin:0 0 8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">' + a.title + '</h3>'
+                  + '<p style="font-size:0.9rem;color:#6B7280;margin:0;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">' + a.description + '</p>'
+                  + '</div>'
                   + '</a></article>';
               }).join('');
             })
@@ -596,76 +600,7 @@
         })();
         </script>
 
-        <!-- Guides Section -->
-        <section id="guides">
-            <h2 class="text-3xl font-bold mb-8">Vinyl Guides</h2>
-            
-            <div class="grid md:grid-cols-2 gap-6">
-                <!-- Guide 1 -->
-                <article class="article-card bg-white rounded-lg p-6 shadow-sm">
-                    <div class="flex gap-4">
-                        <div class="flex-shrink-0">
-                            <div class="w-16 h-16 rounded-lg flex items-center justify-center text-3xl" style="background-color: #FFE5E5">
-                                🎵
-                            </div>
-                        </div>
-                        <div class="flex-1">
-                            <h3 class="text-xl font-bold mb-2">How to Clean Your Vinyl Records</h3>
-                            <p class="text-gray-600 mb-3">Proper maintenance tips to keep your collection in pristine condition.</p>
-                            <a href="#" class="text-coral-600 font-medium hover:underline" style="color: #FF6B6B">Read guide →</a>
-                        </div>
-                    </div>
-                </article>
 
-                <!-- Guide 2 -->
-                <article class="article-card bg-white rounded-lg p-6 shadow-sm">
-                    <div class="flex gap-4">
-                        <div class="flex-shrink-0">
-                            <div class="w-16 h-16 rounded-lg flex items-center justify-center text-3xl" style="background-color: #FFE5E5">
-                                💿
-                            </div>
-                        </div>
-                        <div class="flex-1">
-                            <h3 class="text-xl font-bold mb-2">Understanding Vinyl Pressings</h3>
-                            <p class="text-gray-600 mb-3">Learn about first pressings, reissues, and what makes them valuable.</p>
-                            <a href="#" class="text-coral-600 font-medium hover:underline" style="color: #FF6B6B">Read guide →</a>
-                        </div>
-                    </div>
-                </article>
-
-                <!-- Guide 3 -->
-                <article class="article-card bg-white rounded-lg p-6 shadow-sm">
-                    <div class="flex gap-4">
-                        <div class="flex-shrink-0">
-                            <div class="w-16 h-16 rounded-lg flex items-center justify-center text-3xl" style="background-color: #FFE5E5">
-                                🎧
-                            </div>
-                        </div>
-                        <div class="flex-1">
-                            <h3 class="text-xl font-bold mb-2">Choosing Your First Turntable</h3>
-                            <p class="text-gray-600 mb-3">A beginner's guide to selecting the perfect record player.</p>
-                            <a href="#" class="text-coral-600 font-medium hover:underline" style="color: #FF6B6B">Read guide →</a>
-                        </div>
-                    </div>
-                </article>
-
-                <!-- Guide 4 -->
-                <article class="article-card bg-white rounded-lg p-6 shadow-sm">
-                    <div class="flex gap-4">
-                        <div class="flex-shrink-0">
-                            <div class="w-16 h-16 rounded-lg flex items-center justify-center text-3xl" style="background-color: #FFE5E5">
-                                📦
-                            </div>
-                        </div>
-                        <div class="flex-1">
-                            <h3 class="text-xl font-bold mb-2">Storing Your Vinyl Collection</h3>
-                            <p class="text-gray-600 mb-3">Best practices for organizing and protecting your records.</p>
-                            <a href="#" class="text-coral-600 font-medium hover:underline" style="color: #FF6B6B">Read guide →</a>
-                        </div>
-                    </div>
-                </article>
-            </div>
-        </section>
     </main>
 
     <!-- Footer -->
