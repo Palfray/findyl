@@ -1,4 +1,6 @@
 import { Redis } from '@upstash/redis';
+import { createGunzip } from 'zlib';
+import { Readable } from 'stream';
 
 export const config = {
   maxDuration: 60,
@@ -9,12 +11,11 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
-// Minimal columns only
+// Minimal columns
 const COLUMNS = 'aw_deep_link,product_name,search_price,merchant_name,merchant_category,merchant_image_url,aw_image_url,brand_name,in_stock,ean,colour,merchant_deep_link,currency';
 
 function buildFeedUrl(apiKey, feedId) {
-  // NO compression — request plain CSV to avoid memory spike from decompressing
-  return `https://productdata.awin.com/datafeed/download/apikey/${apiKey}/language/en/fid/${feedId}/rid/0/hasEnhancedFeeds/0/columns/${COLUMNS}/format/csv/delimiter/%2C/compression/0/adultcontent/1/`;
+  return `https://productdata.awin.com/datafeed/download/apikey/${apiKey}/language/en/fid/${feedId}/rid/0/hasEnhancedFeeds/0/columns/${COLUMNS}/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/`;
 }
 
 function parseCSVLine(line) {
@@ -41,49 +42,103 @@ function parseCSVLine(line) {
   return fields;
 }
 
-// Stream-parse CSV text into rows, processing only in-stock items to save memory
-function parseAndFilter(csvText, filterFn) {
-  const results = [];
-  let headerLine = '';
-  let headers = [];
-  let pos = 0;
+// Stream-decompress and parse CSV, filtering as we go
+async function fetchAndProcess(apiKey, feedId, label, filterFn) {
+  const url = buildFeedUrl(apiKey, feedId);
+  console.log(`📥 ${label} (ID: ${feedId})...`);
 
-  // Find header line
-  const firstNewline = csvText.indexOf('\n');
-  if (firstNewline === -1) return results;
-  headerLine = csvText.substring(0, firstNewline);
-  headers = parseCSVLine(headerLine);
-  pos = firstNewline + 1;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 50000);
+  const response = await fetch(url, { signal: controller.signal });
+  clearTimeout(timeoutId);
 
-  // Process line by line
-  while (pos < csvText.length) {
-    const nextNewline = csvText.indexOf('\n', pos);
-    const lineEnd = nextNewline === -1 ? csvText.length : nextNewline;
-    const line = csvText.substring(pos, lineEnd).trim();
-    pos = lineEnd + 1;
+  if (!response.ok) throw new Error(`${label}: AWIN returned ${response.status}`);
 
-    if (!line) continue;
+  const contentLength = response.headers.get('content-length');
+  console.log(`📦 ${label}: ${contentLength ? (parseInt(contentLength) / 1024).toFixed(0) + ' KB compressed' : 'unknown size'}`);
 
-    const values = parseCSVLine(line);
-    if (values.length !== headers.length) continue;
+  // Stream decompress
+  const gunzip = createGunzip();
+  const body = response.body;
 
-    // Quick check: skip out of stock before building object
-    const inStockIdx = headers.indexOf('in_stock');
-    if (inStockIdx >= 0 && values[inStockIdx] !== '1') continue;
+  // Convert web ReadableStream to Node stream and pipe through gunzip
+  const nodeStream = Readable.fromWeb(body);
 
-    const row = {};
-    for (let i = 0; i < headers.length; i++) {
-      row[headers[i].trim()] = values[i] || '';
-    }
+  return new Promise((resolve, reject) => {
+    const results = [];
+    let headers = [];
+    let buffer = '';
+    let headerParsed = false;
+    let totalRows = 0;
 
-    const result = filterFn(row);
-    if (result) results.push(result);
-  }
+    nodeStream.pipe(gunzip);
 
-  return results;
+    gunzip.on('data', (chunk) => {
+      buffer += chunk.toString('utf-8');
+
+      // Process complete lines
+      let newlineIdx;
+      while ((newlineIdx = buffer.indexOf('\n')) !== -1) {
+        const line = buffer.substring(0, newlineIdx).trim();
+        buffer = buffer.substring(newlineIdx + 1);
+
+        if (!line) continue;
+
+        if (!headerParsed) {
+          headers = parseCSVLine(line);
+          headerParsed = true;
+          continue;
+        }
+
+        totalRows++;
+        const values = parseCSVLine(line);
+        if (values.length !== headers.length) continue;
+
+        // Quick in_stock check before building object
+        const inStockIdx = headers.indexOf('in_stock');
+        if (inStockIdx >= 0 && values[inStockIdx] !== '1') continue;
+
+        const row = {};
+        for (let i = 0; i < headers.length; i++) {
+          row[headers[i].trim()] = values[i] || '';
+        }
+
+        const result = filterFn(row);
+        if (result) results.push(result);
+      }
+    });
+
+    gunzip.on('end', () => {
+      // Process remaining buffer
+      if (buffer.trim() && headerParsed) {
+        const values = parseCSVLine(buffer.trim());
+        if (values.length === headers.length) {
+          const inStockIdx = headers.indexOf('in_stock');
+          if (inStockIdx < 0 || values[inStockIdx] === '1') {
+            const row = {};
+            for (let i = 0; i < headers.length; i++) {
+              row[headers[i].trim()] = values[i] || '';
+            }
+            const result = filterFn(row);
+            if (result) results.push(result);
+          }
+        }
+      }
+      console.log(`📊 ${label}: ${totalRows} rows → ${results.length} vinyl products`);
+      resolve(results);
+    });
+
+    gunzip.on('error', (err) => {
+      reject(new Error(`${label} gunzip error: ${err.message}`));
+    });
+
+    nodeStream.on('error', (err) => {
+      reject(new Error(`${label} stream error: ${err.message}`));
+    });
+  });
 }
 
-// --- EMP filter ---
+// --- Filter functions ---
 function empFilter(r) {
   if (r.merchant_category !== 'LP') return null;
   const artist = (r.brand_name || '').trim();
@@ -104,7 +159,6 @@ function empFilter(r) {
   };
 }
 
-// --- VinylCastle filter ---
 function vcFilter(r) {
   const productName = (r.product_name || '').trim();
   const brandName = (r.brand_name || '').trim();
@@ -132,7 +186,6 @@ function vcFilter(r) {
   };
 }
 
-// --- POPSTORE filter ---
 function popFilter(r) {
   const name = (r.product_name || '').toLowerCase();
   const cat = (r.merchant_category || '').toLowerCase();
@@ -165,19 +218,6 @@ function popFilter(r) {
   };
 }
 
-async function fetchFeed(apiKey, feedId, label) {
-  const url = buildFeedUrl(apiKey, feedId);
-  console.log(`📥 Fetching ${label} (ID: ${feedId})...`);
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 50000);
-  const response = await fetch(url, { signal: controller.signal });
-  clearTimeout(timeoutId);
-  if (!response.ok) throw new Error(`${label}: AWIN returned ${response.status}`);
-  const text = await response.text();
-  console.log(`📦 ${label}: ${(text.length / 1024 / 1024).toFixed(1)} MB`);
-  return text;
-}
-
 export default async function handler(req, res) {
   const isManual = req.query.key === process.env.AWIN_API_KEY;
   if (!isManual && !req.headers['x-vercel-cron'] && req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -190,12 +230,10 @@ export default async function handler(req, res) {
   const counts = {};
 
   try {
-    // --- EMP (feed 98984) — smallest feed, ~65k rows, ~3k vinyl ---
+    // --- EMP (feed 98984) ---
     try {
-      const csv = await fetchFeed(apiKey, '98984', 'EMP');
-      const products = parseAndFilter(csv, empFilter);
+      const products = await fetchAndProcess(apiKey, '98984', 'EMP', empFilter);
       counts.emp = products.length;
-      console.log(`🏪 EMP: ${products.length} vinyl`);
       await redis.set('feed:emp', JSON.stringify(products));
       console.log('✅ EMP stored');
     } catch (e) {
@@ -203,12 +241,10 @@ export default async function handler(req, res) {
       counts.emp = 'error';
     }
 
-    // --- POPSTORE (feed 108054) — large feed but few vinyl products ---
+    // --- POPSTORE (feed 108054) ---
     try {
-      const csv = await fetchFeed(apiKey, '108054', 'POPSTORE');
-      const products = parseAndFilter(csv, popFilter);
+      const products = await fetchAndProcess(apiKey, '108054', 'POPSTORE', popFilter);
       counts.popstore = products.length;
-      console.log(`🏪 POPSTORE: ${products.length} vinyl`);
       await redis.set('feed:popstore', JSON.stringify(products));
       console.log('✅ POPSTORE stored');
     } catch (e) {
@@ -218,17 +254,15 @@ export default async function handler(req, res) {
 
     // --- VinylCastle (feed 43053) ---
     try {
-      const csv = await fetchFeed(apiKey, '43053', 'VinylCastle');
-      const products = parseAndFilter(csv, vcFilter);
+      const products = await fetchAndProcess(apiKey, '43053', 'VinylCastle', vcFilter);
       counts.vinylcastle = products.length;
-      console.log(`🏪 VC: ${products.length} vinyl`);
       const CHUNK = 5000;
-      const chunks = Math.ceil(products.length / CHUNK);
-      await redis.set('feed:vc:meta', JSON.stringify({ chunks, total: products.length }));
-      for (let i = 0; i < chunks; i++) {
+      const numChunks = Math.ceil(products.length / CHUNK);
+      await redis.set('feed:vc:meta', JSON.stringify({ chunks: numChunks, total: products.length }));
+      for (let i = 0; i < numChunks; i++) {
         await redis.set(`feed:vc:${i}`, JSON.stringify(products.slice(i * CHUNK, (i + 1) * CHUNK)));
       }
-      console.log(`✅ VC stored (${chunks} chunks)`);
+      console.log(`✅ VC stored (${numChunks} chunks)`);
     } catch (e) {
       console.error('❌ VC:', e.message);
       counts.vinylcastle = 'error';
@@ -236,7 +270,6 @@ export default async function handler(req, res) {
 
     const ts = new Date().toISOString();
     await redis.set('feed:updated', ts);
-    console.log(`✅ Done at ${ts}`);
     return res.status(200).json({ success: true, updated: ts, counts });
 
   } catch (error) {
