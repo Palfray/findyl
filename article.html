@@ -54,6 +54,7 @@
       .article-prose table { font-size: 0.85rem; }
       .article-prose thead th, .article-prose tbody td { padding: 0.5rem 0.5rem; }
       .article-prose h1 { font-size: 1.75rem; }
+      #article-title { font-size: 1.75rem !important; }
     }
 
     /* Hero image */
@@ -128,6 +129,9 @@
     <article id="article-container" style="display:none;">
       <!-- Tags -->
       <div id="article-tags" class="article-tags"></div>
+
+      <!-- Title -->
+      <h1 id="article-title" style="font-size:2.25rem;line-height:1.2;margin:0 0 16px;color:#111827;"></h1>
 
       <!-- Date -->
       <div style="margin-bottom:20px;">
@@ -225,6 +229,7 @@
 
       // Update page title and meta tags
       document.title = meta.title + ' — findyl';
+      document.getElementById('article-title').textContent = meta.title;
       document.querySelector('meta[name="description"]').setAttribute('content', meta.description);
       document.querySelector('meta[property="og:title"]').setAttribute('content', meta.title);
       document.querySelector('meta[property="og:description"]').setAttribute('content', meta.description);
@@ -252,8 +257,6 @@
       // Render markdown — strip the first H1 since we show the title from meta
       let md = markdown.trim();
       md = md.replace(/^#\s+.+\n+/, '');
-      // Also strip if H1 appears after any leading blank lines or non-heading content
-      md = md.replace(/\n#\s+.+\n/, '\n').trim();
 
       marked.setOptions({ breaks: false, gfm: true });
       document.getElementById('article-body').innerHTML = marked.parse(md);
