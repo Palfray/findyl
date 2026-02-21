@@ -38,8 +38,9 @@ export default async function handler(req, res) {
         console.log(`✅ POPSTORE: ${allPop.length} total products in Upstash`);
         // Filter to matching products
         popstoreResults = allPop.filter(p => {
-          const text = `${p.artist} ${p.album} ${p.title || ''}`.toLowerCase();
-          return text.includes(searchTerm);
+          const text = `${p.artist} ${p.album} ${p.title || ''} ${p.product_name || ''}`.toLowerCase();
+          const words = searchTerm.split(/\s+/);
+          return words.every(w => text.includes(w));
         }).slice(0, 20);
         console.log('✅ POPSTORE matched:', popstoreResults.length, 'products');
       } else {
