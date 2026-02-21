@@ -2,6 +2,7 @@
   "name": "findyl",
   "private": true,
   "dependencies": {
-    "marked": "^15.0.0"
+    "marked": "^15.0.0",
+    "@upstash/redis": "^1.34.3"
   }
 }
