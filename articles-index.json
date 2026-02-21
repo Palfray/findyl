@@ -1,10 +1,24 @@
 [
   {
+    "slug": "record-store-day-2026-survival-guide",
+    "title": "Record Store Day 2026: A Survival Guide",
+    "description": "Everything you need to know for RSD 2026 on 18 April — the releases worth chasing, how early to queue, and what to do if you miss out.",
+    "date": "2026-02-21",
+    "category": "guides",
+    "order": 1,
+    "heroImage": "https://images.unsplash.com/photo-1587731556938-38755b4803a6?w=1200&q=80",
+    "heroAlt": "Browsing vinyl records in a record shop",
+    "ogImage": "https://images.unsplash.com/photo-1587731556938-38755b4803a6?w=1200&q=80",
+    "relatedArtists": [],
+    "relatedAlbums": []
+  },
+  {
     "slug": "coloured-vinyl-vs-black-vinyl",
     "title": "Coloured Vinyl vs Black Vinyl: Does It Actually Sound Different?",
     "description": "The science, the myths, and what actually affects how your records sound — from carbon black chemistry to the pressing plant hierarchy.",
     "date": "2026-02-21",
     "category": "guides",
+    "order": 2,
     "heroImage": "https://images.pexels.com/photos/1925099/pexels-photo-1925099.jpeg?w=1200&q=80",
     "heroAlt": "Blue coloured vinyl record with sleeve",
     "ogImage": "https://images.pexels.com/photos/1925099/pexels-photo-1925099.jpeg?w=1200&q=80",
@@ -15,20 +29,29 @@
     "relatedAlbums": []
   },
   {
-    "slug": "vinyl-grading-guide-uk",
-    "title": "Vinyl Record Grading Guide: What the Grades Actually Mean and How Not to Get Burned",
-    "description": "The Goldmine standard, the Record Collector system, and what VG+ really means when you're buying used vinyl in the UK.",
+    "slug": "how-to-clean-vinyl-records",
+    "title": "How to Clean Your Vinyl Records",
+    "description": "From the 30-second pre-play routine to a full deep clean for charity shop rescues — everything you need to keep your collection sounding its best.",
     "date": "2026-02-21",
     "category": "guides",
-    "heroImage": "https://images.unsplash.com/photo-1603373362725-47eb708d7b78?w=1200&q=80",
-    "heroAlt": "Used vinyl records on display in a record store",
-    "ogImage": "https://images.unsplash.com/photo-1603373362725-47eb708d7b78?w=1200&q=80",
-    "relatedArtists": [
-      "bd13909f-1c20-4e16-a1dd-e1a3baf23187",
-      "b38225b8-8e5f-42aa-bcdc-3a5f19939f74",
-      "83d91898-7763-47d7-b03b-b92132571559",
-      "b10bbbfc-cf9e-42e0-be17-e2c3e1d2600d"
-    ],
+    "order": 3,
+    "heroImage": "https://images.unsplash.com/photo-1709649246219-220dfca6f75a?w=1200&q=80",
+    "heroAlt": "Close-up of a vinyl record on a turntable",
+    "ogImage": "https://images.unsplash.com/photo-1709649246219-220dfca6f75a?w=1200&q=80",
+    "relatedArtists": [],
+    "relatedAlbums": []
+  },
+  {
+    "slug": "how-to-store-vinyl-records",
+    "title": "How to Store Vinyl Records Properly",
+    "description": "Everything you need to know about storing your vinyl collection, from shelving and sleeves to temperature, handling and the mistakes that cause the most damage.",
+    "date": "2026-02-21",
+    "category": "guides",
+    "order": 4,
+    "heroImage": "https://images.pexels.com/photos/6862587/pexels-photo-6862587.jpeg",
+    "heroAlt": "Close-up of vinyl records stored vertically on a shelf",
+    "ogImage": "https://images.pexels.com/photos/6862587/pexels-photo-6862587.jpeg",
+    "relatedArtists": [],
     "relatedAlbums": []
   },
   {
@@ -37,6 +60,7 @@
     "description": "180g doesn't automatically mean better sound. Coloured vinyl isn't the problem it used to be. And first pressings aren't always worth the premium. Here's what actually matters.",
     "date": "2026-02-21",
     "category": "guides",
+    "order": 5,
     "heroImage": "https://images.pexels.com/photos/3391930/pexels-photo-3391930.jpeg?w=1200&q=80",
     "heroAlt": "Close-up of vinyl record grooves against a dark background",
     "ogImage": "https://images.pexels.com/photos/3391930/pexels-photo-3391930.jpeg?w=1200&q=80",
@@ -51,39 +75,21 @@
     "relatedAlbums": []
   },
   {
-    "slug": "how-to-store-vinyl-records",
-    "title": "How to Store Vinyl Records Properly",
-    "description": "Everything you need to know about storing your vinyl collection, from shelving and sleeves to temperature, handling and the mistakes that cause the most damage.",
+    "slug": "vinyl-grading-guide-uk",
+    "title": "Vinyl Record Grading Guide: What the Grades Actually Mean and How Not to Get Burned",
+    "description": "The Goldmine standard, the Record Collector system, and what VG+ really means when you're buying used vinyl in the UK.",
     "date": "2026-02-21",
     "category": "guides",
-    "heroImage": "https://images.pexels.com/photos/6862587/pexels-photo-6862587.jpeg",
-    "heroAlt": "Close-up of vinyl records stored vertically on a shelf",
-    "ogImage": "https://images.pexels.com/photos/6862587/pexels-photo-6862587.jpeg",
-    "relatedArtists": [],
-    "relatedAlbums": []
-  },
-  {
-    "slug": "record-store-day-2026-survival-guide",
-    "title": "Record Store Day 2026: A Survival Guide",
-    "description": "Everything you need to know for RSD 2026 on 18 April — the releases worth chasing, how early to queue, and what to do if you miss out.",
-    "date": "2026-02-21",
-    "category": "guides",
-    "heroImage": "https://images.unsplash.com/photo-1587731556938-38755b4803a6?w=1200&q=80",
-    "heroAlt": "Browsing vinyl records in a record shop",
-    "ogImage": "https://images.unsplash.com/photo-1587731556938-38755b4803a6?w=1200&q=80",
-    "relatedArtists": [],
-    "relatedAlbums": []
-  },
-  {
-    "slug": "how-to-clean-vinyl-records",
-    "title": "How to Clean Your Vinyl Records",
-    "description": "From the 30-second pre-play routine to a full deep clean for charity shop rescues — everything you need to keep your collection sounding its best.",
-    "date": "2026-02-21",
-    "category": "guides",
-    "heroImage": "https://images.unsplash.com/photo-1709649246219-220dfca6f75a?w=1200&q=80",
-    "heroAlt": "Close-up of a vinyl record on a turntable",
-    "ogImage": "https://images.unsplash.com/photo-1709649246219-220dfca6f75a?w=1200&q=80",
-    "relatedArtists": [],
+    "order": 6,
+    "heroImage": "https://images.unsplash.com/photo-1603373362725-47eb708d7b78?w=1200&q=80",
+    "heroAlt": "Used vinyl records on display in a record store",
+    "ogImage": "https://images.unsplash.com/photo-1603373362725-47eb708d7b78?w=1200&q=80",
+    "relatedArtists": [
+      "bd13909f-1c20-4e16-a1dd-e1a3baf23187",
+      "b38225b8-8e5f-42aa-bcdc-3a5f19939f74",
+      "83d91898-7763-47d7-b03b-b92132571559",
+      "b10bbbfc-cf9e-42e0-be17-e2c3e1d2600d"
+    ],
     "relatedAlbums": []
   },
   {
