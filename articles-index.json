@@ -1,5 +1,22 @@
 [
   {
+    "slug": "vinyl-grading-guide-uk",
+    "title": "Vinyl Record Grading Guide: What the Grades Actually Mean and How Not to Get Burned",
+    "description": "The Goldmine standard, the Record Collector system, and what VG+ really means when you're buying used vinyl in the UK.",
+    "date": "2026-02-21",
+    "category": "guides",
+    "heroImage": "https://images.unsplash.com/photo-1603373362725-47eb708d7b78?w=1200&q=80",
+    "heroAlt": "Used vinyl records on display in a record store",
+    "ogImage": "https://images.unsplash.com/photo-1603373362725-47eb708d7b78?w=1200&q=80",
+    "relatedArtists": [
+      "bd13909f-1c20-4e16-a1dd-e1a3baf23187",
+      "b38225b8-8e5f-42aa-bcdc-3a5f19939f74",
+      "83d91898-7763-47d7-b03b-b92132571559",
+      "b10bbbfc-cf9e-42e0-be17-e2c3e1d2600d"
+    ],
+    "relatedAlbums": []
+  },
+  {
     "slug": "understanding-vinyl-pressings",
     "title": "Understanding Vinyl Pressings — 180g, Coloured, First Pressing Explained",
     "description": "180g doesn't automatically mean better sound. Coloured vinyl isn't the problem it used to be. And first pressings aren't always worth the premium. Here's what actually matters.",
