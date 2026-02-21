@@ -1,4 +1,10 @@
 {
+  "crons": [
+    {
+      "path": "/api/refresh-feed",
+      "schedule": "0 6 * * *"
+    }
+  ],
   "rewrites": [
     { "source": "/artist", "destination": "/artist.html" },
     { "source": "/album", "destination": "/album.html" },
