@@ -247,9 +247,11 @@
         document.getElementById('article-hero-wrap').style.display = 'block';
       }
 
-      // Render markdown — strip the H1 since we show the title from meta
+      // Render markdown — strip the first H1 since we show the title from meta
       let md = markdown.trim();
       md = md.replace(/^#\s+.+\n+/, '');
+      // Also strip if H1 appears after any leading blank lines or non-heading content
+      md = md.replace(/\n#\s+.+\n/, '\n').trim();
 
       marked.setOptions({ breaks: false, gfm: true });
       document.getElementById('article-body').innerHTML = marked.parse(md);
