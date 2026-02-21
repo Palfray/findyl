@@ -67,9 +67,10 @@ export default async function handler(req, res) {
     }
 
     // Search products
+    const searchWords = searchTerm.split(/\s+/);
     const results = allProducts.filter(product => {
-      const productText = `${product.artist} ${product.album}`.toLowerCase();
-      return productText.includes(searchTerm);
+      const productText = `${product.artist} ${product.album} ${product.product_name || ''}`.toLowerCase();
+      return searchWords.every(w => productText.includes(w));
     }).slice(0, 50);
 
     console.log('[VC] Search "' + q + '" found:', results.length, 'results');
