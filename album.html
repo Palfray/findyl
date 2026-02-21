@@ -585,7 +585,9 @@
                     console.log('📦 Hybrid search returned:', results.length, 'results for', artistName);
 
                     const matchingAlbums = results.filter(r => {
-                        const artistMatch = r.artist.toLowerCase() === artistName.toLowerCase();
+                        // Normalize both names: strip punctuation, lowercase
+                        const normalize = s => s.toLowerCase().replace(/[.\-'",!?()]/g, '').replace(/\s+/g, ' ').trim();
+                        const artistMatch = normalize(r.artist) === normalize(artistName);
                         if (!artistMatch) return false;
                         
                         const albumLower = r.album.toLowerCase();
