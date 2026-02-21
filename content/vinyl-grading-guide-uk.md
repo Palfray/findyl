@@ -1,4 +1,3 @@
-[vinyl-grading-guide-uk.md](https://github.com/user-attachments/files/25456593/vinyl-grading-guide-uk.md)
 # Vinyl Record Grading Guide: What the Grades Actually Mean and How Not to Get Burned
 
 You've found a record you want. It's listed as "VG+" on Discogs. It's £18 plus postage. The seller has decent feedback. You click buy.

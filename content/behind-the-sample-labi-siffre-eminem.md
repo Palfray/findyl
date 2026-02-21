@@ -1,4 +1,3 @@
-[behind-the-sample-labi-siffre-eminem (1).md](https://github.com/user-attachments/files/25454255/behind-the-sample-labi-siffre-eminem.1.md)
 # Behind the Sample: How Labi Siffre Made Eminem's Career (Then Made Him Change the Lyrics)
 
 You know the riff. Even if you think you don't, you do. That lurching, rubbery bassline and choppy electric piano that opens "My Name Is", the track that turned a skinny kid from Detroit into the most talked-about rapper on the planet in 1999, didn't come from Dr. Dre's studio. It came from a 1975 album by a British singer-songwriter from Hammersmith called Labi Siffre. And the story of how it got from one to the other is better than most music biopics.

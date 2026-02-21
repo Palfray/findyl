@@ -1,4 +1,3 @@
-[best-selling-vinyl-2025 (1).md](https://github.com/user-attachments/files/25454262/best-selling-vinyl-2025.1.md)
 # The Best-Selling Vinyl Records in the UK in 2025
 
 UK vinyl sales hit 7.6 million units in 2025. That's up 13.3% on 2024, an extra 900,000 records, and an eighteenth consecutive year of growth for the format, according to new analysis from the BPI.

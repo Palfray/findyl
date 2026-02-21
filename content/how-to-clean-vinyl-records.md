@@ -1,4 +1,3 @@
-[how-to-clean-vinyl-records (1).md](https://github.com/user-attachments/files/25454268/how-to-clean-vinyl-records.1.md)
 # How to Clean Your Vinyl Records
 
 Those pops and crackles you hear? Most of them aren't your record. They're the dust, skin cells and general household debris that vinyl attracts like a magnet with a grudge. Static electricity pulls particles into the grooves, your fingers leave oils every time you handle a disc, and even a shrink-wrapped new pressing can arrive with enough factory residue to take the shine off a first listen.

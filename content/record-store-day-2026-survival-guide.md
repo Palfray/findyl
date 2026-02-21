@@ -1,4 +1,3 @@
-[record-store-day-2026-survival-guide (1).md](https://github.com/user-attachments/files/25454271/record-store-day-2026-survival-guide.1.md)
 # Record Store Day 2026: A Survival Guide
 
 Record Store Day falls on Saturday 18 April this year. Over 300 independent record shops across the UK and Ireland will open their doors early, stock their shelves with more than 350 exclusive releases, and watch queues form that would make a Taylor Swift ticket sale look civilised. It is, without question, the best day of the year to be a vinyl collector. It can also be the most frustrating.

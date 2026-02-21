@@ -1,4 +1,3 @@
-[coloured-vinyl-vs-black-vinyl (1).md](https://github.com/user-attachments/files/25456668/coloured-vinyl-vs-black-vinyl.1.md)
 # Coloured Vinyl vs Black Vinyl: Does It Actually Sound Different?
 
 It's 2026's most reliably heated vinyl debate, right behind "is 180g actually worth it?" and just ahead of "does anyone really need a fourth copy of *Rumours*?" You've found the coloured pressing you want. It looks incredible. But somewhere in the back of your mind, a voice is telling you that coloured vinyl sounds worse than black. You probably read it on a Discogs forum thread at 1am. That the dyes ruin the sound. That you're buying a display piece, not a listening experience.
