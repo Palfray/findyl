@@ -235,9 +235,11 @@
       // Tags
       buildTags(meta);
 
-      // Date
-      const dateObj = new Date(meta.date + 'T00:00:00');
-      document.getElementById('article-date').textContent = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+      // Date — hide for guides (evergreen content)
+      if (meta.category !== 'guides') {
+        const dateObj = new Date(meta.date + 'T00:00:00');
+        document.getElementById('article-date').textContent = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+      }
 
       // Hero image
       if (meta.heroImage) {
