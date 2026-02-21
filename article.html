@@ -55,8 +55,32 @@
       .article-prose thead th, .article-prose tbody td { padding: 0.5rem 0.5rem; }
       .article-prose h1 { font-size: 1.75rem; }
       #article-title { font-size: 1.75rem !important; }
-      .header-nav { display: none !important; }
     }
+
+    /* Content navigation pills */
+    .content-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #E5E7EB;
+    }
+    .content-nav a {
+      padding: 6px 18px;
+      border-radius: 9999px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      text-decoration: none;
+      border: 1.5px solid #D1D5DB;
+      background: #fff;
+      color: #6B7280;
+      transition: all 0.15s ease;
+      font-family: 'Nunito Sans', sans-serif;
+    }
+    .content-nav a:hover { border-color: #FF6B6B; color: #FF6B6B; }
+    .content-nav a.active { background: #FF6B6B; color: #fff; border-color: #FF6B6B; }
+    .content-nav a.active-light { background: #FFF0F0; color: #FF6B6B; border-color: #FF6B6B; }
 
     /* Hero image */
     .hero-image { width: 100%; max-height: 520px; object-fit: contain; background: #000; border-radius: 8px; }
@@ -108,11 +132,6 @@
         </button>
         <div id="header-autocomplete" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #E5E7EB;border-radius:12px;margin-top:4px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:50;max-height:400px;overflow-y:auto;"></div>
       </form>
-      <nav class="header-nav" style="display:flex;gap:20px;flex-shrink:0;font-family:'Nunito Sans',sans-serif;font-size:0.85rem;font-weight:400;">
-        <a href="/articles" style="color:#6B7280;text-decoration:none;white-space:nowrap;">Sleeve Notes</a>
-        <a href="/local-stores" style="color:#6B7280;text-decoration:none;white-space:nowrap;">Find a store</a>
-        <a href="/about" style="color:#6B7280;text-decoration:none;white-space:nowrap;">About</a>
-      </nav>
     </div>
   </header>
 
@@ -133,6 +152,9 @@
 
     <!-- Article container (hidden until loaded) -->
     <article id="article-container" style="display:none;">
+      <!-- Content navigation -->
+      <div id="content-nav" class="content-nav"></div>
+
       <!-- Tags -->
       <div id="article-tags" class="article-tags"></div>
 
@@ -197,6 +219,25 @@
 
     function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
 
+    // Build content navigation pills above the article
+    function buildContentNav(meta) {
+      const navEl = document.getElementById('content-nav');
+      if (!navEl) return;
+
+      const categories = [
+        { label: 'All', href: '/articles' },
+        { label: 'Charts', href: '/articles', cat: 'charts' },
+        { label: 'Features', href: '/articles', cat: 'features' },
+        { label: 'Guides', href: '/articles', cat: 'guides' }
+      ];
+
+      navEl.innerHTML = categories.map(function(c) {
+        const isActive = c.cat && c.cat === meta.category;
+        const cls = isActive ? ' class="active"' : '';
+        return '<a href="' + c.href + '"' + cls + '>' + c.label + '</a>';
+      }).join('');
+    }
+
     // Build tags that link back to filtered Sleeve Notes views
     function buildTags(meta) {
       const tagsEl = document.getElementById('article-tags');
@@ -243,7 +284,8 @@
         document.querySelector('meta[property="og:image"]').setAttribute('content', meta.ogImage);
       }
 
-      // Tags
+      // Content navigation + Tags
+      buildContentNav(meta);
       buildTags(meta);
 
       // Date — hide for guides (evergreen content)
