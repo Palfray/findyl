@@ -1,5 +1,20 @@
 [
   {
+    "slug": "coloured-vinyl-vs-black-vinyl",
+    "title": "Coloured Vinyl vs Black Vinyl: Does It Actually Sound Different?",
+    "description": "The science, the myths, and what actually affects how your records sound — from carbon black chemistry to the pressing plant hierarchy.",
+    "date": "2026-02-21",
+    "category": "guides",
+    "heroImage": "https://images.pexels.com/photos/1925099/pexels-photo-1925099.jpeg?w=1200&q=80",
+    "heroAlt": "Blue coloured vinyl record with sleeve",
+    "ogImage": "https://images.pexels.com/photos/1925099/pexels-photo-1925099.jpeg?w=1200&q=80",
+    "relatedArtists": [
+      "561d854a-6a28-4aa7-8c99-571f5ab36e13",
+      "bd13909f-1c20-4e16-a1dd-e1a3baf23187"
+    ],
+    "relatedAlbums": []
+  },
+  {
     "slug": "vinyl-grading-guide-uk",
     "title": "Vinyl Record Grading Guide: What the Grades Actually Mean and How Not to Get Burned",
     "description": "The Goldmine standard, the Record Collector system, and what VG+ really means when you're buying used vinyl in the UK.",
