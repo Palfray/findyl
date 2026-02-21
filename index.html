@@ -550,9 +550,21 @@
                 <a href="/articles" style="color:#FF6B6B;font-size:0.9rem;text-decoration:none;font-family:'Nunito Sans',sans-serif;font-weight:400;">View all →</a>
             </div>
             <div id="hp-articles" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Loaded dynamically from articles-index.json -->
+                <!-- Loaded dynamically from articles-index.json (non-guide articles) -->
             </div>
         </section>
+
+        <!-- Handbook (Guides) -->
+        <section id="handbook" class="mb-16">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:20px;">
+                <h2 style="margin:0;font-size:2.25rem;font-weight:700;color:#111827;letter-spacing:-0.01em;">Handbook</h2>
+                <a href="/articles" style="color:#FF6B6B;font-size:0.9rem;text-decoration:none;font-family:'Nunito Sans',sans-serif;font-weight:400;">View all →</a>
+            </div>
+            <div id="hp-guides" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Loaded dynamically from articles-index.json (guides only) -->
+            </div>
+        </section>
+
         <script>
         (function() {
           var seriesNames = {
@@ -574,36 +586,39 @@
             }
             return parts.join(' ');
           }
+          function buildCard(a) {
+            var imgSrc = a.heroImage ? a.heroImage.replace('front-1200', 'front-500') : '';
+            var imgHtml = imgSrc
+              ? '<div style="height:200px;overflow:hidden;"><img loading="lazy" src="' + imgSrc + '" alt="' + (a.heroAlt || a.title) + '" style="width:100%;height:100%;object-fit:cover;display:block;"></div>'
+              : '<div style="height:200px;overflow:hidden;background:linear-gradient(135deg,#FFE5E5,#FFF0F0);display:flex;align-items:center;justify-content:center;"><span style="font-size:2.5rem;">🎵</span></div>';
+            return '<article class="article-card bg-white rounded-lg overflow-hidden shadow-sm" style="display:flex;flex-direction:column;">'
+              + '<a href="/articles/' + a.slug + '" style="display:flex;flex-direction:column;height:100%;text-decoration:none;color:inherit;">'
+              + imgHtml
+              + '<div style="padding:16px 20px 20px;display:flex;flex-direction:column;flex:1;">'
+              + '<div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">' + buildTagHtml(a) + '</div>'
+              + '<h3 style="font-size:1.2rem;line-height:1.3;margin:0 0 8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">' + a.title + '</h3>'
+              + '<p style="font-size:0.9rem;color:#6B7280;margin:0;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">' + a.description + '</p>'
+              + '</div>'
+              + '</a></article>';
+          }
           fetch('/articles-index.json')
             .then(function(r) { return r.json(); })
             .then(function(articles) {
-              // Custom display order by slug
-              var order = [
-                'behind-the-sample-labi-siffre-eminem',
-                'best-selling-vinyl-2025',
-                'country-music-uk-2026',
-                'record-store-day-2026-survival-guide',
-                'how-to-clean-vinyl-records'
-              ];
               var bySlug = {};
               articles.forEach(function(a) { bySlug[a.slug] = a; });
-              var latest = order.map(function(s) { return bySlug[s]; }).filter(Boolean);
-              var grid = document.getElementById('hp-articles');
-              grid.innerHTML = latest.map(function(a) {
-                var imgSrc = a.heroImage ? a.heroImage.replace('front-1200', 'front-500') : '';
-                var imgHtml = imgSrc
-                  ? '<div style="height:200px;overflow:hidden;"><img loading="lazy" src="' + imgSrc + '" alt="' + (a.heroAlt || a.title) + '" style="width:100%;height:100%;object-fit:cover;display:block;"></div>'
-                  : '<div style="height:200px;overflow:hidden;background:linear-gradient(135deg,#FFE5E5,#FFF0F0);display:flex;align-items:center;justify-content:center;"><span style="font-size:2.5rem;">🎵</span></div>';
-                return '<article class="article-card bg-white rounded-lg overflow-hidden shadow-sm" style="display:flex;flex-direction:column;">'
-                  + '<a href="/articles/' + a.slug + '" style="display:flex;flex-direction:column;height:100%;text-decoration:none;color:inherit;">'
-                  + imgHtml
-                  + '<div style="padding:16px 20px 20px;display:flex;flex-direction:column;flex:1;">'
-                  + '<div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">' + buildTagHtml(a) + '</div>'
-                  + '<h3 style="font-size:1.2rem;line-height:1.3;margin:0 0 8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">' + a.title + '</h3>'
-                  + '<p style="font-size:0.9rem;color:#6B7280;margin:0;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">' + a.description + '</p>'
-                  + '</div>'
-                  + '</a></article>';
-              }).join('');
+
+              // Sleeve Notes — hand-picked non-guide articles
+              var sleeveOrder = [
+                'behind-the-sample-labi-siffre-eminem',
+                'best-selling-vinyl-2025',
+                'country-music-uk-2026'
+              ];
+              var sleeveArticles = sleeveOrder.map(function(s) { return bySlug[s]; }).filter(Boolean);
+              document.getElementById('hp-articles').innerHTML = sleeveArticles.map(buildCard).join('');
+
+              // Handbook — all guides
+              var guides = articles.filter(function(a) { return a.category === 'guides'; });
+              document.getElementById('hp-guides').innerHTML = guides.map(buildCard).join('');
             })
             .catch(function(err) { console.error('Failed to load homepage articles:', err); });
         })();
