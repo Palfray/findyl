@@ -1,4 +1,4 @@
-[how-to-store-vinyl-records.md](https://github.com/user-attachments/files/25456476/how-to-store-vinyl-records.md)
+[how-to-store-vinyl-records (1).md](https://github.com/user-attachments/files/25456484/how-to-store-vinyl-records.1.md)
 # How to Store Vinyl Records Properly
 
 You've spent good money on your records. Maybe a lot of good money. The least they deserve is somewhere better to live than a leaning stack on the floor next to your turntable, slowly warping under their own weight while you tell yourself you'll sort it out at the weekend.
