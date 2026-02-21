@@ -204,17 +204,13 @@ export default async function handler(req, res) {
         const artistWithoutThe = artistLower.replace(/^the\s+/, '');
         const searchWithoutThe = searchTerm.replace(/^the\s+/, '');
         
-        // For "the X" searches, be very strict
-        const isTheSearch = searchTerm.startsWith('the ');
-        let artistMatch;
-        
-        if (isTheSearch) {
-          // ONLY match exact artist name with or without "the"
-          artistMatch = artistLower === searchTerm || artistWithoutThe === searchWithoutThe;
-        } else {
-          // For other multi-word searches, require exact match or starts with
-          artistMatch = artistLower === searchTerm || artistLower.startsWith(searchTerm + ' ');
-        }
+        // Check if search term contains the artist name OR artist contains search term
+        const artistMatch = artistLower === searchTerm || 
+          searchTerm.startsWith(artistLower + ' ') ||
+          searchTerm.startsWith(artistWithoutThe + ' ') ||
+          artistLower.startsWith(searchTerm + ' ') ||
+          artistLower === searchWithoutThe ||
+          artistWithoutThe === searchWithoutThe;
         
         if (!artistMatch) {
           console.log(`  ❌ POPSTORE: Filtered out "${artist}" - doesn't match "${searchTerm}"`);
@@ -268,17 +264,12 @@ export default async function handler(req, res) {
         const artistWithoutThe = artistLower.replace(/^the\s+/, '');
         const searchWithoutThe = searchTerm.replace(/^the\s+/, '');
         
-        // For "the X" searches, be very strict
-        const isTheSearch = searchTerm.startsWith('the ');
-        let artistMatch;
-        
-        if (isTheSearch) {
-          // ONLY match exact artist name with or without "the"
-          artistMatch = artistLower === searchTerm || artistWithoutThe === searchWithoutThe;
-        } else {
-          // For other multi-word searches, require exact match or starts with
-          artistMatch = artistLower === searchTerm || artistLower.startsWith(searchTerm + ' ');
-        }
+        const artistMatch = artistLower === searchTerm || 
+          searchTerm.startsWith(artistLower + ' ') ||
+          searchTerm.startsWith(artistWithoutThe + ' ') ||
+          artistLower.startsWith(searchTerm + ' ') ||
+          artistLower === searchWithoutThe ||
+          artistWithoutThe === searchWithoutThe;
         
         if (!artistMatch) {
           console.log(`  ❌ VC: Filtered out "${vc.artist}" - doesn't match "${searchTerm}"`);
@@ -361,14 +352,12 @@ export default async function handler(req, res) {
         const artistWithoutThe = artistLower.replace(/^the\s+/, '');
         const searchWithoutThe = searchTerm.replace(/^the\s+/, '');
         
-        const isTheSearch = searchTerm.startsWith('the ');
-        let artistMatch;
-        
-        if (isTheSearch) {
-          artistMatch = artistLower === searchTerm || artistWithoutThe === searchWithoutThe;
-        } else {
-          artistMatch = artistLower === searchTerm || artistLower.startsWith(searchTerm + ' ');
-        }
+        const artistMatch = artistLower === searchTerm || 
+          searchTerm.startsWith(artistLower + ' ') ||
+          searchTerm.startsWith(artistWithoutThe + ' ') ||
+          artistLower.startsWith(searchTerm + ' ') ||
+          artistLower === searchWithoutThe ||
+          artistWithoutThe === searchWithoutThe;
         
         if (!artistMatch) {
           console.log(`  ❌ EMP: Filtered out "${emp.artist}" - doesn't match "${searchTerm}"`);
