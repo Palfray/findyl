@@ -157,21 +157,31 @@ function empFilter(r) {
 }
 
 // --- VinylCastle (feed 98984): category "Vinyl", brand_name useless ("1") ---
-// Product names follow "Artist - Album" pattern OR just album titles
+// Product names: "Artist - Album, Format" OR just title without dash
 function vcFilter(r) {
   if (r.merchant_category !== 'Vinyl') return null;
 
   const productName = (r.product_name || '').trim();
+  if (!productName) return null;
+
+  const price = parseFloat(r.search_price) || 0;
+  if (price <= 0) return null;
+
   let artist = '', album = '';
 
-  // Parse "Artist - Album, Format" from product name
-  const dashSplit = productName.split(' - ');
-  if (dashSplit.length >= 2) {
-    artist = dashSplit[0].trim();
-    album = dashSplit.slice(1).join(' - ').trim();
+  // Try "Artist - Album" split
+  const dashIdx = productName.indexOf(' - ');
+  if (dashIdx > 0) {
+    artist = productName.substring(0, dashIdx).trim();
+    album = productName.substring(dashIdx + 3).trim();
+  } else {
+    // No dash — store full name as both artist and album for search matching
+    // The search endpoint does text matching on product_name anyway
+    artist = '';
+    album = productName;
   }
 
-  // Clean album: remove format suffixes
+  // Clean album: remove format suffixes like ", Heavyweight Vinyl 2xlp"
   album = album
     .replace(/,\s*(vinyl|lp|2xlp|3xlp|heavyweight|gatefold|coloured|colored|limited|clear|180g|180 gram).*$/i, '')
     .replace(/\b(vinyl|lp|2xlp|3xlp|12"|7"|10")\b.*$/gi, '')
@@ -179,11 +189,6 @@ function vcFilter(r) {
     .trim()
     .replace(/[\s\-–—,]+$/, '')
     .trim();
-
-  if (!artist || !album) return null;
-
-  const price = parseFloat(r.search_price) || 0;
-  if (price <= 0) return null;
 
   return {
     artist, album, price, currency: r.currency || 'GBP',
