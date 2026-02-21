@@ -11,7 +11,6 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
-// Minimal columns
 const COLUMNS = 'aw_deep_link,product_name,search_price,merchant_name,merchant_category,merchant_image_url,aw_image_url,brand_name,in_stock,ean,colour,merchant_deep_link,currency';
 
 function buildFeedUrl(apiKey, feedId) {
@@ -43,7 +42,8 @@ function parseCSVLine(line) {
 }
 
 // Stream-decompress and parse CSV, filtering as we go
-async function fetchAndProcess(apiKey, feedId, label, filterFn) {
+// debugCategories: if true, collect unique category values for logging
+async function fetchAndProcess(apiKey, feedId, label, filterFn, debugCategories = false) {
   const url = buildFeedUrl(apiKey, feedId);
   console.log(`📥 ${label} (ID: ${feedId})...`);
 
@@ -54,15 +54,8 @@ async function fetchAndProcess(apiKey, feedId, label, filterFn) {
 
   if (!response.ok) throw new Error(`${label}: AWIN returned ${response.status}`);
 
-  const contentLength = response.headers.get('content-length');
-  console.log(`📦 ${label}: ${contentLength ? (parseInt(contentLength) / 1024).toFixed(0) + ' KB compressed' : 'unknown size'}`);
-
-  // Stream decompress
   const gunzip = createGunzip();
-  const body = response.body;
-
-  // Convert web ReadableStream to Node stream and pipe through gunzip
-  const nodeStream = Readable.fromWeb(body);
+  const nodeStream = Readable.fromWeb(response.body);
 
   return new Promise((resolve, reject) => {
     const results = [];
@@ -70,46 +63,48 @@ async function fetchAndProcess(apiKey, feedId, label, filterFn) {
     let buffer = '';
     let headerParsed = false;
     let totalRows = 0;
+    const categories = debugCategories ? new Map() : null;
 
     nodeStream.pipe(gunzip);
 
     gunzip.on('data', (chunk) => {
       buffer += chunk.toString('utf-8');
-
-      // Process complete lines
       let newlineIdx;
       while ((newlineIdx = buffer.indexOf('\n')) !== -1) {
         const line = buffer.substring(0, newlineIdx).trim();
         buffer = buffer.substring(newlineIdx + 1);
-
         if (!line) continue;
-
         if (!headerParsed) {
           headers = parseCSVLine(line);
           headerParsed = true;
           continue;
         }
-
         totalRows++;
         const values = parseCSVLine(line);
         if (values.length !== headers.length) continue;
 
-        // Quick in_stock check before building object
         const inStockIdx = headers.indexOf('in_stock');
         if (inStockIdx >= 0 && values[inStockIdx] !== '1') continue;
+
+        // Debug: collect categories
+        if (categories) {
+          const catIdx = headers.indexOf('merchant_category');
+          if (catIdx >= 0) {
+            const cat = values[catIdx] || '(empty)';
+            categories.set(cat, (categories.get(cat) || 0) + 1);
+          }
+        }
 
         const row = {};
         for (let i = 0; i < headers.length; i++) {
           row[headers[i].trim()] = values[i] || '';
         }
-
         const result = filterFn(row);
         if (result) results.push(result);
       }
     });
 
     gunzip.on('end', () => {
-      // Process remaining buffer
       if (buffer.trim() && headerParsed) {
         const values = parseCSVLine(buffer.trim());
         if (values.length === headers.length) {
@@ -124,23 +119,29 @@ async function fetchAndProcess(apiKey, feedId, label, filterFn) {
           }
         }
       }
-      console.log(`📊 ${label}: ${totalRows} rows → ${results.length} vinyl products`);
+      console.log(`📊 ${label}: ${totalRows} rows → ${results.length} products`);
+      if (categories) {
+        // Log top 20 categories
+        const sorted = [...categories.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20);
+        console.log(`📋 ${label} categories:`, JSON.stringify(sorted));
+      }
       resolve(results);
     });
 
-    gunzip.on('error', (err) => {
-      reject(new Error(`${label} gunzip error: ${err.message}`));
-    });
-
-    nodeStream.on('error', (err) => {
-      reject(new Error(`${label} stream error: ${err.message}`));
-    });
+    gunzip.on('error', (err) => reject(new Error(`${label} gunzip: ${err.message}`)));
+    nodeStream.on('error', (err) => reject(new Error(`${label} stream: ${err.message}`)));
   });
 }
 
-// --- Filter functions ---
+// --- EMP: accept LP in any case, also check product_name for "LP" ---
 function empFilter(r) {
-  if (r.merchant_category !== 'LP') return null;
+  const cat = (r.merchant_category || '').trim();
+  const name = (r.product_name || '').toLowerCase();
+
+  // Accept if category is LP (case-insensitive) OR product name contains " LP"
+  const isLP = cat.toLowerCase() === 'lp' || name.includes(' lp');
+  if (!isLP) return null;
+
   const artist = (r.brand_name || '').trim();
   const productName = (r.product_name || '').trim();
   let album = productName;
@@ -159,8 +160,19 @@ function empFilter(r) {
   };
 }
 
+// --- VinylCastle: only accept vinyl/LP products ---
 function vcFilter(r) {
   const productName = (r.product_name || '').trim();
+  const nameLower = productName.toLowerCase();
+  const cat = (r.merchant_category || '').toLowerCase();
+
+  // VinylCastle filter: must look like a vinyl product
+  const isVinyl = cat.includes('vinyl') || cat.includes('lp') || cat.includes('record') ||
+    nameLower.includes('vinyl') || nameLower.includes(' lp') ||
+    nameLower.includes(' lp,') || nameLower.includes(' lp ') ||
+    /\bLP\b/.test(r.product_name || '');
+  if (!isVinyl) return null;
+
   const brandName = (r.brand_name || '').trim();
   let artist = '', album = '';
   const dashSplit = productName.split(' - ');
@@ -186,6 +198,7 @@ function vcFilter(r) {
   };
 }
 
+// --- POPSTORE ---
 function popFilter(r) {
   const name = (r.product_name || '').toLowerCase();
   const cat = (r.merchant_category || '').toLowerCase();
@@ -230,9 +243,9 @@ export default async function handler(req, res) {
   const counts = {};
 
   try {
-    // --- EMP (feed 98984) ---
+    // EMP — enable debug categories to see what values exist
     try {
-      const products = await fetchAndProcess(apiKey, '98984', 'EMP', empFilter);
+      const products = await fetchAndProcess(apiKey, '98984', 'EMP', empFilter, true);
       counts.emp = products.length;
       await redis.set('feed:emp', JSON.stringify(products));
       console.log('✅ EMP stored');
@@ -241,7 +254,7 @@ export default async function handler(req, res) {
       counts.emp = 'error';
     }
 
-    // --- POPSTORE (feed 108054) ---
+    // POPSTORE
     try {
       const products = await fetchAndProcess(apiKey, '108054', 'POPSTORE', popFilter);
       counts.popstore = products.length;
@@ -252,9 +265,9 @@ export default async function handler(req, res) {
       counts.popstore = 'error';
     }
 
-    // --- VinylCastle (feed 43053) ---
+    // VinylCastle — enable debug categories
     try {
-      const products = await fetchAndProcess(apiKey, '43053', 'VinylCastle', vcFilter);
+      const products = await fetchAndProcess(apiKey, '43053', 'VinylCastle', vcFilter, true);
       counts.vinylcastle = products.length;
       const CHUNK = 5000;
       const numChunks = Math.ceil(products.length / CHUNK);
