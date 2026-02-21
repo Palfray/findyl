@@ -11,6 +11,11 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
+// Correct feed ID mapping (confirmed via feed-debug):
+// 43053  = EMP (65k products, category "LP" for vinyl, brand_name = real artist)
+// 98984  = VinylCastle (83k products, category "Vinyl" for records, brand_name = "1" useless)
+// 108054 = POPSTORE (770 products, category "855" numeric, brand_name = EAN barcode)
+
 const COLUMNS = 'aw_deep_link,product_name,search_price,merchant_name,merchant_category,merchant_image_url,aw_image_url,brand_name,in_stock,ean,colour,merchant_deep_link,currency';
 
 function buildFeedUrl(apiKey, feedId) {
@@ -41,9 +46,7 @@ function parseCSVLine(line) {
   return fields;
 }
 
-// Stream-decompress and parse CSV, filtering as we go
-// debugCategories: if true, collect unique category values for logging
-async function fetchAndProcess(apiKey, feedId, label, filterFn, debugCategories = false) {
+async function fetchAndProcess(apiKey, feedId, label, filterFn) {
   const url = buildFeedUrl(apiKey, feedId);
   console.log(`📥 ${label} (ID: ${feedId})...`);
 
@@ -63,7 +66,6 @@ async function fetchAndProcess(apiKey, feedId, label, filterFn, debugCategories 
     let buffer = '';
     let headerParsed = false;
     let totalRows = 0;
-    const categories = debugCategories ? new Map() : null;
 
     nodeStream.pipe(gunzip);
 
@@ -85,15 +87,6 @@ async function fetchAndProcess(apiKey, feedId, label, filterFn, debugCategories 
 
         const inStockIdx = headers.indexOf('in_stock');
         if (inStockIdx >= 0 && values[inStockIdx] !== '1') continue;
-
-        // Debug: collect categories
-        if (categories) {
-          const catIdx = headers.indexOf('merchant_category');
-          if (catIdx >= 0) {
-            const cat = values[catIdx] || '(empty)';
-            categories.set(cat, (categories.get(cat) || 0) + 1);
-          }
-        }
 
         const row = {};
         for (let i = 0; i < headers.length; i++) {
@@ -120,11 +113,6 @@ async function fetchAndProcess(apiKey, feedId, label, filterFn, debugCategories 
         }
       }
       console.log(`📊 ${label}: ${totalRows} rows → ${results.length} products`);
-      if (categories) {
-        // Log top 20 categories
-        const sorted = [...categories.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20);
-        console.log(`📋 ${label} categories:`, JSON.stringify(sorted));
-      }
       resolve(results);
     });
 
@@ -133,23 +121,31 @@ async function fetchAndProcess(apiKey, feedId, label, filterFn, debugCategories 
   });
 }
 
-// --- EMP: accept LP in any case, also check product_name for "LP" ---
+// --- EMP (feed 43053): category "LP", brand_name = real artist ---
 function empFilter(r) {
-  const cat = (r.merchant_category || '').trim();
-  const name = (r.product_name || '').toLowerCase();
-
-  // Accept if category is LP (case-insensitive) OR product name contains " LP"
-  const isLP = cat.toLowerCase() === 'lp' || name.includes(' lp');
-  if (!isLP) return null;
+  if (r.merchant_category !== 'LP') return null;
 
   const artist = (r.brand_name || '').trim();
   const productName = (r.product_name || '').trim();
+
+  // Derive album from product name
   let album = productName;
+  // Strip artist prefix if present
   if (artist && album.toLowerCase().startsWith(artist.toLowerCase())) {
     album = album.substring(artist.length).trim();
+    album = album.replace(/^[\s\-–—]+/, '').trim();
   }
-  album = album.replace(/\b\d*LP\b.*$/i, '').replace(/\b(vinyl|gatefold|reissue|remaster|deluxe|limited|edition)\b.*$/gi, '').trim().replace(/[\s\-–—]+$/, '').trim();
+  // Remove "LP", "LP [colour]", "2LP", format keywords
+  album = album
+    .replace(/\b\d*LP\b.*$/i, '')
+    .replace(/\b(vinyl|gatefold|reissue|remaster|deluxe|limited|edition|coloured|colored|heavyweight|clear|red|blue|green|white|black|yellow|orange|pink|purple|marble|splatter)\b.*$/gi, '')
+    .replace(/\(.*?\)/g, '')
+    .trim()
+    .replace(/[\s\-–—]+$/, '')
+    .trim();
+
   if (!artist || !album) return null;
+
   return {
     artist, album, title: productName,
     price: parseFloat(r.search_price) || 0,
@@ -160,36 +156,35 @@ function empFilter(r) {
   };
 }
 
-// --- VinylCastle: only accept vinyl/LP products ---
+// --- VinylCastle (feed 98984): category "Vinyl", brand_name useless ("1") ---
+// Product names follow "Artist - Album" pattern OR just album titles
 function vcFilter(r) {
+  if (r.merchant_category !== 'Vinyl') return null;
+
   const productName = (r.product_name || '').trim();
-  const nameLower = productName.toLowerCase();
-  const cat = (r.merchant_category || '').toLowerCase();
-
-  // VinylCastle filter: must look like a vinyl product
-  const isVinyl = cat.includes('vinyl') || cat.includes('lp') || cat.includes('record') ||
-    nameLower.includes('vinyl') || nameLower.includes(' lp') ||
-    nameLower.includes(' lp,') || nameLower.includes(' lp ') ||
-    /\bLP\b/.test(r.product_name || '');
-  if (!isVinyl) return null;
-
-  const brandName = (r.brand_name || '').trim();
   let artist = '', album = '';
+
+  // Parse "Artist - Album, Format" from product name
   const dashSplit = productName.split(' - ');
   if (dashSplit.length >= 2) {
     artist = dashSplit[0].trim();
     album = dashSplit.slice(1).join(' - ').trim();
-  } else if (brandName) {
-    artist = brandName;
-    album = productName;
-    if (album.toLowerCase().startsWith(artist.toLowerCase())) {
-      album = album.substring(artist.length).trim().replace(/^[\s\-–—]+/, '').trim();
-    }
   }
-  album = album.replace(/\b(vinyl|lp|2xlp|3xlp|12"|7"|10")\b.*$/gi, '').replace(/\(.*?\)/g, '').trim().replace(/[\s\-–—]+$/, '').trim();
+
+  // Clean album: remove format suffixes
+  album = album
+    .replace(/,\s*(vinyl|lp|2xlp|3xlp|heavyweight|gatefold|coloured|colored|limited|clear|180g|180 gram).*$/i, '')
+    .replace(/\b(vinyl|lp|2xlp|3xlp|12"|7"|10")\b.*$/gi, '')
+    .replace(/\(.*?\)/g, '')
+    .trim()
+    .replace(/[\s\-–—,]+$/, '')
+    .trim();
+
   if (!artist || !album) return null;
+
   const price = parseFloat(r.search_price) || 0;
   if (price <= 0) return null;
+
   return {
     artist, album, price, currency: r.currency || 'GBP',
     link: r.aw_deep_link || '',
@@ -198,34 +193,46 @@ function vcFilter(r) {
   };
 }
 
-// --- POPSTORE ---
+// --- POPSTORE (feed 108054): category "855" (numeric), brand_name = EAN barcode ---
+// Product names: "Artist - Album, Format Lp" or "Artist - Album, Gatefold Vinyl Lp"
 function popFilter(r) {
-  const name = (r.product_name || '').toLowerCase();
-  const cat = (r.merchant_category || '').toLowerCase();
-  const isVinyl = cat.includes('vinyl') || cat.includes('lp') || cat === 'records' ||
-    name.includes('vinyl') || name.includes(' lp');
+  const productName = (r.product_name || '').trim();
+  const nameLower = productName.toLowerCase();
+
+  // POPSTORE is almost all vinyl but filter to be safe
+  const isVinyl = nameLower.includes('lp') || nameLower.includes('vinyl') ||
+    r.merchant_category === '855';
   if (!isVinyl) return null;
 
-  const productName = (r.product_name || '').trim();
-  const brandName = (r.brand_name || '').trim();
   let artist = '', album = '';
   const dashSplit = productName.split(' - ');
   if (dashSplit.length >= 2) {
     artist = dashSplit[0].trim();
     album = dashSplit.slice(1).join(' - ').trim();
-  } else if (brandName) {
-    artist = brandName;
-    album = productName;
   }
-  album = album.replace(/,\s*(vinyl|lp).*$/i, '').replace(/\b(vinyl|lp|2xlp|3xlp|gatefold|coloured|colored|limited|edition|deluxe)\b.*$/gi, '').replace(/\(.*?\)/g, '').trim().replace(/[\s\-–—]+$/, '').trim();
+
+  // Clean album: remove ", Heavyweight Vinyl 2xlp" etc
+  album = album
+    .replace(/,\s*(heavyweight|gatefold|coloured|colored|limited|clear|180g|lp|vinyl|2xlp|3xlp).*$/i, '')
+    .replace(/\b(vinyl|lp|2xlp|3xlp|gatefold|coloured|colored|limited|edition|deluxe|heavyweight)\b.*$/gi, '')
+    .replace(/\(.*?\)/g, '')
+    .trim()
+    .replace(/[\s\-–—,]+$/, '')
+    .trim();
+
   if (!artist || !album) return null;
+
   const price = parseFloat(r.search_price) || 0;
   if (price <= 0) return null;
+
+  // Use brand_name as EAN if it looks like one (all digits)
+  const ean = /^\d+$/.test(r.brand_name || '') ? r.brand_name : (r.ean || '');
+
   return {
     artist, album, title: productName, price,
     link: r.aw_deep_link || '',
     image: r.merchant_image_url || r.aw_image_url || '',
-    availability: 'In Stock', ean: r.ean || '',
+    availability: 'In Stock', ean,
     product_name: productName,
     url: r.merchant_deep_link || r.aw_deep_link || ''
   };
@@ -243,9 +250,9 @@ export default async function handler(req, res) {
   const counts = {};
 
   try {
-    // EMP — enable debug categories to see what values exist
+    // --- EMP (feed 43053) ---
     try {
-      const products = await fetchAndProcess(apiKey, '98984', 'EMP', empFilter, true);
+      const products = await fetchAndProcess(apiKey, '43053', 'EMP', empFilter);
       counts.emp = products.length;
       await redis.set('feed:emp', JSON.stringify(products));
       console.log('✅ EMP stored');
@@ -254,7 +261,7 @@ export default async function handler(req, res) {
       counts.emp = 'error';
     }
 
-    // POPSTORE
+    // --- POPSTORE (feed 108054) ---
     try {
       const products = await fetchAndProcess(apiKey, '108054', 'POPSTORE', popFilter);
       counts.popstore = products.length;
@@ -265,9 +272,9 @@ export default async function handler(req, res) {
       counts.popstore = 'error';
     }
 
-    // VinylCastle — enable debug categories
+    // --- VinylCastle (feed 98984) ---
     try {
-      const products = await fetchAndProcess(apiKey, '43053', 'VinylCastle', vcFilter, true);
+      const products = await fetchAndProcess(apiKey, '98984', 'VinylCastle', vcFilter);
       counts.vinylcastle = products.length;
       const CHUNK = 5000;
       const numChunks = Math.ceil(products.length / CHUNK);
