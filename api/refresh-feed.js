@@ -1,6 +1,11 @@
 import { Redis } from '@upstash/redis';
 import { gunzipSync } from 'zlib';
 
+// Vercel serverless config — this function needs more time for the large AWIN feed download
+export const config = {
+  maxDuration: 60, // 60 seconds (Vercel Hobby allows up to 60s for cron functions)
+};
+
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL,
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
