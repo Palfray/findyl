@@ -616,8 +616,9 @@
               var sleeveArticles = sleeveOrder.map(function(s) { return bySlug[s]; }).filter(Boolean);
               document.getElementById('hp-articles').innerHTML = sleeveArticles.map(buildCard).join('');
 
-              // Handbook — all guides
+              // Handbook — all guides, sorted by order field
               var guides = articles.filter(function(a) { return a.category === 'guides'; });
+              guides.sort(function(a, b) { return (a.order || 99) - (b.order || 99); });
               document.getElementById('hp-guides').innerHTML = guides.map(buildCard).join('');
             })
             .catch(function(err) { console.error('Failed to load homepage articles:', err); });
