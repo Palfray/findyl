@@ -1,4 +1,4 @@
-[understanding-vinyl-pressings (1).md](https://github.com/user-attachments/files/25456779/understanding-vinyl-pressings.1.md)
+[understanding-vinyl-pressings (2).md](https://github.com/user-attachments/files/25456892/understanding-vinyl-pressings.2.md)
 # Understanding Vinyl Pressings: 180g, Coloured, First Pressing Explained
 
 Every vinyl listing throws terms at you. 180g audiophile pressing. Limited edition splatter. Remastered from the original tapes. First pressing. Gatefold. Half-speed mastered. You're expected to know what all of it means and, more importantly, whether any of it is worth paying extra for.
