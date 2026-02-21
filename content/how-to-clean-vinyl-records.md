@@ -1,3 +1,4 @@
+
 # How to Clean Your Vinyl Records
 
 Those pops and crackles you hear? Most of them aren't your record. They're the dust, skin cells and general household debris that vinyl attracts like a magnet with a grudge. Static electricity pulls particles into the grooves, your fingers leave oils every time you handle a disc, and even a shrink-wrapped new pressing can arrive with enough factory residue to take the shine off a first listen.
@@ -32,7 +33,7 @@ Vinyl forums are full of DIY cleaning methods, and some of them will ruin your r
 
 **Washing-up liquid.** It works in the short term but it strips the protective coating from the vinyl over time. You'll trade today's dust for tomorrow's permanently degraded surface.
 
-**Isopropyl alcohol.** Same problem. It's a common ingredient in home-brew cleaning solutions, and it'll dissolve oils and grime effectively — along with the coating that keeps your record healthy. There's a reason the Library of Congress uses a mild surfactant called Tergitol instead of alcohol when cleaning their archive. If it's good enough for them, it's good enough for your copy of *Rumours*.
+**Isopropyl alcohol.** Same problem. It's a common ingredient in home-brew cleaning solutions, and it'll dissolve oils and grime effectively — along with the coating that keeps your record healthy. There's a reason the Library of Congress uses a mild surfactant called Tergitol instead of alcohol when cleaning their archive. If it's good enough for them, it's good enough for your copy of [*Rumours*](/album?name=Rumours&artist=Fleetwood+Mac&id=b0cc4838-a835-34fb-87dc-51a74a52aab1).
 
 **Your regular household vacuum cleaner.** This one should be obvious, but the internet being the internet: don't do it. Dedicated vacuum record cleaners exist (from brands like Pro-Ject and Okki Nokki, typically £300+), and they use precisely calibrated suction. Your Henry does not.
 
@@ -48,10 +49,10 @@ A basic stylus brush — a tiny, soft-bristled brush you stroke gently from back
 
 If you're cleaning records but putting them back into tatty old paper inner sleeves, you're undoing half your work. Paper sleeves shed fibres, they don't block static, and they can scratch the surface when you slide the record in and out.
 
-Poly-lined inner sleeves — the kind with a soft plastic lining inside the paper — are the standard upgrade. They're anti-static, they don't shed, and they cost about 15–20p each in bulk. MoFi (Mobile Fidelity) and Spincare both make good ones. Replacing the inners across your whole collection is a rainy Sunday afternoon job that quietly improves every listen going forward.
+Poly-lined inner sleeves — the kind with a soft plastic lining inside the paper — are the standard upgrade. They're anti-static, they don't shed, and they cost about 15–20p each in bulk. MoFi (Mobile Fidelity) and Spincare both make good ones. Replacing the inners across your whole collection is a rainy Sunday afternoon job that quietly improves every listen going forward. For more on sleeve types and how to store your records once they're clean, have a look at our [storage guide](/articles/how-to-store-vinyl-records).
 
 ## The Bottom Line
 
 You don't need to spend hundreds on a vacuum machine or turn record cleaning into a weekend hobby. A carbon fibre brush before every play, a Spin-Clean or similar for periodic deep cleans, and decent inner sleeves will keep the vast majority of collections sounding excellent.
 
-The real magic is in the routine. Fifteen seconds with a brush before you drop the needle. That's it. Your records will sound better, your stylus will last longer, and those mysterious clicks that made you think your copy of *OK Computer* was done for? Probably just dust.
+The real magic is in the routine. Fifteen seconds with a brush before you drop the needle. That's it. Your records will sound better, your stylus will last longer, and those mysterious clicks that made you think your copy of [*OK Computer*](/album?name=OK+Computer&artist=Radiohead&id=b1392450-e666-3926-a536-22c65f834433) was done for? Probably just dust.
