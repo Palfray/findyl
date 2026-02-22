@@ -55,6 +55,22 @@
             margin-left: 6px;
             vertical-align: middle;
             flex-shrink: 0;
+        }
+        .discount-sticker {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #FF6B6B;
+            color: white;
+            font-family: 'Raleway', 'Inter', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 3px 7px;
+            border-radius: 4px;
+            z-index: 2;
+            line-height: 1.2;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
             opacity: 0.85;
         }
         .category-pill {
@@ -312,11 +328,25 @@
             return false;
         }
 
+        // Get best discount for an album (returns {percent, price, rrp} or null)
+        function getBestDiscount(mbTitle) {
+            let best = null;
+            empProducts.forEach(p => {
+                if (artistMatches(p.artist) && albumMatches(p.album, mbTitle)) {
+                    const pct = parseFloat(p.savingsPercent) || 0;
+                    if (pct > 0 && (!best || pct > best.percent)) {
+                        best = { percent: Math.round(pct), price: p.price, rrp: p.rrp };
+                    }
+                }
+            });
+            return best;
+        }
+
         // Load all feeds in background (non-blocking, no MB dependency)
         async function loadPricingFeeds() {
             try {
                 const [empRes, vcRes, ebayRes] = await Promise.allSettled([
-                    fetch('https://raw.githubusercontent.com/Palfray/findyl/main/api/emp-vinyl.json'),
+                    fetch('/api/emp-search?q=' + encodeURIComponent(artistName)),
                     fetch('/api/vinylcastle-search?q=' + encodeURIComponent(artistName)),
                     fetch('/api/ebay-search?artist=' + encodeURIComponent(artistName))
                 ]);
@@ -351,6 +381,12 @@
                     if (titleEl && !titleEl.querySelector('.pricing-dot')) {
                         titleEl.insertAdjacentHTML('beforeend', '<span class="pricing-dot" title="Available from UK retailers"></span>');
                     }
+                }
+                // Add discount sticker if not already present
+                const discount = getBestDiscount(title);
+                const imgContainer = card.querySelector('.aspect-square');
+                if (discount && imgContainer && !imgContainer.querySelector('.discount-sticker')) {
+                    imgContainer.insertAdjacentHTML('afterbegin', `<span class="discount-sticker">-${discount.percent}%</span>`);
                 }
             });
         }
@@ -666,12 +702,14 @@
                 const year = album['first-release-date'] ? album['first-release-date'].substring(0, 4) : '';
                 const coverUrl = `https://coverartarchive.org/release-group/${album.id}/front-250`;
                 const hasDot = pricingReady && hasPricing(album.title);
+                const discount = pricingReady ? getBestDiscount(album.title) : null;
 
                 return `
                     <a href="/album?id=${album.id}&artist=${encodeURIComponent(artistName)}" 
                        class="album-card block bg-white rounded-lg overflow-hidden shadow-sm"
                        data-title="${album.title.replace(/"/g, '&quot;')}">
                         <div class="aspect-square bg-gray-200 relative">
+                            ${discount ? `<span class="discount-sticker">-${discount.percent}%</span>` : ''}
                             <img src="${coverUrl}" 
                                  alt="${album.title}" 
                                  class="w-full h-full object-cover"
