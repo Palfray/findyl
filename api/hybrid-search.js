@@ -385,6 +385,9 @@ export default async function handler(req, res) {
       const empOption = {
         storeName: 'EMP',
         price: price,
+        rrp: parseFloat(emp.rrp) || 0,
+        saving: parseFloat(emp.saving) || 0,
+        savingsPercent: parseFloat(emp.savingsPercent) || 0,
         link: emp.link,
         source: 'emp',
         availability: emp.availability || 'In Stock',
