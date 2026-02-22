@@ -16,7 +16,7 @@ const redis = new Redis({
 // 98984  = VinylCastle (83k products, category "Vinyl" for records, brand_name = "1" useless)
 // 108054 = POPSTORE (770 products, category "855" numeric, brand_name = EAN barcode)
 
-const COLUMNS = 'aw_deep_link,product_name,search_price,merchant_name,merchant_category,merchant_image_url,aw_image_url,brand_name,in_stock,ean,colour,merchant_deep_link,currency';
+const COLUMNS = 'aw_deep_link,product_name,search_price,merchant_name,merchant_category,merchant_image_url,aw_image_url,brand_name,in_stock,ean,colour,merchant_deep_link,currency,saving,savings_percent,rrp_price';
 
 function buildFeedUrl(apiKey, feedId) {
   return `https://productdata.awin.com/datafeed/download/apikey/${apiKey}/language/en/fid/${feedId}/rid/0/hasEnhancedFeeds/0/columns/${COLUMNS}/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/`;
@@ -146,9 +146,17 @@ function empFilter(r) {
 
   if (!artist || !album) return null;
 
+  const price = parseFloat(r.search_price) || 0;
+  const saving = parseFloat(r.saving) || 0;
+  const savingsPercent = parseFloat(r.savings_percent) || 0;
+  const rrp = parseFloat(r.rrp_price) || (saving > 0 ? price + saving : 0);
+
   return {
     artist, album, title: productName,
-    price: parseFloat(r.search_price) || 0,
+    price,
+    rrp: rrp > price ? rrp : 0,
+    saving: saving > 0 ? saving : 0,
+    savingsPercent: savingsPercent > 0 ? savingsPercent : 0,
     link: r.aw_deep_link || '',
     image: r.merchant_image_url || r.aw_image_url || '',
     ean: r.ean || '', in_stock: true, colour: r.colour || '',
