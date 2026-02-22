@@ -91,21 +91,24 @@
         }
         .category-pill {
             display: inline-block;
-            padding: 6px 16px;
-            border-radius: 9999px;
+            padding: 6px 16px !important;
+            border-radius: 9999px !important;
             font-size: 14px;
             font-family: 'DM Serif Display', serif;
             cursor: pointer;
-            border: none;
-            outline: none;
+            border: none !important;
+            outline: none !important;
             transition: all 0.2s ease;
-            background: #F3F4F6;
-            color: #6B7280;
+            background: #F3F4F6 !important;
+            color: #6B7280 !important;
             font-weight: 400;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
         }
         .category-pill.active {
-            background: #FF6B6B;
-            color: #FFFFFF;
+            background: #FF6B6B !important;
+            color: #FFFFFF !important;
             font-weight: 600;
         }
         .sim-img-fade {
