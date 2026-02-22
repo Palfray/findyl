@@ -60,16 +60,31 @@
             position: absolute;
             top: 8px;
             right: 8px;
-            background: #FF6B6B;
+            background: #E53E3E;
             color: white;
             font-family: 'Raleway', 'Inter', sans-serif;
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 3px 7px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 4px 8px;
             border-radius: 4px;
             z-index: 2;
             line-height: 1.2;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            letter-spacing: 0.02em;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+        }
+        .album-from-price {
+            font-family: 'Raleway', 'Inter', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #E53E3E;
+            margin-top: 2px;
+        }
+        .album-from-price .was {
+            font-weight: 400;
+            color: #9CA3AF;
+            text-decoration: line-through;
+            font-size: 0.7rem;
+            margin-left: 4px;
         }
             opacity: 0.85;
         }
@@ -329,12 +344,13 @@
         }
 
         // Get best discount for an album (returns {percent, price, rrp} or null)
+        // Minimum 10% threshold — small discounts cheapen the brand
         function getBestDiscount(mbTitle) {
             let best = null;
             empProducts.forEach(p => {
                 if (artistMatches(p.artist) && albumMatches(p.album, mbTitle)) {
                     const pct = parseFloat(p.savingsPercent) || 0;
-                    if (pct > 0 && (!best || pct > best.percent)) {
+                    if (pct >= 10 && (!best || pct > best.percent)) {
                         best = { percent: Math.round(pct), price: p.price, rrp: p.rrp };
                     }
                 }
@@ -382,11 +398,17 @@
                         titleEl.insertAdjacentHTML('beforeend', '<span class="pricing-dot" title="Available from UK retailers"></span>');
                     }
                 }
-                // Add discount sticker if not already present
+                // Add discount sticker and from-price if not already present
                 const discount = getBestDiscount(title);
-                const imgContainer = card.querySelector('.aspect-square');
-                if (discount && imgContainer && !imgContainer.querySelector('.discount-sticker')) {
-                    imgContainer.insertAdjacentHTML('afterbegin', `<span class="discount-sticker">-${discount.percent}%</span>`);
+                if (discount) {
+                    const imgContainer = card.querySelector('.aspect-square');
+                    if (imgContainer && !imgContainer.querySelector('.discount-sticker')) {
+                        imgContainer.insertAdjacentHTML('afterbegin', `<span class="discount-sticker">SAVE ${discount.percent}%</span>`);
+                    }
+                    const infoContainer = card.querySelector('.p-4');
+                    if (infoContainer && !infoContainer.querySelector('.album-from-price')) {
+                        infoContainer.insertAdjacentHTML('beforeend', `<p class="album-from-price">From £${discount.price.toFixed(2)}<span class="was">£${discount.rrp.toFixed(2)}</span></p>`);
+                    }
                 }
             });
         }
@@ -709,7 +731,7 @@
                        class="album-card block bg-white rounded-lg overflow-hidden shadow-sm"
                        data-title="${album.title.replace(/"/g, '&quot;')}">
                         <div class="aspect-square bg-gray-200 relative">
-                            ${discount ? `<span class="discount-sticker">-${discount.percent}%</span>` : ''}
+                            ${discount ? `<span class="discount-sticker">SAVE ${discount.percent}%</span>` : ''}
                             <img src="${coverUrl}" 
                                  alt="${album.title}" 
                                  class="w-full h-full object-cover"
@@ -722,6 +744,7 @@
                                 <span>${album.title}</span>${hasDot ? '<span class="pricing-dot" title="Available from UK retailers"></span>' : ''}
                             </h3>
                             ${year ? `<p class="text-sm text-gray-500">${year}</p>` : ''}
+                            ${discount ? `<p class="album-from-price">From £${discount.price.toFixed(2)}<span class="was">£${discount.rrp.toFixed(2)}</span></p>` : ''}
                         </div>
                     </a>
                 `;
