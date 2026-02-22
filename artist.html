@@ -60,40 +60,23 @@
             position: absolute;
             top: 8px;
             right: 8px;
-            width: 52px;
-            height: 52px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
-            background: #E53E3E;
+            background: #FF6B6B;
             color: white;
-            font-family: 'Raleway', 'Inter', Arial, sans-serif;
-            font-size: 0.6rem;
-            font-weight: 800;
+            font-family: 'Raleway', 'Inter', sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            line-height: 1.1;
-            letter-spacing: 0.03em;
             z-index: 2;
-            box-shadow: 1px 2px 4px rgba(0,0,0,0.3);
-            transform: rotate(12deg);
-            text-transform: uppercase;
-        }
-        .discount-sticker::after {
-            content: '';
-            position: absolute;
-            bottom: 2px;
-            right: 2px;
-            width: 14px;
-            height: 14px;
-            background: linear-gradient(135deg, transparent 40%, #F3F4F6 40%, #F3F4F6 50%, #cb3333 50%);
-            border-radius: 0 0 50% 0;
-        }
-        .discount-sticker .pct {
-            font-size: 1rem;
-            font-weight: 900;
             line-height: 1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 0 0 2px rgba(255,255,255,0.25), inset 0 0 0 5px rgba(255,255,255,0.08);
+            transform: rotate(6deg);
         }
+        .discount-sticker .pct { font-size: 1.3rem; font-weight: 900; letter-spacing: -0.02em; }
+        .discount-sticker .save { font-size: 0.38rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; margin-top: 2px; opacity: 0.9; }
         .album-card .album-from-price {
             font-family: 'Raleway', 'Inter', sans-serif;
             font-size: 0.8rem;
@@ -428,7 +411,7 @@
                 if (discount) {
                     const imgContainer = card.querySelector('.aspect-square');
                     if (imgContainer && !imgContainer.querySelector('.discount-sticker')) {
-                        imgContainer.insertAdjacentHTML('afterbegin', `<span class="discount-sticker">SAVE<span class="pct">${discount.percent}%</span></span>`);
+                        imgContainer.insertAdjacentHTML('afterbegin', `<span class="discount-sticker"><span class="pct">${discount.percent}%</span><span class="save">SAVE</span></span>`);
                     }
                     const infoContainer = card.querySelector('.p-4');
                     if (infoContainer && !infoContainer.querySelector('.album-from-price')) {
@@ -765,7 +748,7 @@
                        class="album-card block bg-white rounded-lg overflow-hidden shadow-sm"
                        data-title="${album.title.replace(/"/g, '&quot;')}">
                         <div class="aspect-square bg-gray-200 relative">
-                            ${discount ? `<span class="discount-sticker">SAVE<span class="pct">${discount.percent}%</span></span>` : ''}
+                            ${discount ? `<span class="discount-sticker"><span class="pct">${discount.percent}%</span><span class="save">SAVE</span></span>` : ''}
                             <img src="${coverUrl}" 
                                  alt="${album.title}" 
                                  class="w-full h-full object-cover"
