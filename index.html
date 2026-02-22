@@ -171,6 +171,27 @@
           padding: 2px 7px;
           border-radius: 6px;
         }
+        .sc-discount {
+          position: absolute;
+          top: 6px;
+          right: 6px;
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          background: #FF6B6B;
+          color: white;
+          font-family: 'Raleway', sans-serif;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          z-index: 2;
+          line-height: 1;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3), inset 0 0 0 1.5px rgba(255,255,255,0.25), inset 0 0 0 4px rgba(255,255,255,0.08);
+          transform: rotate(6deg);
+        }
+        .sc-discount .pct { font-size: 0.95rem; font-weight: 900; letter-spacing: -0.02em; }
+        .sc-discount .save { font-size: 0.3rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; margin-top: 1px; opacity: 0.9; }
         .sc-body {
           padding: 8px 10px 10px;
         }
@@ -794,10 +815,11 @@
       }
 
       // Update a card's price display
-      function updateCard(card, prices) {
+      function updateCard(card, prices, bestDiscount) {
         const priceEl = card.querySelector('.sc-price');
         const highEl = card.querySelector('.sc-price-high');
         const storesEl = card.querySelector('.sc-stores');
+        const artEl = card.querySelector('.sc-art');
 
         if (prices.length === 0) {
           priceEl.textContent = 'Compare';
@@ -814,6 +836,11 @@
 
         if (prices.length > 1 && high > low) {
           highEl.textContent = '£' + high.toFixed(2);
+        }
+
+        // Add discount sticker if 10%+
+        if (bestDiscount && bestDiscount >= 10 && artEl && !artEl.querySelector('.sc-discount')) {
+          artEl.insertAdjacentHTML('beforeend', `<div class="sc-discount"><span class="pct">${bestDiscount}%</span><span class="save">SAVE</span></div>`);
         }
       }
 
@@ -838,6 +865,7 @@
           cardsForArtist.forEach(card => {
             const albumNorm = norm(card.dataset.album);
             const prices = [];
+            let bestDiscount = null;
 
             // Match from hybrid results
             if (Array.isArray(hybridResults)) {
@@ -845,6 +873,10 @@
                 if (norm(result.album || '').includes(albumNorm) || albumNorm.includes(norm(result.album || ''))) {
                   (result.buyOptions || []).forEach(opt => {
                     if (opt.price && opt.price > 0) prices.push(opt.price);
+                    const pct = parseFloat(opt.savingsPercent) || 0;
+                    if (pct >= 10 && (!bestDiscount || pct > bestDiscount)) {
+                      bestDiscount = Math.round(pct);
+                    }
                   });
                 }
               });
@@ -859,7 +891,7 @@
               });
             }
 
-            updateCard(card, prices);
+            updateCard(card, prices, bestDiscount);
           });
         });
       });
